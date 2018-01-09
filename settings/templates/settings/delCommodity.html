@@ -1,0 +1,112 @@
+{% include "home/header.html" %}
+
+{% if mainCommodityRegistered is not None %}
+
+<form class="form-signup" role="form" action="{% url 'setup:index2' %}" method="POST">
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class='col-sm-4'>
+			<br>
+			<br>
+
+			<!-- <form class="form-signup" role="form" action="{% url 'setup:index' %}" method="POST"> -->
+				<center>
+		        <h2 class="form-signup-heading">Select Your Deleterious Commodities:</h2>
+		        </center>
+		        <br>
+
+		        {% if errorMsg != None %}
+		        	<center>
+		        	<p class="errorMsg">{{ errorMsg }}</p>
+		        	</center>
+		        {% endif %}
+		        
+		        {% csrf_token %}
+
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		<center>
+		<ul style="list-style: none;" id="id_{{ form.commodity1.name }}">
+ 			{% for pk, choice in form.commodity1.field.widget.choices %}
+				<li>
+					<label for="id_{{ form.commodity1.name }}_{{ forloop.counter0 }}">
+						<input {% for m2moption in model.m2moptions.all %}{% if option.pk == pk %}checked="checked"{% endif %}{% endfor %} type="checkbox" id="id_{{ form.commodity1.name }}_{{ forloop.counter0 }}" value="{{ pk }}" name="{{ form.commodity1.name }}" />
+						{{ choice }}
+					</label>
+				</li>
+			{% endfor %}
+		</ul>
+		</center>
+		</div>
+
+		<div class="col-sm-4">
+		<center>
+		<ul style="list-style: none;" id="id_{{ form.commodity2.name }}">
+ 			{% for pk, choice in form.commodity2.field.widget.choices %}
+				<li>
+					<label for="id_{{ form.commodity2.name }}_{{ forloop.counter0 }}">
+						<input {% for m2moption in model.m2moptions.all %}{% if option.pk == pk %}checked="checked"{% endif %}{% endfor %} type="checkbox" id="id_{{ form.commodity2.name }}_{{ forloop.counter0 }}" value="{{ pk }}" name="{{ form.commodity2.name }}" />
+						{{ choice }}
+					</label>
+				</li>
+			{% endfor %}
+		</ul>
+		</center>
+		</div>
+
+		<div class="col-sm-4">
+		<center>
+		<ul style="list-style: none;" id="id_{{ form.commodity3.name }}">
+ 			{% for pk, choice in form.commodity3.field.widget.choices %}
+				<li>
+					<label for="id_{{ form.commodity3.name }}_{{ forloop.counter0 }}">
+						<input {% for m2moption in model.m2moptions.all %}{% if option.pk == pk %}checked="checked"{% endif %}{% endfor %} type="checkbox" id="id_{{ form.commodity3.name }}_{{ forloop.counter0 }}" value="{{ pk }}" name="{{ form.commodity3.name }}" />
+						{{ choice }}
+					</label>
+				</li>
+			{% endfor %}
+		</ul>
+		</center>
+		</div>
+
+	</div>
+
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class="col-sm-4">
+			<center>
+			<button class="btn btn-group-lg btn-primary" type="button" onClick="history.go(-1);return true;">Back</button>
+			<button class="btn btn-group-lg btn-primary" type="submit">Next</button>
+			</form>
+			</center>			
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+
+{% else %}
+
+<p>ERROR!</p>
+
+{% endif %}
+
+{% include "home/footer.html" %}

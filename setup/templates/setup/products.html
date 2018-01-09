@@ -1,0 +1,125 @@
+{% include "home/header.html" %}
+
+{% if delCommodityRegistered is not None %}
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class='col-sm-4'>
+			<br>
+			<br>
+
+			<form class="form-signup" role="form" action="{% url 'setup:index3' %}" method="POST">
+				<center>
+		        <h2 class="form-signup-heading">Project Type:</h2>
+		        </center>
+		        <br>
+
+		        {% if errorMsg != None %}
+		        	<center>
+		        	<p class="errorMsg" style="color:#FF6600">{{ errorMsg }}</p>
+		        	</center>
+		        {% endif %}
+
+		        {% if form.errors %}
+				    {% for field in form %}
+				       	{% for error in field.errors %}
+				            <div class="alert alert-danger">
+				                <strong>{{ error|escape }}</strong>
+				            </div>
+				        {% endfor %}
+				    {% endfor %}
+				    {% for error in form.non_field_errors %}
+				        <div class="alert alert-danger">
+				            <strong>{{ error|escape }}</strong>
+				        </div>
+				    {% endfor %}
+				{% endif %}
+		        
+		        {% csrf_token %}
+
+		        <!-- {{ form.as_p }} -->
+
+				<p>
+					<label for="id_{{ form.projectType.name }}">{{ form.projectType.label }}:</label>
+					<select class="form-control" id="id_{{ form.projectType.name }}" name="{{ form.projectType.name }}" required>
+						{% for pk, choice in form.projectType.field.widget.choices %}
+							<option value="{{ pk }}">{{ choice }}</option>
+						{% endfor %}
+					</select>
+				</p>
+
+				<!-- <p>
+					<label for="id_{{ form.mineProduct.name }}">{{ form.mineProduct.label }}:</label>
+					<ul style="list-style: none;" id="id_{{ form.mineProduct.name }}">
+ 						{% for pk, choice in form.mineProduct.field.widget.choices %}
+							<li>
+								<label for="id_{{ form.mineProduct.name }}_{{ forloop.counter0 }}">
+								<input {% for m2moption in model.m2moptions.all %}{% if option.pk == pk %}checked="checked"{% endif %}{% endfor %} type="checkbox" id="id_{{ form.mineProduct.name }}_{{ forloop.counter0 }}" value="{{ pk }}" name="{{ form.mineProduct.name }}" />
+								{{ choice }}
+								</label>
+							</li>
+						{% endfor %}
+					</ul>
+				</p> -->
+
+				<p>
+					<label for="id_{{ form.stockpiles.name }}">{{ form.stockpiles.label }}:</label>
+					<input class="form-control" id="id_{{ form.stockpiles.name }}" name="{{ form.stockpiles.name }}" min="{{ form.stockpiles.field.min_value }}" type="number" value="{{ form.stockpiles.field.initial }}" required>
+				</p>
+
+				<p>
+					<label for="id_{{ form.plantProduct.name }}">{{ form.plantProduct.label }}:</label>
+					<ul style="list-style: none;" id="id_{{ form.plantProduct.name }}">
+ 						{% for pk, choice in form.plantProduct.field.widget.choices %}
+							<li>
+								<label for="id_{{ form.plantProduct.name }}_{{ forloop.counter0 }}">
+								<input {% for m2moption in model.m2moptions.all %}{% if option.pk == pk %}checked="checked"{% endif %}{% endfor %} type="checkbox" id="id_{{ form.plantProduct.name }}_{{ forloop.counter0 }}" value="{{ pk }}" name="{{ form.plantProduct.name }}" />
+								{{ choice }}
+								</label>
+							</li>
+						{% endfor %}
+					</ul>
+				</p>
+
+				<p>
+					<label for="id_{{ form.LOM.name }}">{{ form.LOM.label }}:</label>
+					<input class="form-control" id="id_{{ form.LOM.name }}" name="{{ form.LOM.name }}" min="{{ form.LOM.field.min_value }}" type="number" value="{{ form.LOM.field.initial }}" required>
+				</p>
+
+				<p>
+					<label for="id_{{ form.startDate.name }}">{{ form.startDate.label }}:</label>
+					<input class="form-control datepicker" id="id_{{ form.startDate.name }}" name="{{ form.startDate.name }}" type="text" required>
+				</p>
+
+		    <center>
+			<button class="btn btn-group-lg btn-primary" type="button" onClick="history.go(-1);return true;">Back</button>
+			<button class="btn btn-group-lg btn-primary" type="submit">Next</button>
+			</form>
+			</center>
+
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+
+{% else %}
+
+<p>ERROR!</p>
+
+{% endif %}
+
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css"> 
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+<script>
+$(document).ready(function() {
+    $('.datepicker').datepicker({ dateFormat:'yy-mm-dd' });
+});
+</script>
+
+{% include "home/footer.html" %}

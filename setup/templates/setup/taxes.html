@@ -1,0 +1,90 @@
+{% include "home/header.html" %}
+
+{% if financialsRegistered is not None %}
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class='col-sm-4'>
+			<br>
+			<br>
+
+			<form class="form-signup" role="form" action="{% url 'setup:index9' %}" method="POST">
+				<center>
+		        <h2 class="form-signup-heading">Declare Taxes (in million CAN$):</h2>
+		        </center>
+		        <br>
+		        {% csrf_token %}
+
+		        <input type="hidden" value="{{ LOM }}" name="LOM" />
+
+		        <br>
+				<br>
+
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+
+	<div class="table-responsive">
+  		<table class="table table-bordered">
+    		<thead> 
+    			<tr> 
+    				<th>        </th>
+    				{% for i in "x"|rjust:LOM %}
+    					<th>Year {{ forloop.counter0|add:"1" }}</th>
+    				{% endfor %}
+    			</tr> 
+    		</thead>
+    		<tbody>
+    			<tr>
+    				<th>Federal</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Federal" name="year{{ forloop.counter0|add:'1' }}Federal" max="100" min="0" placeholder="Max 2 Decimals" step="0.01" type="number"> %</td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Provincial</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Provincial" name="year{{ forloop.counter0|add:'1' }}Provincial" max="100" min="0" placeholder="Max 2 Decimals" step="0.01" type="number"> %</td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Mining</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Mining" name="year{{ forloop.counter0|add:'1' }}Mining" max="100" min="0" placeholder="Max 2 Decimals" step="0.01" type="number"> %</td>
+    				{% endfor %}
+    			</tr>
+    		</tbody>
+  		</table>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4">
+		</div>
+
+		<div class="col-sm-4">
+			<center>
+			<button class="btn btn-group-lg btn-primary" type="button" onClick="history.go(-1);return true;">Back</button>
+			<button class="btn btn-group-lg btn-primary" type="submit">Next</button>
+			</form>
+			</center>
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+	</div>
+
+	<p></p>
+
+{% else %}
+
+<p>ERROR!</p>
+
+{% endif %}
+
+{% include "home/footer.html" %}

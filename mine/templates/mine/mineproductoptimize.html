@@ -1,0 +1,46 @@
+{% include "home/header.html" %}
+
+{% if smelterRegistered is not None %}
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class='col-sm-4'>
+			<br>
+			<br>
+
+			<form class="form-mineproductoptimize" role="form" action="{% url 'mine:index' %}" method="POST">
+				<center>
+		        <h2 class="form-signup-heading">Mine:</h2>
+		        </center>
+		        <br>
+		        {% csrf_token %}
+
+				{{ form.as_p }}
+
+				<center>
+				<button class="btn btn-group-lg btn-primary" type="button" onClick="history.go(-1);return true;">Back</button>
+				<button class="btn btn-group-lg btn-primary" type="submit">Accept</button>
+				<!-- <button class="btn btn-group-lg btn-primary" type="submit">Calculate</button> -->
+				<!-- <button class="btn btn-group-lg btn-primary" type="submit">Overwrite</button> -->
+				</center>
+			</form>
+		 
+
+
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+
+{% else %}
+
+<p>ERROR!</p>
+
+{% endif %}
+
+{% include "home/footer.html" %}

@@ -1,0 +1,86 @@
+{% include "home/header.html" %}
+
+{% if inputsRegistered is not None %}
+
+    <div class="row">
+
+        <div class="col-sm-4">
+        </div>
+
+        <div class='col-sm-4'>
+            <br>
+            <br>
+
+            <form class="form-signup" role="form" action="{% url 'setup:index10' %}" method="POST">
+                <center>
+                <h2 class="form-signup-heading">Declare Mine Product Recovery:</h2>
+                </center>
+                <br>
+                {% csrf_token %}
+
+                <input type="hidden" value="{{ LOM }}" name="LOM" />
+
+                <br>
+                <br>
+
+        </div>
+
+        <div class="col-sm-4">
+        </div>
+
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead> 
+			<table class="table table-bordered">
+    		<thead> 
+    			<tr> 
+    				<th>        </th>
+    				{% for i in "x"|rjust:LOM %}
+    					<th>Year{{ forloop.counter0|add:"1" }}</th>
+    				{% endfor %}
+    			</tr> 
+    		</thead>
+    		<tbody>
+    			<tr>
+    				<th>Grade</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}gradeInitial" name="year{{ forloop.counter0|add:'1' }}gradeInitial" placeholder="Max 6 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Tonnage</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}tonnageInitial" name="year{{ forloop.counter0|add:'1' }}tonnageInitial" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    		</tbody>
+  		</table>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+        </div>
+
+        <div class="col-sm-4">
+            <center>
+            <button class="btn btn-group-lg btn-primary" type="button" onClick="history.go(-1);return true;">Back</button>
+            <button class="btn btn-group-lg btn-primary" type="submit">Next</button>
+            </form>
+            </center>
+        </div>
+
+        <div class="col-sm-4">
+        </div>
+    </div>
+
+    <p></p>
+
+{% else %}
+
+<p>ERROR!</p>
+
+{% endif %}
+
+{% include "home/footer.html" %}

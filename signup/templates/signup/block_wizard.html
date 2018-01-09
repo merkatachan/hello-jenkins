@@ -1,0 +1,41 @@
+{% include "home/header.html" %}
+
+    <br>
+            <form enctype="multipart/form-data" action="/signup/" method="post">{% csrf_token %}
+                <table>
+                    {{ wizard.management_form }}
+                    {% if wizard.form.forms %}
+                        {{ wizard.form.management_form }}
+                        {% for form in wizard.form.forms %}
+                            <!-- block below accesses -a customized form layout for each step -->
+                            {% block form_if %}{% endblock %}
+                        {% endfor %}
+                    {% else %}
+                        <!-- block below accesses a customized form layout for each step -->
+                        <!-- using the with statement makes it possible to use the same layout used in the form_if block -->
+                        {% with form=wizard.form %}
+                        {% block form_else %}{% endblock %}
+                        {% endwith %}
+                    {% endif %}
+                </table>
+                {% if wizard.steps.prev %}
+                <button name="wizard_goto_step" value="{{ wizard.steps.first }}" class="button">first step</button>
+                <button name="wizard_goto_step" value="{{ wizard.steps.prev }}" class="button">prev step</button>
+                {% endif %}
+
+                <br>
+                <input class="btn btn-lg btn-primary btn-block" type="submit" value="Next">
+            </form>
+            <br>
+            <center>
+                <a href="/">Cancel</a>
+            </center>
+
+        </div>
+
+        <div class="col-sm-4">
+        </div>
+
+    </div>
+
+{% include "home/footer.html" %}

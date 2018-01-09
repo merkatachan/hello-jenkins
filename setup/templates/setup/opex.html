@@ -1,0 +1,168 @@
+{% include "home/header.html" %}
+
+{% if CAPEXRegistered is not None %}
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class='col-sm-4'>
+			<br>
+			<br>
+
+			<form class="form-signup" role="form" action="{% url 'setup:index6' %}" method="POST">
+				<center>
+		        <h2 class="form-signup-heading">Declare OPEX (in million CAN$):</h2>
+		        </center>
+		        <br>
+		        {% csrf_token %}
+
+				<input type="hidden" value="{{ LOM }}" name="LOM" />
+
+		        <br>
+				<br>
+
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+
+	<div class="table-responsive">
+  		<table class="table table-bordered">
+    		<thead> 
+    			<tr> 
+    				<th>        </th>
+    				{% for i in "x"|rjust:LOM %}
+    					<th>Year {{ forloop.counter0|add:"1" }}</th>
+    				{% endfor %}
+    			</tr> 
+    		</thead>
+    		<tbody>
+    			<tr>
+    				<th>Mining</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Mining" name="year{{ forloop.counter0|add:'1' }}Mining" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Infrastructure</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Infrastructure" name="year{{ forloop.counter0|add:'1' }}Infrastructure" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Stockpile Reclaim</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}StockpileLG" name="year{{ forloop.counter0|add:'1' }}StockpileLG" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Dewatering</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Dewatering" name="year{{ forloop.counter0|add:'1' }}Dewatering" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Processing</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Processing" name="year{{ forloop.counter0|add:'1' }}Processing" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Product Hauling</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}ProductHauling" name="year{{ forloop.counter0|add:'1' }}ProductHauling" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Load-out and Rail Loop</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}LoadoutRailLoop" name="year{{ forloop.counter0|add:'1' }}LoadoutRailLoop" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>G&amp;A Site</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}GASite" name="year{{ forloop.counter0|add:'1' }}GASite" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>G&amp;A (Room &amp; Board and FIFO)</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}GARoomBoardFIFO" name="year{{ forloop.counter0|add:'1' }}GARoomBoardFIFO" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Rail Transportation</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}RailTransportation" name="year{{ forloop.counter0|add:'1' }}RailTransportation" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>G&amp;A (Corporate)</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}GACorporate" name="year{{ forloop.counter0|add:'1' }}GACorporate" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Royalties</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Royalties" name="year{{ forloop.counter0|add:'1' }}Royalties" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Transportation</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Transportation" name="year{{ forloop.counter0|add:'1' }}Transportation" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>G&amp;A</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}GA" name="year{{ forloop.counter0|add:'1' }}GA" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Shipping Cost (US$/t)</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}ShippingCost" name="year{{ forloop.counter0|add:'1' }}ShippingCost" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+				<tr>
+    				<th>OPEX (CAD$/t)</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}OpexPT" name="year{{ forloop.counter0|add:'1' }}OpexPT" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    		</tbody>
+  		</table>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4">
+		</div>
+
+		<div class="col-sm-4">
+			<center>
+			<button class="btn btn-group-lg btn-primary" type="button" onClick="history.go(-1);return true;">Back</button>
+			<button class="btn btn-group-lg btn-primary" type="submit">Next</button>
+			</form>
+			</center>
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+	</div>
+
+	<p></p>
+
+{% else %}
+
+<p>ERROR!</p>
+
+{% endif %}
+
+{% include "home/footer.html" %}

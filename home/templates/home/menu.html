@@ -1,0 +1,43 @@
+{% load staticfiles %}
+
+<div class="row">
+	<div class="col-sm-1">
+	</div>
+		<div class="col-sm-3">
+		<br>
+		<br>
+		<!-- Great, til you resize. -->
+		<div class="well-new bs-sidebar affix" id="sidebar" style="background-color:#fff">
+			<ul class="nav nav-stacked">
+				<li><a href='/mine'>
+						<img src="{% static 'images/mine.PNG' %}" class="list-group-item:hover" style='max-height:50px;' alt="mine">
+				<a href='/plant'>
+						<img src="{% static 'images/plant.PNG' %}" class="responsive-img" style='max-height:50px;' alt="plant">
+				<a href='/smelter'>
+						<img src="{% static 'images/smelter.png' %}" class="responsive-img" style='max-height:40px;' alt="smelter">
+				<a href='/transportation'>
+						<img src="{% static 'images/transportation.PNG' %}" class="responsive-img" style='max-height:40px;' alt="transportation">
+				<a href='/report'>
+						<img src="{% static 'images/report.png' %}" class="responsive-img" style='max-height:40px;' alt="report">
+				</a></li>
+			</ul>
+		</div> <!--well bs-sidebar affix-->
+	</div> <!--col-sm-2-->
+	<div class="col-sm-8">
+		<div class='container-fluid'>
+			<br>
+			<br>
+
+			{% if firstName != None %}
+				<center>
+			        <h3>Welcome back, {{ firstName }}!</h3>
+			    </center>
+			    <br>
+			    <center>
+			    	<a href="/setup">Start Setup</a>
+			    </center>
+			{% endif %}
+
+		</div>
+	</div>
+</div>

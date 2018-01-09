@@ -1,0 +1,220 @@
+{% include "home/header.html" %}
+
+{% if OPEXRegistered is not None %}
+
+    <div class="row">
+
+        <div class="col-sm-4">
+        </div>
+
+        <div class='col-sm-4'>
+            <br>
+            <br>
+
+            <form class="form-signup" role="form" action="{% url 'setup:index7' %}" method="POST">
+                <center>
+                <h2 class="form-signup-heading">Declare Smelter Terms (CAN$/t, unless stated):</h2>
+                </center>
+                <br>
+                {% csrf_token %}
+
+                <input type="hidden" value="{{ LOM }}" name="LOM" />
+
+                <br>
+                <br>
+
+        </div>
+
+        <div class="col-sm-4">
+        </div>
+
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead> 
+                <tr> 
+                    <th>        </th>
+                    {% for commName in nameList %}
+                        <th>{{ commName }}</th>
+                    {% endfor %}
+                </tr> 
+            </thead>
+            <tbody>
+
+            {% for curr in numStockpiles %}
+                <tr>
+                    <th>Stockpile {{ curr }} Min Grade (%)</th>
+                    {% for id in idList %}
+                        <td><input id="id_Stockpile{{ curr }}MinGrade{{ id }}" name="Stockpile{{ curr }}MinGrade{{ id }}" placeholder="Between 1-100%" step="0.01" type="number" max="100" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>Stockpile {{ curr }} Max Grade (%)</th>
+                    {% for id in idList %}
+                        <td><input id="id_Stockpile{{ curr }}MaxGrade{{ id }}" name="Stockpile{{ curr }}MaxGrade{{ id }}" placeholder="Between 1-100%" step="0.01" type="number" max="100" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>Stockpile {{ curr }} Min Penalty</th>
+                    {% for id in idList %}
+                        <td><input id="id_Stockpile{{ curr }}MinPenalty{{ id }}" name="Stockpile{{ curr }}MinPenalty{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>Stockpile {{ curr }} Max Penalty</th>
+                    {% for id in idList %}
+                        <td><input id="id_Stockpile{{ curr }}MaxPenalty{{ id }}" name="Stockpile{{ curr }}MaxPenalty{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>Stockpile {{ curr }} Penalty Between Min and Max</th>
+                    {% for id in idList %}
+                        <td><input id="id_Stockpile{{ curr }}MinMaxPenalty{{ id }}" name="Stockpile{{ curr }}MinMaxPenalty{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>Stockpile {{ curr }} Premium</th>
+                    {% for id in idList %}
+                        <td><input id="id_Stockpile{{ curr }}Premium{{ id }}" name="Stockpile{{ curr }}Premium{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>Stockpile {{ curr }} Increments (%)</th>
+                    {% for id in idList %}
+                        <td><input id="id_Stockpile{{ curr }}Increments{{ id }}" name="Stockpile{{ curr }}Increments{{ id }}" placeholder="Between 1-100%" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+
+                <!-- <tr>
+                    <th>LG Min Grade (%)</th>
+                    {% for id in idList %}
+                        <td><input id="id_LGMinGrade{{ id }}" name="LGMinGrade{{ id }}" placeholder="Between 1-100%" step="0.01" type="number" max="100" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>LG Max Grade (%)</th>
+                    {% for id in idList %}
+                        <td><input id="id_LGMaxGrade{{ id }}" name="LGMaxGrade{{ id }}" placeholder="Between 1-100%" step="0.01" type="number" max="100" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>LG Min Penalty</th>
+                    {% for id in idList %}
+                        <td><input id="id_LGMinPenalty{{ id }}" name="LGMinPenalty{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>LG Max Penalty</th>
+                    {% for id in idList %}
+                        <td><input id="id_LGMaxPenalty{{ id }}" name="LGMaxPenalty{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>LG Penalty Between Min and Max</th>
+                    {% for id in idList %}
+                        <td><input id="id_LGMinMaxPenalty{{ id }}" name="LGMinMaxPenalty{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>LG Premium</th>
+                    {% for id in idList %}
+                        <td><input id="id_LGPremium{{ id }}" name="LGPremium{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>HG Min Grade (%)</th>
+                    {% for id in idList %}
+                        <td><input id="id_HGMinGrade{{ id }}" name="HGMinGrade{{ id }}" placeholder="Between 1-100%" step="0.01" type="number" max="100" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>HG Max Grade (%)</th>
+                    {% for id in idList %}
+                        <td><input id="id_HGMaxGrade{{ id }}" name="HGMaxGrade{{ id }}" placeholder="Between 1-100%" step="0.01" type="number" max="100" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>HG Min Penalty</th>
+                    {% for id in idList %}
+                        <td><input id="id_HGMinPenalty{{ id }}" name="HGMinPenalty{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>HG Max Penalty</th>
+                    {% for id in idList %}
+                        <td><input id="id_HGMaxPenalty{{ id }}" name="HGMaxPenalty{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>HG Penalty Between Min and Max</th>
+                    {% for id in idList %}
+                        <td><input id="id_HGMinMaxPenalty{{ id }}" name="HGMinMaxPenalty{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>HG Premium</th>
+                    {% for id in idList %}
+                        <td><input id="id_HGPremium{{ id }}" name="HGPremium{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr> -->
+                <!-- <tr>
+                    <th>Increments (%)</th>
+                    {% for id in idList %}
+                        <td><input id="id_increments{{ id }}" name="increments{{ id }}" placeholder="Between 1-100%" step="0.01" type="number" required=""></td>
+                    {% endfor %}
+                </tr> -->
+                <!-- <tr> -->
+                    <!-- <th>Low Grade Plant Feed Min Grade</th> -->
+                    <!-- {% for id in idList %} -->
+                        <!-- <td><input id="id_LGPlantMinGrade{{ id }}" name="LGPlantMinGrade{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" min="0" max="100"> %</td> -->
+                    <!-- {% endfor %} -->
+                <!-- </tr> -->
+                <!-- <tr> -->
+                    <!-- <th>Low Grade Plant Feed Min Penalty</th> -->
+                    <!-- {% for id in idList %} -->
+                        <!-- <td><input id="id_LGPlantMinPenalty{{ id }}" name="LGPlantMinPenalty{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number"></td> -->
+                    <!-- {% endfor %} -->
+                <!-- </tr> -->
+                <!-- <tr> -->
+                    <!-- <th>High Grade Plant Feed Min Grade</th> -->
+                    <!-- {% for id in idList %} -->
+                        <!-- <td><input id="id_HGPlantMinGrade{{ id }}" name="HGPlantMinGrade{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number" min="0" max="100"> %</td> -->
+                    <!-- {% endfor %} -->
+                <!-- </tr> -->
+                <!-- <tr> -->
+                    <!-- <th>High Grade Plant Feed Min Penalty</th> -->
+                    <!-- {% for id in idList %} -->
+                        <!-- <td><input id="id_HGPlantMinPenalty{{ id }}" name="HGPlantMinPenalty{{ id }}" placeholder="Max 2 Decimals" step="0.01" type="number"></td> -->
+                    <!-- {% endfor %} -->
+                <!-- </tr> -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+        </div>
+
+        <div class="col-sm-4">
+            <center>
+            <button class="btn btn-group-lg btn-primary" type="button" onClick="history.go(-1);return true;">Back</button>
+            <button class="btn btn-group-lg btn-primary" type="submit">Next</button>
+            </form>
+            </center>
+        </div>
+
+        <div class="col-sm-4">
+        </div>
+    </div>
+
+    <p></p>
+
+{% else %}
+
+<p>ERROR!</p>
+
+{% endif %}
+
+{% include "home/footer.html" %}

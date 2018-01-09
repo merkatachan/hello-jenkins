@@ -1,0 +1,75 @@
+{% include "home/header.html" %}
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class='col-sm-4'>
+			<br>
+			<br>
+
+			<form class="form-mineproduct" id="form-mineproduct" role="form" action="{% url 'mine:index' %}" method="POST">
+				<center>
+		        <h2 class="form-signup-heading">Mine:</h2>
+		        </center>
+		        <br>
+		        {% csrf_token %}
+
+		        {% if errorMsg != None %}
+		        	<center>
+		        	<p class="errorMsg" style="color:#FF6600">{{ errorMsg }}</p>
+		        	</center>
+		        {% endif %}
+				
+				<div class="table-responsive">
+					<table class="table table-condensed">
+					{{ form.as_table }}
+					</table>
+				</div>
+				
+				<br>
+				<br>
+
+				<center>
+				<button class="btn btn-group-lg btn-primary" type="button" onClick="history.go(-1);return true;">Back</button>
+				{% if calculated is None %}
+				<button class="btn btn-group-lg btn-primary" type="submit" name="calculate">Calculate</button>
+				{% endif %}
+				</center>
+				{% if calculated is not None %}
+				<br>
+				<center>
+				<button class="btn btn-group-lg btn-primary" type="submit" name="accept">Accept Optimization</button>
+				<button class="btn btn-group-lg btn-primary" type="submit" name="overwrite">Overwrite</button>
+				</center>
+				{% endif %}
+				{% if overwrite is not None %}
+				<br>
+				<center>
+				<button class="btn btn-group-lg btn-primary" type="submit" name="acceptOverwrite">Accept Overwrite</button>
+				</center>
+				{% endif %}
+			</form>
+
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css"> 
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+<script>
+$(document).ready(function() {
+    $('.datepicker').datepicker({ dateFormat:'yy-mm-dd' });
+});
+
+$('#form-mineproduct').submit(function(){
+	$("#form-mineproduct :input").prop("disabled", false);
+});
+</script>
+
+{% include "home/footer.html" %}

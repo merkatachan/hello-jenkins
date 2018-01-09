@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Magemi Mine Optimizer</title>
+	<meta charset="utf-8" />
+	{% load staticfiles %}
+	<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" type = "text/css"/>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<meta name="viewport" content = "width=device-width, initial-scale=1.0">
+	<style type="text/css">
+		<!--html,
+		body {
+		  height:100%
+		}-->
+	</style>
+</head>
+<body class="body" style="background-color:#FFF">
+	<header>
+		<style="background-color:#FF6600">
+		</style>
+	</header>
+	<div class="container-fluid" style="min-height:95%; ">
+		<div class="row">
+			  <div class="col-sm-4">
+				  <br>
+				  <center>
+				  	<!--<a href='/home'>-->
+					<a href='/home'>
+					<img src="{% static 'images/logo.png' %}" class="responsive-img" style='max-height:100px;' alt="face">
+					</a>
+				  </center>
+			  </div>
+			  <div class="col-sm-6">
+			  	<br>
+			  </div>
+			  <div class="col-sm-2">
+				  <br>
+				  <br>
+				  <center>
+				  	<ul class="nav navbar-nav">
+				  		<li>
+				  			<div class="dropdown">
+						  		<a class="btn btn-secondary dropdown-toggle" id="dropdownMenuLink" data-toggle="dropdown">
+  									<img src="{% static 'images/settings.PNG' %}" class="responsive-img" style='max-height:25px;' alt="settings">
+  								</a>
+								<ul class="dropdown-menu">
+								    <li><a href='/setup'>Setup</a></li>
+									<li><a href='/settings/commodities'>Commodities</a></li>
+									<li><a href='/settings/products'>Products</a></li>
+									<li><a href='/settings/minePlan'>Mine Plan</a></li>
+									<li><a href='/settings/CAPEX'>CAPEX</a></li>
+									<li><a href='/settings/OPEX'>OPEX</a></li>
+									<li><a href='/settings/smelter'>Smelter Terms</a></li>
+									<li><a href='/settings/prices'>Prices</a></li>
+									<li><a href='/settings/inputs'>Other Inputs</a></li>
+								</ul>
+							</div>
+						</li>
+				  		<li>
+				  			<div>
+				  			<!--<a class="btn btn-secondary" href='/signup'>-->
+							<a class="btn btn-secondary dropdown-toggle" id="dropdownUser" data-toggle="dropdown">
+								<img src="{% static 'images/user.PNG' %}" class="responsive-img" style='max-height:25px;' alt="login">
+							</a>
+							<ul class="dropdown-menu">
+								    <li><a href='/user/'>Company</a></li>
+									<li><a href='/user/step2'>Mine</a></li>
+									<li><a href='/user/step3'>User</a></li>
+								</ul>
+							</div>
+				  		</li> 
+				  	</ul>
+				  </center>
+			  </div>
+		</div>
+		<hr>

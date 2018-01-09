@@ -1,0 +1,159 @@
+{% include "home/header.html" %}
+
+{% if minePlanRegistered is not None %}
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class='col-sm-4'>
+			<br>
+			<br>
+
+			<form class="form-signup" role="form" action="{% url 'setup:index5' %}" method="POST">
+				<center>
+		        <h2 class="form-signup-heading">Declare CAPEX (in million CAN$):</h2>
+		        </center>
+		        <br>
+		        {% csrf_token %}
+
+				<input type="hidden" value="{{ LOM }}" name="LOM" />
+
+		        <br>
+				<br>
+
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+
+	<div class="table-responsive">
+  		<table class="table table-bordered">
+    		<thead> 
+    			<tr> 
+    				<th>        </th>
+    				{% for i in "x"|rjust:LOM %}
+    					<th>Year {{ forloop.counter0|add:"1" }}</th>
+    				{% endfor %}
+    			</tr> 
+    		</thead>
+    		<tbody>
+    			<tr>
+    				<th>Pre-Stripping</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}PreStripping" name="year{{ forloop.counter0|add:'1' }}PreStripping" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Mining Equipment Initial</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}MiningEquipmentInitial" name="year{{ forloop.counter0|add:'1' }}MiningEquipmentInitial" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Mining Equipment Sustaining</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}MiningEquipmentSustaining" name="year{{ forloop.counter0|add:'1' }}MiningEquipmentSustaining" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Infrastructure Direct Costs</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}InfrastructureDirectCosts" name="year{{ forloop.counter0|add:'1' }}InfrastructureDirectCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Infrastructure Indirect Costs</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}InfrastructureIndirectCosts" name="year{{ forloop.counter0|add:'1' }}InfrastructureIndirectCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Contingency</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Contingency" name="year{{ forloop.counter0|add:'1' }}Contingency" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Railcars</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Railcars" name="year{{ forloop.counter0|add:'1' }}Railcars" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Other Mobile Equipment</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}OtherMobileEquipment" name="year{{ forloop.counter0|add:'1' }}OtherMobileEquipment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Closure and Rehab Assurance</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}ClosureAndRehabAssurancePayment" name="year{{ forloop.counter0|add:'1' }}ClosureAndRehabAssurancePayment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Deposits Provision Payment</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}DepositsProvisionPayment" name="year{{ forloop.counter0|add:'1' }}DepositsProvisionPayment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Working Capital</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}WorkingCapCurrentProd" name="year{{ forloop.counter0|add:'1' }}WorkingCapCurrentProd" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Working Capital Stockpile Reclaim</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}WorkingCapCostsOfLG" name="year{{ forloop.counter0|add:'1' }}WorkingCapCostsOfLG" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>EPCM</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}EPCM" name="year{{ forloop.counter0|add:'1' }}EPCM" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Owner's Costs</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}OwnersCosts" name="year{{ forloop.counter0|add:'1' }}OwnersCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+    				{% endfor %}
+    			</tr>
+    		</tbody>
+  		</table>
+	</div>
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class="col-sm-4">
+			<center>
+			<button class="btn btn-group-lg btn-primary" type="button" onClick="history.go(-1);return true;">Back</button>
+			<button class="btn btn-group-lg btn-primary" type="submit">Next</button>
+			</form>
+			</center>
+			
+		</div>
+	
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+	
+
+{% else %}
+
+<p>ERROR!</p>
+
+{% endif %}
+
+{% include "home/footer.html" %}

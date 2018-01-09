@@ -1,0 +1,62 @@
+{% extends "signup/block_wizard.html" %}
+
+{% block form_if %}{% block form_else %}
+
+	<div class="row">
+
+		<div class="col-sm-2">
+		</div>
+
+		<div class="col-sm-8">	
+			<div class="progress">
+			  <div class="progress-bar progress-bar-info" style="width: 33.3%">
+			    Step 1 of 3
+			  </div>
+			  <!-- <div class="progress-bar progress-bar-warning progress-bar-striped" style="width: 33.3%">
+			    <span class="sr-only">Step 2 of 3 (danger)</span>
+			  </div>
+			  <div class="progress-bar progress-bar-danger" style="width: 33.3%">
+			    <span class="sr-only">Step 3 of 3 (danger)</span>
+			  </div> -->
+			</div>
+		</div>
+
+		<div class="col-sm-2">
+		</div>
+
+	</div>
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class='col-sm-4'>
+			<br>
+			<br>
+
+				<center>
+		        <h2 class="form-signup-heading">Company Info</h2>
+		        </center>
+		        <br>
+
+		        {% for field in form %}
+
+				    <label class="control-label" for="id_{{ field.name }}" hidden>{{ field.label }}</label>
+				    <input type="text" class="form-control"
+				        placeholder="{{ field.label }}"
+				        id="{{ field.name }}"
+				        name="{{ field.name }}"
+				        maxlength="{{ field.field.max_length }}"
+				        {% if field.field.required %}
+				        	required
+				        {% endif %}
+					>
+
+				{% endfor %}
+<!-- 				<br>
+				<input class="btn btn-lg btn-primary btn-block" type="submit" value="Next"> -->
+
+{% endblock %}{% endblock %} 
+
+				<!-- {{ form.as_p }} -->
