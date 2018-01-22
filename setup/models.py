@@ -29,6 +29,7 @@ class tblMine(models.Model):
 	country = models.CharField(max_length=50)
 	postalCode = models.CharField(max_length=10)
 	phone = models.CharField(max_length=32)
+	fax = models.CharField(max_length=32)
 	dateAdded = models.DateTimeField(null=False)
 
 	def __str__(self):
