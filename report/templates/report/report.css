@@ -1,0 +1,17 @@
+/*td.self-wrap,
+th.self-wrap {
+	white-space: nowrap;
+    width: 1%;
+}*/
+
+tr th {
+	max-width: 50px;
+}
+
+tr td {
+	max-width: 50px;
+}
+
+.table {
+	table-layout: fixed;
+}

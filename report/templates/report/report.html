@@ -1,0 +1,1191 @@
+{% include "report/header.html" %}
+{% load get_item %}
+{% load index %}
+{% load humanize %}
+
+    <div class="row">
+        <div class="col-sm-4">
+        </div>
+
+        <div class='col-sm-4'>
+            <br>
+            <br>
+                <center>
+                <h2 class="form-signup-heading">Production, Revenues, Costs and Financials Report:</h2>
+                </center>
+                <br>
+                <br>
+                <br>
+
+        </div>
+
+        <div class="col-sm-4">
+        </div>
+    </div>
+
+    <div class="report-tables" style="padding-left: 1cm; padding-right: 1cm">
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white fixed-width"> 
+                <th class="firstcol">Item</th>
+                {% for year in fullYearVals %}
+                    <th class="yearcol">Year {{ year }}</th>
+                {% endfor %}
+                <th class="totalcol">Total</th>
+            </tr> 
+        </table>
+
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white">
+                <th class="firstcol">Mining</th>
+                {% for year in fullYearVals %}
+                    <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            <tbody>
+
+                {% for curr in numStockpiles %}
+                    <tr>
+                        <th class="subhead">Stockpile {{ curr }} Ore (kt)</th>
+                        {% for val in minePlanTonnageVals|get_item:curr %}
+                            <td class="numval">{{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">{{ sumMinePlanTonnages|get_item:curr|intcomma }}</td>
+                    </tr>
+                {% endfor %}
+
+                <!-- {% if minePlanHGTonnageVals is not None %}
+                    <tr>
+                        <th class="subhead">High Grade Ore (kt)</th>
+                        {% for val in minePlanHGTonnageVals %}
+                            <td class="numval">{{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">{{ sumMinePlanHGTonnage|intcomma }}</td>
+                    </tr>
+                {% endif %}
+                {% if minePlanLGTonnageVals is not None %}
+                    <tr>
+                        <th class="subhead">Low Grade Ore (kt)</th>
+                        {% for val in minePlanLGTonnageVals %}
+                            <td class="numval">{{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">{{ sumMinePlanLGTonnage|intcomma }}</td>
+                    </tr>
+                {% endif %}
+                {% if minePlanWasteTonnageVals is not None %}
+                    <tr>
+                        <th class="subhead">Waste (kt)</th>
+                        {% for val in minePlanWasteTonnageVals %}
+                            <td class="numval">{{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">{{ sumMinePlanWasteTonnage|intcomma }}</td>
+                    </tr>
+                {% endif %}
+                {% if minePlanOverburdenTonnageVals is not None %}
+                    <tr>
+                        <th class="subhead">Overburden (kt)</th>
+                        {% for val in minePlanOverburdenTonnageVals %}
+                            <td class="numval">{{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">{{ sumMinePlanOverburdenTonnage|intcomma }}</td>
+                    </tr>
+                {% endif %} -->
+            </tbody>
+        </table>
+
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white">
+                <th class="firstcol">Processing</th>
+                {% for year in fullYearVals %}
+                    <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+
+            {% for curr in numStockpiles %}
+                <tr>
+                    <th class="centrecol">
+                        <label for="processing{{curr}}">Stockpile {{ curr }} Ore &#9662;</label>
+                        <input type="checkbox" name="processing{{curr}}" id="processing{{curr}}" data-toggle="toggle">
+                    </th>
+                    {% for year in fullYearVals %}
+                    <th></th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+                <tbody class="collapsible">
+                    <tr>
+                        <th class="subhead">Tonnage(kt)</th>
+                        {% for val in tonnageVals|get_item:curr %}
+                            <td class="numval">{{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">{{ tonnageTotals|get_item:curr|intcomma }}</td>
+                    </tr>
+                    {% for comm in commNameList %}
+                            <tr>
+                                <th class="subhead">{{ comm }} Grade (%)</th>
+                                {% for val in gradeVals|get_item:curr|get_item:comm %}
+                                    <td class="numval">{{ val }}</td>
+                                {% endfor %}
+                                <td></td>
+                            </tr>                       
+                    {% endfor %}
+                    <tr>
+                        <th class="subhead">Moisture (%)</th>
+                        {% for val in moistures|get_item:curr %}
+                        <td class="numval">{{ val }}</td>
+                        {% endfor %}
+                        <td></td>
+                    </tr>
+                </tbody>
+                <tr></tr>
+            {% endfor %}
+
+<!--             {% if HGTonnageVals is not None %}
+                <tr>
+                    <th class="centrecol">
+                        <label for="processingHG">High Grade Ore &#9662;</label>
+                        <input type="checkbox" name="processingHG" id="processingHG" data-toggle="toggle">
+                    </th>
+                    {% for year in fullYearVals %}
+                    <th></th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+                <tbody class="collapsible">
+                    <tr>
+                        <th class="subhead">Tonnage(kt)</th>
+                        {% for val in HGTonnageVals %}
+                            <td class="numval">{{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">{{ HGTonnageTotal|intcomma }}</td>
+                    </tr>
+                    {% for comm in commNameList %}
+                            <tr>
+                                <th class="subhead">{{ comm }} Grade (%)</th>
+                                {% for val in HGGradeVals|get_item:comm %}
+                                    <td class="numval">{{ val }}</td>
+                                {% endfor %}
+                                <td></td>
+                            </tr>                       
+                    {% endfor %}
+                    <tr>
+                        <th class="subhead">Moisture (%)</th>
+                        {% for val in HGMoistures %}
+                        <td class="numval">{{ val }}</td>
+                        {% endfor %}
+                        <td></td>
+                    </tr>
+                </tbody>
+            {% endif %}
+            <tr></tr>
+            {% if LGTonnageVals is not None %}
+                <tr>
+                    <th class="centrecol">
+                        <label for="processingLG">Low Grade Ore &#9662;</label>
+                        <input type="checkbox" name="processingLG" id="processingLG" data-toggle="toggle">
+                    </th>
+                    {% for year in fullYearVals %}
+                    <th></th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+                <tbody class="collapsible">
+                    <tr>
+                        <th class="subhead">Tonnage(kt)</th>
+                        {% for val in LGTonnageVals %}
+                            <td class="numval">{{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">{{ LGTonnageTotal|intcomma }}</td>
+                    </tr>
+                    {% for comm in commNameList %}
+                            <tr>
+                                <th class="subhead">{{ comm }} Grade (%)</th>
+                                {% for val in LGGradeVals|get_item:comm %}
+                                    <td class="numval">{{ val }}</td>
+                                {% endfor %}
+                                <td></td>
+                            </tr>                       
+                    {% endfor %}
+                    <tr>
+                        <th class="subhead">Moisture (%)</th>
+                        {% for val in LGMoistures %}
+                        <td class="numval">{{ val }}</td>
+                        {% endfor %}
+                        <td></td>
+                    </tr>
+                </tbody>
+            {% endif %} -->
+        </table>
+
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white">
+                <th class="firstcol">Plant Product</th>
+                {% for year in fullYearVals %}
+                    <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            {% if lumpTonnageVals is not None %}
+                <tr>
+                    <th class="centrecol">
+                        <label for="plantProductLump">Lump &#9662;</label>
+                        <input type="checkbox" name="plantProductLump" id="plantProductLump" data-toggle="toggle">
+                    </th>
+                    {% for year in fullYearVals %}
+                    <th></th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+                <tbody class="collapsible">
+                    <tr>
+                        <th class="subhead">Tonnage(dkt)</th>
+                        {% for val in lumpTonnageVals %}
+                            <td class="numval">{{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">{{ lumpTonnageTotal|intcomma }}</td>
+                    </tr>
+                    {% for comm in commNameList %}
+                            <tr>
+                                <th class="subhead">{{ comm }} Grade (%)</th>
+                                {% for val in lumpGradeVals|get_item:comm %}
+                                    <td class="numval">{{ val }}</td>
+                                {% endfor %}
+                                <td></td>
+                            </tr>                       
+                    {% endfor %}
+                    <tr>
+                        <th class="subhead">Moisture (%)</th>
+                        {% for val in lumpMoistures %}
+                        <td class="numval">{{ val }}</td>
+                        {% endfor %}
+                        <td></td>
+                    </tr>
+                </tbody>
+            {% endif %}
+            {% if finesTonnageVals is not None %}
+                <tr>
+                    <th class="centrecol">
+                        <label for="plantProductFines">Fines &#9662;</label>
+                        <input type="checkbox" name="plantProductFines" id="plantProductFines" data-toggle="toggle">
+                    </th>
+                    {% for year in fullYearVals %}
+                    <th></th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+                <tbody class="collapsible">
+                    <tr>
+                        <th class="subhead">Tonnage(dkt)</th>
+                        {% for val in finesTonnageVals %}
+                            <td class="numval">{{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">{{ finesTonnageTotal|intcomma }}</td>
+                    </tr>
+                    {% for comm in commNameList %}
+                            <tr>
+                                <th class="subhead">{{ comm }} Grade (%)</th>
+                                {% for val in finesGradeVals|get_item:comm %}
+                                    <td class="numval">{{ val }}</td>
+                                {% endfor %}
+                                <td></td>
+                            </tr>                       
+                    {% endfor %}
+                    <tr>
+                        <th class="subhead">Moisture (%)</th>
+                        {% for val in finesMoistures %}
+                        <td class="numval">{{ val }}</td>
+                        {% endfor %}
+                        <td></td>
+                    </tr>
+                </tbody>
+            {% endif %}
+            <tr></tr>
+            {% if ultraFinesTonnageVals is not None %}
+                <tr>
+                    <th class="centrecol">
+                        <label for="plantProductUltraFines">Ultra Fines &#9662;</label>
+                        <input type="checkbox" name="plantProductUltraFines" id="plantProductUltraFines" data-toggle="toggle">
+                    </th>
+                    {% for year in fullYearVals %}
+                    <th></th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+                <tbody class="collapsible">
+                    <tr>
+                        <th class="subhead">Tonnage(dkt)</th>
+                        {% for val in ultraFinesTonnageVals %}
+                            <td class="numval">{{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">{{ ultraFinesTonnageTotal|intcomma }}</td>
+                    </tr>
+                    {% for comm in commNameList %}
+                            <tr>
+                                <th class="subhead">{{ comm }} Grade (%)</th>
+                                {% for val in ultraFinesGradeVals|get_item:comm %}
+                                    <td class="numval">{{ val }}</td>
+                                {% endfor %}
+                                <td></td>
+                            </tr>                       
+                    {% endfor %}
+                    <tr>
+                        <th class="subhead">Moisture (%)</th>
+                        {% for val in ultraFinesMoistures %}
+                        <td class="numval">{{ val }}</td>
+                        {% endfor %}
+                        <td></td>
+                    </tr>
+                </tbody>
+            {% endif %}
+            <tr>
+                <th class="centrecol">Total Product (dkt)</th>
+                {% for val in totalProducts %}
+                <td class="numval">{{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">{{ sumTotalProducts|intcomma }}</td>
+            </tr>
+            {% if rejectsTonnageVals is not None %}
+                <tr>
+                    <th class="centrecol">Rejects</th>
+                </tr>
+                <tr>
+                    <th class="subhead">Tonnage(dkt)</th>
+                    {% for val in rejectsTonnageVals %}
+                        <td class="numval">{{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">{{ rejectsTonnageTotal|intcomma }}</td>
+                </tr>
+                {% for comm in commNameList %}
+                    <tr>
+                        <th class="subhead">{{ comm }} Grade (%)</th>
+                        {% for val in rejectsGradeVals|get_item:comm %}
+                            <td class="numval">{{ val }}</td>
+                        {% endfor %}
+                        <td></td>
+                    </tr>                       
+                {% endfor %}
+                <tr>
+                    <th class="subhead">Moisture (%)</th>
+                    {% for val in rejectsMoistures %}
+                    <td class="numval">{{ val }}</td>
+                    {% endfor %}
+                    <td></td>
+                </tr>
+            {% endif %}
+        </table>
+
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white">
+                <th class="firstcol">Products Selling Price</th>
+                {% for year in fullYearVals %}
+                    <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            {% if HGLumps is not None %}
+                <tr>
+                    <th class="centrecol">
+                        <label for="lumpSellingPrice">Lump Selling Price (USD/dmt) &#9662;</label>
+                        <input type="checkbox" name="lumpSellingPrice" id="lumpSellingPrice" data-toggle="toggle">
+                    </th>
+                    {% for year in fullYearVals %}
+                    <th></th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+                <tbody class="collapsible">
+                    <tr>
+                        <th class="subhead">Lump Base (USD/t)</th>
+                        {% for val in HGLumps %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% for comm in commNameList %}
+                        <tr>
+                            <th class="subhead">Lump {{ comm }} Penalty (USD/t)</th>
+                            {% for val in lumpPenaltyVals|get_item:comm %}
+                                <td class="numval">${{ val|intcomma }}</td>
+                            {% endfor %}
+                            <td></td>
+                        </tr>                       
+                    {% endfor %}
+                    <tr>
+                        <th class="subhead">Lump Selling Price (USD/t)</th>
+                        {% for val in lumpSellingPrices %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">Avg: ${{ avgLumpSellingPrice|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <th class="subhead">Shipping (USD/dmt)</th>
+                        {% for val in fullShippingCosts %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th class="subhead">Net Lump Price (USD/t)</th>
+                        {% for val in netLumpPrices %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">Avg: ${{ avgNetLumpPrice|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <th class="subhead">Exchange Rate (USD to CAD)</th>
+                        {% for val in fullExchangeRates %}
+                            <td class="numval">{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th class="subhead">Net Lump Price (CAD/t)</th>
+                        {% for val in exchangeNetLumpPrices %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">Avg: ${{ avgExchangeNetLumpPrice|intcomma }}</td>
+                    </tr>
+                </tbody>
+            {% endif %}
+            {% if HGFines is not None %}
+                <tr>
+                    <th class="centrecol">
+                        <label for="finesSellingPrice">Fines Selling Price (USD/dmt) &#9662;</label>
+                        <input type="checkbox" name="finesSellingPrice" id="finesSellingPrice" data-toggle="toggle">
+                    </th>
+                    {% for year in fullYearVals %}
+                    <th></th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+                <tbody class="collapsible">
+                    <tr>
+                        <th class="subhead">Fines Base (USD/t)</th>
+                        {% for val in HGFines %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% for comm in commNameList %}
+                            <tr>
+                                <th class="subhead">Fines {{ comm }} Penalty (USD/t)</th>
+                                {% for val in finesPenaltyVals|get_item:comm %}
+                                    <td class="numval">${{ val|intcomma }}</td>
+                                {% endfor %}
+                                <td></td>
+                            </tr>                       
+                    {% endfor %}
+                    <tr>
+                        <th class="subhead">Fines Selling Price (USD/t)</th>
+                        {% for val in finesSellingPrices %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">Avg: ${{ avgFinesSellingPrice|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <th class="subhead">Shipping (USD/dmt)</th>
+                        {% for val in fullShippingCosts %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th class="subhead">Net Fines Price (USD/t)</th>
+                        {% for val in netFinesPrices %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">Avg: ${{ avgNetFinesPrice|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <th class="subhead">Exchange Rate (USD to CAD)</th>
+                        {% for val in fullExchangeRates %}
+                            <td class="numval">{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th class="subhead">Net Fines Price (CAD/t)</th>
+                        {% for val in exchangeNetFinesPrices %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">Avg: ${{ avgExchangeNetFinesPrice|intcomma }}</td>
+                    </tr>
+                </tbody>
+            {% endif %}
+            {% if HGUltraFines is not None %}
+                <tr>
+                    <th class="centrecol">
+                        <label for="ultraFinesSellingPrice">Ultra Fines Selling Price (USD/dmt) &#9662;</label>
+                        <input type="checkbox" name="ultraFinesSellingPrice" id="ultraFinesSellingPrice" data-toggle="toggle">
+                    </th>
+                    {% for year in fullYearVals %}
+                    <th></th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+                <tbody class="collapsible">
+                    <tr>
+                        <th class="subhead">Ultra Fines Base (USD/t)</th>
+                        {% for val in HGUltraFines %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% for comm in commNameList %}
+                            <tr>
+                                <th class="subhead">Ultra Fines {{ comm }} Penalty (USD/t)</th>
+                                {% for val in ultraFinesPenaltyVals|get_item:comm %}
+                                    <td class="numval">${{ val|intcomma }}</td>
+                                {% endfor %}
+                                <td></td>
+                            </tr>                       
+                    {% endfor %}
+                    <tr>
+                        <th class="subhead">Ultra Fines Selling Price (USD/t)</th>
+                        {% for val in ultraFinesSellingPrices %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">Avg: ${{ avgUltraFinesSellingPrice|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <th class="subhead">Shipping (USD/dmt)</th>
+                        {% for val in fullShippingCosts %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th class="subhead">Net Ultra Fines Price (USD/t)</th>
+                        {% for val in netUltraFinesPrices %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">Avg: ${{ avgNetUltraFinesPrice|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <th class="subhead">Exchange Rate (USD to CAD)</th>
+                        {% for val in fullExchangeRates %}
+                            <td class="numval">{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th class="subhead">Net Ultra Fines Price (CAD/t)</th>
+                        {% for val in exchangeNetUltraFinesPrices %}
+                            <td class="numval">${{ val|intcomma }}</td>
+                        {% endfor %}
+                        <td class="numval">Avg: ${{ avgExchangeNetUltraFinesPrice|intcomma }}</td>
+                    </tr>
+                </tbody>
+            {% endif %}
+        </table>
+
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white">
+                <th class="firstcol">Revenues</th>
+                {% for year in fullYearVals %}
+                    <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            {% if lumpRevenues is not None %}
+                <tr>
+                    <th class="subhead">Lump Revenue</th>
+                    {% for val in lumpRevenues %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumLumpRevenues|intcomma }}</td>
+                </tr>
+            {% endif %}
+            {% if finesRevenues is not None %}
+                <tr>
+                    <th class="subhead">Fines Revenue</th>
+                    {% for val in finesRevenues %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumFinesRevenues|intcomma }}</td>
+                </tr>
+            {% endif %}
+            {% if ultraFinesRevenues is not None %}
+                <tr>
+                    <th class="subhead">Ultra Fines Revenue</th>
+                    {% for val in ultraFinesRevenues %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumUltraFinesRevenues|intcomma }}</td>
+                </tr>
+            {% endif %}
+            <tr>
+                <th class="subhead">TOTAL REVENUE</th>
+                {% for val in totalRevenues %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumTotalRevenues|intcomma }}</td>
+            </tr>
+        </table>
+
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white">
+                <th class="firstcol">COSTS</th>
+                {% for year in fullYearVals %}
+                    <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            <tr>
+                <th class="centrecol">
+                    <label for="costsOPEX">OPEX (millions CAD) &#9662;</label>
+                    <input type="checkbox" name="costsOPEX" id="costsOPEX" data-toggle="toggle">
+                </th>
+                {% for year in fullYearVals %}
+                <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            <tbody class="collapsible">
+                <tr>
+                    <th class="subhead">Mining</th>
+                    {% for val in mining %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumMining|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Stockpile LG Reclaiming</th>
+                    {% for val in stockpileLG %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumStockpileLG|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Pit Dewatering</th>
+                    {% for val in dewatering %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumDewatering|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Processing</th>
+                    {% for val in processing %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumProcessing|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Product Hauling</th>
+                    {% for val in hauling %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumHauling|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Load-out and Rail Loop</th>
+                    {% for val in loadOutRailLoop %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumLoadOutRailLoop|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">G&amp;A (Site)</th>
+                    {% for val in GASite %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumGASite|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">G&amp;A (Room &amp; Board / FIFO)</th>
+                    {% for val in GARoom %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumGARoom|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Rail Transportation, Port and Shiploading</th>
+                    {% for val in railTransport %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumRailTransport|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Corporate G&amp;A</th>
+                    {% for val in GACorp %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumGACorp|intcomma }}</td>
+                </tr>
+            </tbody>
+            <tr>
+                <th class="centrecol">TOTAL OPEX (millions CAD)</th>
+                {% for val in totalOPEX %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumTotalOPEX|intcomma }}</td>
+            </tr>
+            <tr></tr>
+            <tr>
+                <th class="centrecol">ROYALTIES (millions CAD)</th>
+                {% for val in royalties %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumRoyalties }}</td>
+            </tr>
+            <tr>
+                <th class="centrecol">
+                    <label for="costsCAPEX">CAPEX (millions CAD) &#9662;</label>
+                    <input type="checkbox" name="costsCAPEX" id="costsCAPEX" data-toggle="toggle">
+                </th>
+                {% for year in fullYearVals %}
+                <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            <tbody class="collapsible">
+                <tr>
+                    <th class="subhead">Pre-Stripping</th>
+                    {% for val in preStrip %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumPreStrip|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Mining Equipment Initial</th>
+                    {% for val in mineEquipInitial %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumMineEquipInitial|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Mining Equipment Sustaining</th>
+                    {% for val in mineEquipSustain %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumMineEquipSustain|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Project Infrastructure Direct Costs</th>
+                    {% for val in infraDirectCost %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumInfraDirectCost|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Project Infrastructure Indirect Costs</th>
+                    {% for val in infraIndirectCost %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumInfraIndirectCost|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Project Infrastructure Contingency</th>
+                    {% for val in contingency %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumContingency|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Railcars</th>
+                    {% for val in railcars %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumRailcars|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Other Mobile Equipment</th>
+                    {% for val in otherMobEquip %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumOtherMobEquip|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Closure and Rehab Assurance Payments</th>
+                    {% for val in closureRehabAssure %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumClosureRehabAssure|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Deposits Provision Payments</th>
+                    {% for val in depoProvisionPay %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumDepoProvisionPay|intcomma }}</td>
+                </tr>
+            </tbody>
+            <tr>
+                <th class="centrecol">TOTAL CAPEX (millions CAD)</th>
+                {% for val in totalCAPEX %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumTotalCAPEX|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="centrecol">
+                    <label for="costsTaxes">TAXES (millions CAD) &#9662;</label>
+                    <input type="checkbox" name="costsTaxes" id="costsTaxes" data-toggle="toggle">
+                </th>
+                {% for year in fullYearVals %}
+                <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            <tbody class="collapsible">
+                <tr>
+                    <th class="subhead">Federal Corporate Taxes</th>
+                    {% for val in federalTaxes %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumFederalTaxes }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Provincial Corporate Taxes</th>
+                    {% for val in provincialTaxes %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumProvincialTaxes }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">Mining Taxes</th>
+                    {% for val in miningTaxes %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumMiningTaxes }}</td>
+                </tr>
+                <tr>
+                    <th class="subhead">TOTAL (millions CAD)</th>
+                    {% for val in totalTaxes %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumTotalTaxes|intcomma }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white">
+                <th class="firstcol">SUMMARY</th>
+                {% for year in fullYearVals %}
+                    <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            <tr>
+                <th class="subhead">Revenues (millions CAD)</th>
+                {% for val in totalRevenues %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumTotalRevenues|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">OPEX (millions CAD)</th>
+                {% for val in totalOPEX %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumTotalOPEX|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">Royalties (millions CAD)</th>
+                {% for val in royalties %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumRoyalties }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">CAPEX (millions CAD)</th>
+                {% for val in totalCAPEX %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumTotalCAPEX|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">Working Capital (Current Production) (millions CAD)</th>
+                {% for val in workCapCurrentProd %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumWorkCapCurrentProd|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">Working Capital (Costs of LG Stockpile) (millions CAD)</th>
+                {% for val in workCapCostsLG %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumWorkCapCostsLG|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">Taxes (millions CAD)</th>
+                {% for val in totalTaxes %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumTotalTaxes|intcomma }}</td>
+            </tr>
+        </table>
+
+
+
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white">
+                <th class="firstcol">PRE-TAX CASH FLOW</th>
+                {% for year in fullYearVals %}
+                    <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            <tr>
+                <th class="subhead">Cash Flow (millions CAD)</th>
+                {% for val in cashFlowPreTax %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumCashFlowPreTax|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">Cumulative Undiscounted Cash Flow (millions CAD)</th>
+                {% for val in cumCashFlowPreTax %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumCashFlowPreTax|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">Payback Period (year)</th>
+                {% for val in paybackPreTax %}
+                    <td class="numval">{{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">{{ sumPaybackPreTax|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 6%</th>
+                {% for val in preTaxPVs|get_item:6 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:6|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 8%</th>
+                {% for val in preTaxPVs|get_item:8 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:8|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 10%</th>
+                {% for val in preTaxPVs|get_item:10 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:10|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 12%</th>
+                {% for val in preTaxPVs|get_item:12 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:12|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 15%</th>
+                {% for val in preTaxPVs|get_item:15 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:15|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 20%</th>
+                {% for val in preTaxPVs|get_item:20 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:20|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">INTERNAL RATE OF RETURN (IRR)</th>
+                <td class="numval">{{ preTaxIRR|intcomma }}%</td>
+            </tr>
+        </table>
+
+
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white">
+                <th class="firstcol">POST-TAX CASH FLOW</th>
+                {% for year in fullYearVals %}
+                    <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            <tr>
+                <th class="subhead">Cash Flow (millions CAD)</th>
+                {% for val in cashFlowPostTax %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumCashFlowPostTax|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">Cumulative Undiscounted Cash Flow (millions CAD)</th>
+                {% for val in cumCashFlowPostTax %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumCashFlowPostTax|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">Payback Period (year)</th>
+                {% for val in paybackPostTax %}
+                    <td class="numval">{{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">{{ sumPaybackPostTax|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 6%</th>
+                {% for val in postTaxPVs|get_item:6 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:6|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 8%</th>
+                {% for val in postTaxPVs|get_item:8 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:8|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 10%</th>
+                {% for val in postTaxPVs|get_item:10 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:10|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 12%</th>
+                {% for val in postTaxPVs|get_item:12 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:12|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 15%</th>
+                {% for val in postTaxPVs|get_item:15 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:15|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 20%</th>
+                {% for val in postTaxPVs|get_item:20 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:20|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">INTERNAL RATE OF RETURN (IRR)</th>
+                <td class="numval">{{ postTaxIRR|intcomma }}%</td>
+            </tr>
+        </table>
+    </div>
+
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css"> 
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+<script>
+
+$(document).ready(function() {
+
+    {% for curr in numStockpiles %}
+        $('#processing{{curr}}').change(function(){
+            $(this).parents().next('.collapsible').toggle();
+            if ($(this).is(':checked')) {
+                $(this).prev().html("Stockpile {{curr}} Ore &#9652;");
+            } else {
+                $(this).prev().html("Stockpile {{curr}} Ore &#9662;");
+            }
+    });
+    {% endfor %}
+
+    // $('#processingHG').change(function(){
+    //     $(this).parents().next('.collapsible').toggle();
+    //     if ($(this).is(':checked')) {
+    //         $(this).prev().html("High Grade Ore &#9652;");
+    //     } else {
+    //         $(this).prev().html("High Grade Ore &#9662;");
+    //     }
+    // });
+
+    // $('#processingLG').change(function(){
+    //     $(this).parents().next('.collapsible').toggle();
+    //     if ($(this).is(':checked')) {
+    //         $(this).prev().html("Low Grade Ore &#9652;");
+    //     } else {
+    //         $(this).prev().html("Low Grade Ore &#9662;");
+    //     }
+    // });
+
+    $('#plantProductLump').change(function(){
+        $(this).parents().next('.collapsible').toggle();
+        if ($(this).is(':checked')) {
+            $(this).prev().html("Lump &#9652;");
+        } else {
+            $(this).prev().html("Lump &#9662;");
+        }
+    });
+
+    $('#plantProductFines').change(function(){
+        $(this).parents().next('.collapsible').toggle();
+        if ($(this).is(':checked')) {
+            $(this).prev().html("Fines &#9652;");
+        } else {
+            $(this).prev().html("Fines &#9662;");
+        }
+    });
+
+    $('#plantProductUltraFines').change(function(){
+        $(this).parents().next('.collapsible').toggle();
+        if ($(this).is(':checked')) {
+            $(this).prev().html("Ultra Fines &#9652;");
+        } else {
+            $(this).prev().html("Ultra Fines &#9662;");
+        }
+    });
+
+    $('#lumpSellingPrice').change(function(){
+        $(this).parents().next('.collapsible').toggle();
+        if ($(this).is(':checked')) {
+            $(this).prev().html("Lump Selling Price (USD/dmt) &#9652;");
+        } else {
+            $(this).prev().html("Lump Selling Price (USD/dmt) &#9662;");
+        }
+    });
+
+    $('#finesSellingPrice').change(function(){
+        $(this).parents().next('.collapsible').toggle();
+        if ($(this).is(':checked')) {
+            $(this).prev().html("Fines Selling Price (USD/dmt) &#9652;");
+        } else {
+            $(this).prev().html("Fines Selling Price (USD/dmt) &#9662;");
+        }
+    });
+
+    $('#ultraFinesSellingPrice').change(function(){
+        $(this).parents().next('.collapsible').toggle();
+        if ($(this).is(':checked')) {
+            $(this).prev().html("Ultra Fines Selling Price (USD/dmt) &#9652;");
+        } else {
+            $(this).prev().html("Ultra Fines Selling Price (USD/dmt) &#9662;");
+        }
+    });
+
+    $('#costsOPEX').change(function(){
+        $(this).parents().next('.collapsible').toggle();
+        if ($(this).is(':checked')) {
+            $(this).prev().html("OPEX (millions CAD) &#9652;");
+        } else {
+            $(this).prev().html("OPEX (millions CAD) &#9662;");
+        }
+    });
+
+    $('#costsCAPEX').change(function(){
+        $(this).parents().next('.collapsible').toggle();
+        if ($(this).is(':checked')) {
+            $(this).prev().html("CAPEX (millions CAD) &#9652;");
+        } else {
+            $(this).prev().html("CAPEX (millions CAD) &#9662;");
+        }
+    });
+
+    $('#costsTaxes').change(function(){
+        $(this).parents().next('.collapsible').toggle();
+        if ($(this).is(':checked')) {
+            $(this).prev().html("TAXES (millions CAD) &#9652;");
+        } else {
+            $(this).prev().html("TAXES (millions CAD) &#9662;");
+        }
+    });
+});
+
+</script>
+
+{% include "home/footer.html" %}
