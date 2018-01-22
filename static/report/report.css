@@ -1,0 +1,38 @@
+/*th {
+	max-width: 50px;
+}
+
+td {
+	max-width: 50px;
+}*/
+
+.report-table {
+	min-width: 100px;
+	max-width: 700px !important;
+}
+
+th, td {
+	min-width: 200px;
+}
+
+.firstcol {
+	min-width: 300px;
+}
+
+.yearcol, .totalcol, .subhead, .numval {
+	text-align: right;
+}
+
+.centrecol {
+	text-align: center;
+}
+
+.borderless > tbody > tr > th,
+.borderless > tbody > tr > td {
+	border-top: none !important;
+	border: none;
+}
+
+[data-toggle="toggle"] {
+	display: none;
+}
