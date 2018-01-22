@@ -1,0 +1,92 @@
+{% include "home/header.html" %}
+{% load index %}
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class='col-sm-4'>
+			<br>
+			<br>
+
+			<form class="form-signup" role="form" action="{% url 'transportation:index' %}" method="POST">
+				<center>
+		        <h2 class="form-signup-heading">Transportation:</h2>
+		        </center>
+		        <br>
+		        {% csrf_token %}
+
+				<input type="hidden" value="{{ LOM }}" name="LOM" />
+
+		        <br>
+				<br>
+
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+
+	<div class="table-responsive">
+  		<table class="table table-bordered">
+    		<thead> 
+    			<tr> 
+    				<th>        </th>
+    				{% for i in "x"|rjust:LOM %}
+    					<th>Year {{ forloop.counter0|add:"1" }}</th>
+    				{% endfor %}
+    			</tr> 
+    		</thead>
+    		<tbody>
+    			<tr>
+    				<th>Product Hauling</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}ProductHauling" name="year{{ forloop.counter0|add:'1' }}ProductHauling" placeholder="Max 2 Decimals" step="0.01" type="number" {% if hauling|index:forloop.counter0 is not None %} value="{{ hauling|index:forloop.counter0|floatformat:'-2' }}" {% endif %}>
+                        </td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Rail Transportation</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}RailTransportation" name="year{{ forloop.counter0|add:'1' }}RailTransportation" placeholder="Max 2 Decimals" step="0.01" type="number" {% if railTransport|index:forloop.counter0 is not None %} value="{{ railTransport|index:forloop.counter0|floatformat:'-2' }}" {% endif %}>
+                        </td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Transportation</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Transportation" name="year{{ forloop.counter0|add:'1' }}Transportation" placeholder="Max 2 Decimals" step="0.01" type="number" {% if transportation|index:forloop.counter0 is not None %} value="{{ transportation|index:forloop.counter0|floatformat:'-2' }}" {% endif %}>
+                        </td>
+    				{% endfor %}
+    			</tr>
+    			<tr>
+    				<th>Shipping Cost</th>
+    				{% for i in "x"|rjust:LOM %}
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}ShippingCost" name="year{{ forloop.counter0|add:'1' }}ShippingCost" placeholder="Max 2 Decimals" step="0.01" type="number" {% if shipping|index:forloop.counter0 is not None %} value="{{ shipping|index:forloop.counter0|floatformat:'-2' }}" {% endif %}>
+                        </td>
+    				{% endfor %}
+    			</tr>
+    		</tbody>
+  		</table>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4">
+		</div>
+
+		<div class="col-sm-4">
+            <center>
+            <button class="btn btn-group-lg btn-primary" type="button" onClick="history.go(-1);return true;">Cancel</button>
+            </form>
+            </center>
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+	</div>
+
+	<p></p>
+
+{% include "home/footer.html" %}
