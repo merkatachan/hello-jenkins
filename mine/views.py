@@ -139,6 +139,7 @@ def index(request):
 				for ID in commIDs:
 					intermediateSpaces = [*[tonnageSpaces[curr]*gradesInit[curr+1][ID] for curr in range(len(tonnageSpaces))]]
 					denominator = sum(tonnageSpaces)
+					denominator[firstIndex] = 1.0
 					sumIntermediateSpaces = sum(intermediateSpaces)
 					intermediateMats[ID] = sumIntermediateSpaces/denominator
 					intermediateMats[ID][firstIndex] = 0.0
