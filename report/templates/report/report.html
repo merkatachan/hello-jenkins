@@ -23,6 +23,20 @@
         </div>
     </div>
 
+    <div>
+        <form class="form-reportDL" id="form-reportDL" role="form" action="{% url 'report:reportDL' %}" method="POST">
+            <br>
+            {% csrf_token %}
+
+            {{ form.as_table }}
+
+            <center>
+                <button class="btn btn-group-lg btn-primary" type="submit" name="reportDL">Report Download (CSV)</button>
+            </center>
+            <br>
+        </form>
+    </div>
+
     <div class="report-tables" style="padding-left: 1cm; padding-right: 1cm">
         <table class="report-table table table-hover borderless">
             <tr class="bg-info text-white fixed-width"> 
