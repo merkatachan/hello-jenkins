@@ -463,13 +463,325 @@ def index(request):
 		for year in range(1, yearCount+1):
 			currDataRow.append('Year{0}'.format(year))
 		currDataRow.append('Total')
-
-		# reportRows.append(currDataRow)
 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		
-		request.session['reportRowCount'] = reportRowCount
 
-		# form_class = csvForm(reportRows=reportRows)
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Mining']
+
+		for curr in range(1, numStockpiles+1):
+			reportRowCount += 1
+			currDataRow = ["Stockpile {0} Ore (kt)".format(curr)] + [*[str(round(x,2)) for x in minePlanTonnageVals[curr]]]
+			# currDataRow += [*[str(round(x,2)) for x in minePlanTonnageVals[curr]]]
+			currDataRow.append(str(round(sumMinePlanTonnages[curr],2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Processing']
+
+		for curr in range(1, numStockpiles+1):
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ["Stockpile {0} Ore".format(curr)]
+			reportRowCount += 1
+			currDataRow = ['Tonnage (kt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in tonnageVals[curr]]]
+			currDataRow.append(str(round(tonnageTotals[curr],2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			for i in range(len(commIDs)):
+				reportRowCount += 1
+				currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in gradeVals[curr][commNameList[i]]]]
+				request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			reportRowCount += 1
+			currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in moistures[curr]]]
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Plant Product']
+
+		if 1 in PPIDs:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Lump']
+			reportRowCount += 1
+			currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpTonnageVals]]
+			currDataRow.append(str(round(lumpTonnageTotal,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			for i in range(len(commIDs)):
+				reportRowCount += 1
+				currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpGradeVals[commNameList[i]]]]
+				request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			reportRowCount += 1
+			currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpMoistures]]
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+
+		if 2 in PPIDs:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Fines']
+			reportRowCount += 1
+			currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesTonnageVals]]
+			currDataRow.append(str(round(finesTonnageTotal,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			for i in range(len(commIDs)):
+				reportRowCount += 1
+				currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesGradeVals[commNameList[i]]]]
+				request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			reportRowCount += 1
+			currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesMoistures]]
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+
+		if 3 in PPIDs:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines']
+			reportRowCount += 1
+			currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesTonnageVals]]
+			currDataRow.append(str(round(ultraFinesTonnageTotal,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			for i in range(len(commIDs)):
+				reportRowCount += 1
+				currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesGradeVals[commNameList[i]]]]
+				request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			reportRowCount += 1
+			currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesMoistures]]
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+
+		reportRowCount += 1
+		currDataRow = ['Total Product (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalProducts]]
+		currDataRow.append(str(round(sumTotalProducts,2)))
+		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+
+		if 4 in PPIDs:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Rejects']
+			reportRowCount += 1
+			currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsTonnageVals]]
+			currDataRow.append(str(round(rejectsTonnageTotal,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			for i in range(len(commIDs)):
+				reportRowCount += 1
+				currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsGradeVals[commNameList[i]]]]
+				request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			reportRowCount += 1
+			currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsMoistures]]
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Products Selling Price']
+
+		if 1 in PPIDs:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Lump Selling Price (USD/dmt)']
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Lump Base (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in HGLumps]]
+			for i in range(len(commIDs)):
+				reportRowCount += 1
+				request.session['reportRow{0}'.format(reportRowCount)] = ['Lump {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpPenaltyVals[commNameList[i]]]]
+			reportRowCount += 1
+			currDataRow = ['Lump Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpSellingPrices]]
+			currDataRow.append('Avg: ' + str(round(avgLumpSellingPrice,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
+			reportRowCount += 1
+			currDataRow = ['Net Lump Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netLumpPrices]]
+			currDataRow.append('Avg: ' + str(round(avgNetLumpPrice,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
+			reportRowCount += 1
+			currDataRow = ['Net Lump Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetLumpPrices]]
+			currDataRow.append('Avg: ' + str(round(avgExchangeNetLumpPrice,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+
+		if 2 in PPIDs:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Fines Selling Price (USD/dmt)']
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Fines Base (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in HGFines]]
+			for i in range(len(commIDs)):
+				reportRowCount += 1
+				request.session['reportRow{0}'.format(reportRowCount)] = ['Fines {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesPenaltyVals[commNameList[i]]]]
+			reportRowCount += 1
+			currDataRow = ['Fines Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesSellingPrices]]
+			currDataRow.append('Avg: ' + str(round(avgFinesSellingPrice,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
+			reportRowCount += 1
+			currDataRow = ['Net Fines Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netFinesPrices]]
+			currDataRow.append('Avg: ' + str(round(avgNetFinesPrice,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
+			reportRowCount += 1
+			currDataRow = ['Net Fines Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetFinesPrices]]
+			currDataRow.append('Avg: ' + str(round(avgExchangeNetFinesPrice,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+
+		if 3 in PPIDs:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines Selling Price (USD/dmt)']
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines Base (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in HGUltraFines]]
+			for i in range(len(commIDs)):
+				reportRowCount += 1
+				request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesPenaltyVals[commNameList[i]]]]
+			reportRowCount += 1
+			currDataRow = ['Ultra Fines Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesSellingPrices]]
+			currDataRow.append('Avg: ' + str(round(avgUltraFinesSellingPrice,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
+			reportRowCount += 1
+			currDataRow = ['Net Ultra Fines Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netUltraFinesPrices]]
+			currDataRow.append('Avg: ' + str(round(avgNetUltraFinesPrice,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
+			reportRowCount += 1
+			currDataRow = ['Net Ultra Fines Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetUltraFinesPrices]]
+			currDataRow.append('Avg: ' + str(round(avgExchangeNetUltraFinesPrice,2)))
+			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
+
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Revenues']
+
+		if 1 in PPIDs:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Lump Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpRevenues]] + [str(round(sumLumpRevenues,2))]
+		if 2 in PPIDs:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Fines Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesRevenues]] + [str(round(sumFinesRevenues,2))]
+		if 3 in PPIDs:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesRevenues]] + [str(round(sumUltraFinesRevenues,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL REVENUE'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]] + [str(round(sumTotalRevenues,2))]
+
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['COSTS']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['OPEX (millions CAD)']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Mining'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in mining]] + [str(round(sumMining,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Stockpile LG Reclaiming'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in stockpileLG]] + [str(round(sumStockpileLG,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Pit Dewatering'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in dewatering]] + [str(round(sumDewatering,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Processing'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in processing]] + [str(round(sumProcessing,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Product Hauling'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in hauling]] + [str(round(sumHauling,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Load-out and Rail Loop'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in loadOutRailLoop]] + [str(round(sumLoadOutRailLoop,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['G&A (Site)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in GASite]] + [str(round(sumGASite,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['G&A (Room & Board / FIFO)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in GARoom]] + [str(round(sumGARoom,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Rail Transportation, Port and Shiploading'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in railTransport]] + [str(round(sumRailTransport,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Corporate G&A'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in GACorp]] + [str(round(sumGACorp,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL OPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]] + [str(round(sumTotalOPEX,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['ROYALTIES (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]] + [str(round(sumRoyalties,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['CAPEX (millions CAD)']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Pre-Stripping'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in preStrip]] + [str(round(sumPreStrip,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Mining Equipment Initial'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipInitial]] + [str(round(sumMineEquipInitial,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Mining Equipment Sustaining'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipSustain]] + [str(round(sumMineEquipSustain,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Project Infrastructure Direct Costs'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in infraDirectCost]] + [str(round(sumInfraDirectCost,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Project Infrastructure Indirect Costs'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in infraIndirectCost]] + [str(round(sumInfraIndirectCost,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Project Infrastructure Contingency'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in contingency]] + [str(round(sumContingency,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Railcars'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in railcars]] + [str(round(sumRailcars,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Other Mobile Equipment'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]] + [str(round(sumOtherMobEquip,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Closure and Rehab Assurance Payments'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]] + [str(round(sumClosureRehabAssure,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Deposits Provision Payments'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]] + [str(round(sumDepoProvisionPay,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL CAPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]] + [str(round(sumTotalCAPEX,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['TAXES (millions CAD)']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Federal Corporate Taxes'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in federalTaxes]] + [str(round(sumFederalTaxes,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Provincial Corporate Taxes'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in provincialTaxes]] + [str(round(sumProvincialTaxes,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Mining Taxes'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in miningTaxes]] + [str(round(sumMiningTaxes,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]] + [str(round(sumTotalTaxes,2))]
+
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['SUMMARY']
+
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Revenues (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]] + [str(round(sumTotalRevenues,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['OPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]] + [str(round(sumTotalOPEX,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Royalties (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]] + [str(round(sumRoyalties,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['CAPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]] + [str(round(sumTotalCAPEX,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Working Capital (Current Production) (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCurrentProd]] + [str(round(sumWorkCapCurrentProd,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Working Capital (Costs of LG Stockpile) (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCostsLG]] + [str(round(sumWorkCapCostsLG,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Taxes (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]] + [str(round(sumTotalTaxes,2))]
+
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['PRE-TAX CASH FLOW']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]] + [str(round(sumCashFlowPreTax,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Cumulative Undiscounted Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]] + [str(round(sumCashFlowPreTax,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Payback Period (year)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]] + [str(round(sumPaybackPreTax,2))]
+		for rate in discountRates:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['PRE-TAX NPV @ {0}%'.format(int(round(rate*100)))] + [*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]] + [str(round(sumPreTaxNPV[int(round(rate*100))],2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['INTERNAL RATE OF RETURN (IRR)'] + [str(round(preTaxIRR,2))]
+
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['POST-TAX CASH FLOW']
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]] + [str(round(sumCashFlowPostTax,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Cumulative Undiscounted Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]] + [str(round(sumCashFlowPostTax,2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Payback Period (year)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]] + [str(round(sumPaybackPostTax,2))]
+		for rate in discountRates:
+			reportRowCount += 1
+			request.session['reportRow{0}'.format(reportRowCount)] = ['POST-TAX NPV @ {0}%'.format(int(round(rate*100)))] + [*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]] + [str(round(sumPostTaxNPV[int(round(rate*100))],2))]
+		reportRowCount += 1
+		request.session['reportRow{0}'.format(reportRowCount)] = ['INTERNAL RATE OF RETURN (IRR)'] + [str(round(postTaxIRR,2))]
+
+		request.session['reportRowCount'] = reportRowCount
 
 		return render(request, 'report/report.html', {'yearVals': yearVals, 'fullYearVals': fullYearVals, 'commIDs': commIDs, 'commNameList': commNameList,
 			'numStockpiles': list(range(1, numStockpiles+1)),
