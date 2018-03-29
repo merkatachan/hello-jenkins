@@ -1,5 +1,6 @@
 {% include "home/header.html" %}
 {% load index %}
+{% load humanize %}
 
 	<div class="row">
 
@@ -37,36 +38,45 @@
     				{% for i in "x"|rjust:LOM %}
     					<th>Year {{ forloop.counter0|add:"1" }}</th>
     				{% endfor %}
+                    <th>Total</th>
     			</tr> 
     		</thead>
     		<tbody>
     			<tr>
     				<th>Product Hauling</th>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}ProductHauling" name="year{{ forloop.counter0|add:'1' }}ProductHauling" placeholder="Max 2 Decimals" step="0.01" type="number" {% if hauling|index:forloop.counter0 is not None %} value="{{ hauling|index:forloop.counter0|floatformat:'-2' }}" {% endif %}>
+    					<td>$ <input id="id_year{{ forloop.counter0|add:'1' }}ProductHauling" name="year{{ forloop.counter0|add:'1' }}ProductHauling" type="text" {% if hauling|index:forloop.counter0 is not None %} value="{{ hauling|index:forloop.counter0|floatformat:'-2'|intcomma }}" {% endif %}>
                         </td>
     				{% endfor %}
+                    <td>$ <input id="id_totalProductHauling" name="totalProductHauling" type="text" value="{{ totalHauling|intcomma }}">
+                    </td>
     			</tr>
     			<tr>
     				<th>Rail Transportation</th>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}RailTransportation" name="year{{ forloop.counter0|add:'1' }}RailTransportation" placeholder="Max 2 Decimals" step="0.01" type="number" {% if railTransport|index:forloop.counter0 is not None %} value="{{ railTransport|index:forloop.counter0|floatformat:'-2' }}" {% endif %}>
+    					<td>$ <input id="id_year{{ forloop.counter0|add:'1' }}RailTransportation" name="year{{ forloop.counter0|add:'1' }}RailTransportation" type="text" {% if railTransport|index:forloop.counter0 is not None %} value="{{ railTransport|index:forloop.counter0|floatformat:'-2'|intcomma }}" {% endif %}>
                         </td>
     				{% endfor %}
+                    <td>$ <input id="id_totalRailTransportation" name="totalRailTransportation" type="text" value="{{ totalRailTransport|intcomma }}">
+                    </td>
     			</tr>
     			<tr>
     				<th>Transportation</th>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Transportation" name="year{{ forloop.counter0|add:'1' }}Transportation" placeholder="Max 2 Decimals" step="0.01" type="number" {% if transportation|index:forloop.counter0 is not None %} value="{{ transportation|index:forloop.counter0|floatformat:'-2' }}" {% endif %}>
+    					<td>$ <input id="id_year{{ forloop.counter0|add:'1' }}Transportation" name="year{{ forloop.counter0|add:'1' }}Transportation" type="text" {% if transportation|index:forloop.counter0 is not None %} value="{{ transportation|index:forloop.counter0|floatformat:'-2'|intcomma }}" {% endif %}>
                         </td>
     				{% endfor %}
+                    <td>$ <input id="id_totalTransportation" name="totalTransportation" type="text" value="{{ totalTransportation|intcomma }}">
+                    </td>
     			</tr>
     			<tr>
     				<th>Shipping Cost</th>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}ShippingCost" name="year{{ forloop.counter0|add:'1' }}ShippingCost" placeholder="Max 2 Decimals" step="0.01" type="number" {% if shipping|index:forloop.counter0 is not None %} value="{{ shipping|index:forloop.counter0|floatformat:'-2' }}" {% endif %}>
+    					<td>$ <input id="id_year{{ forloop.counter0|add:'1' }}ShippingCost" name="year{{ forloop.counter0|add:'1' }}ShippingCost" type="text" {% if shipping|index:forloop.counter0 is not None %} value="{{ shipping|index:forloop.counter0|floatformat:'-2'|intcomma }}" {% endif %}>
                         </td>
     				{% endfor %}
+                    <td>$ <input id="id_totalShippingCost" name="totalShippingCost" type="text" value="{{ totalShipping|intcomma }}">
+                    </td>
     			</tr>
     		</tbody>
   		</table>
@@ -78,7 +88,7 @@
 
 		<div class="col-sm-4">
             <center>
-            <button class="btn btn-group-lg btn-primary" type="button" onClick="history.go(-1);return true;">Cancel</button>
+            <button class="btn btn-group-lg btn-primary" type="button" onClick="location.href='{% url 'home:index' %}'">Cancel</button>
             </form>
             </center>
 		</div>

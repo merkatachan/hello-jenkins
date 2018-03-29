@@ -1,12 +1,14 @@
 {% include "home/header.html" %}
-{% load index %}
+{% load get_item %}
+{% load ifinlist %}
+
 
 	<div class="row">
 
-		<div class="col-sm-4">
+		<div class="col-sm-2">
 		</div>
 
-		<div class='col-sm-4'>
+		<div class="col-sm-8">
 			<br>
 			<br>
 
@@ -18,8 +20,55 @@
 		        {% csrf_token %}
 
 				<div class="table-responsive">
-					<table class="table table-condensed">
-					{{ form.as_table }}
+					<table class="table table-bordered">
+						<thead> 
+                			<tr> 
+                    			<th>        </th>
+                    			{% if 1|ifinlist:PPIDs %}
+                    			<th>Lump Price</th>
+                    			<th>Lump Premium</th>
+                    			{% endif %}
+                    			{% if 2|ifinlist:PPIDs %}
+                    			<th>Fines Price</th>
+                    			{% endif %}
+                    			{% if 3|ifinlist:PPIDs %}
+                    			<th>Ultra Fines Price</th>
+                    			{% endif %}
+                    			{% if 1|ifinlist:PPIDs %}
+                    			<th>Lump Average</th>
+                    			{% endif %}
+                			</tr> 
+           				</thead>
+           				<tbody>
+           				{% for curr in numStockpiles %}
+           					<tr>
+           						<th>Stockpile {{ curr }}</th>
+           						{% if 1|ifinlist:PPIDs %}
+           						<td>
+           							<input id="id_Stockpile{{ curr }}Lump" name="Stockpile{{ curr }}Lump" placeholder="Max 2 Decmial Places" step="0.01" type="number" value="{{ lumps|get_item:curr }}" required="">
+           						</td>
+	           					<td>
+	           						<input id="id_Stockpile{{ curr }}LumpPrem" name="Stockpile{{ curr }}LumpPrem" placeholder="Max 2 Decmial Places" step="0.01" type="number" value="{{ lumpPrems|get_item:curr }}" required="">
+	           					</td>
+	           					{% endif %}
+	           					{% if 2|ifinlist:PPIDs %}
+	           					<td>
+	           						<input id="id_Stockpile{{ curr }}Fines" name="Stockpile{{ curr }}Fines" placeholder="Max 2 Decmial Places" step="0.01" type="number" value="{{ fines|get_item:curr }}" required="">
+	           					</td>
+	           					{% endif %}
+	           					{% if 3|ifinlist:PPIDs %}
+	           					<td>
+	           						<input id="id_Stockpile{{ curr }}UltraFines" name="Stockpile{{ curr }}UltraFines" placeholder="Max 2 Decmial Places" step="0.01" type="number" value="{{ ultraFines|get_item:curr }}" required="">
+	           					</td>
+	           					{% endif %}
+	           					{% if 1|ifinlist:PPIDs %}
+	           					<td>
+	           						<input id="id_Stockpile{{ curr }}LumpAvg" name="Stockpile{{ curr }}LumpAvg" placeholder="Max 2 Decmial Places" step="0.01" type="number" value="{{ lumpAvgs|get_item:curr }}" required="">
+	           					</td>
+	           					{% endif %}
+           					</tr>
+           				{% endfor %}	
+           				</tbody>
 					</table>
 				</div>
 
@@ -30,14 +79,13 @@
 				</center>
 			</form>
 		 
-
-
 		</div>
 
-		<div class="col-sm-4">
+		<div class="col-sm-2">
 		</div>
 
 	</div>
+
 
 
 {% include "home/footer.html" %}

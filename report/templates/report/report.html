@@ -23,12 +23,24 @@
         </div>
     </div>
 
+<!--     <div>
+        <form class="form-reportFilter" id="form-reportFilter" role="form" action="{% url 'report:reportFilter' %}" method="POST">
+            <br>
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <center>
+                <button class="btn btn-group-lg btn-primary" type="submit" name="reportFilter">Apply Filter</button>
+            </center>
+            <br>
+        </form>
+    </div> -->
+
     <div>
         <form class="form-reportDL" id="form-reportDL" role="form" action="{% url 'report:reportDL' %}" method="POST">
             <br>
             {% csrf_token %}
-
-            {{ form.as_table }}
 
             <center>
                 <button class="btn btn-group-lg btn-primary" type="submit" name="reportDL">Report Download (CSV)</button>

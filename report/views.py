@@ -38,6 +38,8 @@ def index(request):
 	mineID = request.session["mineID"]
 	mineMatch = tblMine.objects.get(mineID=int(mineID))
 
+	form_class = filterForm(mineID=mineID)
+
 	# Check project exists
 	projectsList  = tblProject.objects.filter(mineID=mineID)
 	if not projectsList:
@@ -487,7 +489,7 @@ def index(request):
 			request.session['reportRow{0}'.format(reportRowCount)] = ["Stockpile {0} Ore".format(curr)]
 			reportRowCount += 1
 			currDataRow = ['Tonnage (kt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in tonnageVals[curr]]]
-			currDataRow.append(str(round(tonnageTotals[curr],2)))
+			currDataRow.append(tonnageTotals[curr])
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 			for i in range(len(commIDs)):
 				reportRowCount += 1
@@ -507,7 +509,7 @@ def index(request):
 			request.session['reportRow{0}'.format(reportRowCount)] = ['Lump']
 			reportRowCount += 1
 			currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpTonnageVals]]
-			currDataRow.append(str(round(lumpTonnageTotal,2)))
+			currDataRow.append(lumpTonnageTotal)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 			for i in range(len(commIDs)):
 				reportRowCount += 1
@@ -522,7 +524,7 @@ def index(request):
 			request.session['reportRow{0}'.format(reportRowCount)] = ['Fines']
 			reportRowCount += 1
 			currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesTonnageVals]]
-			currDataRow.append(str(round(finesTonnageTotal,2)))
+			currDataRow.append(finesTonnageTotal)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 			for i in range(len(commIDs)):
 				reportRowCount += 1
@@ -537,7 +539,7 @@ def index(request):
 			request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines']
 			reportRowCount += 1
 			currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesTonnageVals]]
-			currDataRow.append(str(round(ultraFinesTonnageTotal,2)))
+			currDataRow.append(ultraFinesTonnageTotal)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 			for i in range(len(commIDs)):
 				reportRowCount += 1
@@ -549,7 +551,7 @@ def index(request):
 
 		reportRowCount += 1
 		currDataRow = ['Total Product (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalProducts]]
-		currDataRow.append(str(round(sumTotalProducts,2)))
+		currDataRow.append(sumTotalProducts)
 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 
 		if 4 in PPIDs:
@@ -582,19 +584,19 @@ def index(request):
 				request.session['reportRow{0}'.format(reportRowCount)] = ['Lump {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpPenaltyVals[commNameList[i]]]]
 			reportRowCount += 1
 			currDataRow = ['Lump Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpSellingPrices]]
-			currDataRow.append('Avg: ' + str(round(avgLumpSellingPrice,2)))
+			currDataRow.append('Avg: ' + avgLumpSellingPrice)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 			reportRowCount += 1
 			request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
 			reportRowCount += 1
 			currDataRow = ['Net Lump Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netLumpPrices]]
-			currDataRow.append('Avg: ' + str(round(avgNetLumpPrice,2)))
+			currDataRow.append('Avg: ' + avgNetLumpPrice)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 			reportRowCount += 1
 			request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
 			reportRowCount += 1
 			currDataRow = ['Net Lump Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetLumpPrices]]
-			currDataRow.append('Avg: ' + str(round(avgExchangeNetLumpPrice,2)))
+			currDataRow.append('Avg: ' + avgExchangeNetLumpPrice)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 
 		if 2 in PPIDs:
@@ -607,19 +609,19 @@ def index(request):
 				request.session['reportRow{0}'.format(reportRowCount)] = ['Fines {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesPenaltyVals[commNameList[i]]]]
 			reportRowCount += 1
 			currDataRow = ['Fines Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesSellingPrices]]
-			currDataRow.append('Avg: ' + str(round(avgFinesSellingPrice,2)))
+			currDataRow.append('Avg: ' + avgFinesSellingPrice)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 			reportRowCount += 1
 			request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
 			reportRowCount += 1
 			currDataRow = ['Net Fines Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netFinesPrices]]
-			currDataRow.append('Avg: ' + str(round(avgNetFinesPrice,2)))
+			currDataRow.append('Avg: ' + avgNetFinesPrice)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 			reportRowCount += 1
 			request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
 			reportRowCount += 1
 			currDataRow = ['Net Fines Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetFinesPrices]]
-			currDataRow.append('Avg: ' + str(round(avgExchangeNetFinesPrice,2)))
+			currDataRow.append('Avg: ' + avgExchangeNetFinesPrice)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 
 		if 3 in PPIDs:
@@ -632,19 +634,19 @@ def index(request):
 				request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesPenaltyVals[commNameList[i]]]]
 			reportRowCount += 1
 			currDataRow = ['Ultra Fines Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesSellingPrices]]
-			currDataRow.append('Avg: ' + str(round(avgUltraFinesSellingPrice,2)))
+			currDataRow.append('Avg: ' + avgUltraFinesSellingPrice)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 			reportRowCount += 1
 			request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
 			reportRowCount += 1
 			currDataRow = ['Net Ultra Fines Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netUltraFinesPrices]]
-			currDataRow.append('Avg: ' + str(round(avgNetUltraFinesPrice,2)))
+			currDataRow.append('Avg: ' + avgNetUltraFinesPrice)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 			reportRowCount += 1
 			request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
 			reportRowCount += 1
 			currDataRow = ['Net Ultra Fines Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetUltraFinesPrices]]
-			currDataRow.append('Avg: ' + str(round(avgExchangeNetUltraFinesPrice,2)))
+			currDataRow.append('Avg: ' + avgExchangeNetUltraFinesPrice)
 			request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 
 		reportRowCount += 1
@@ -654,15 +656,15 @@ def index(request):
 
 		if 1 in PPIDs:
 			reportRowCount += 1
-			request.session['reportRow{0}'.format(reportRowCount)] = ['Lump Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpRevenues]] + [str(round(sumLumpRevenues,2))]
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Lump Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpRevenues]] + [sumLumpRevenues]
 		if 2 in PPIDs:
 			reportRowCount += 1
-			request.session['reportRow{0}'.format(reportRowCount)] = ['Fines Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesRevenues]] + [str(round(sumFinesRevenues,2))]
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Fines Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesRevenues]] + [sumFinesRevenues]
 		if 3 in PPIDs:
 			reportRowCount += 1
-			request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesRevenues]] + [str(round(sumUltraFinesRevenues,2))]
+			request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesRevenues]] + [sumUltraFinesRevenues]
 		reportRowCount += 1
-		request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL REVENUE'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]] + [str(round(sumTotalRevenues,2))]
+		request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL REVENUE'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]] + [sumTotalRevenues]
 
 		reportRowCount += 1
 		request.session['reportRow{0}'.format(reportRowCount)] = ['']
@@ -735,7 +737,7 @@ def index(request):
 		request.session['reportRow{0}'.format(reportRowCount)] = ['SUMMARY']
 
 		reportRowCount += 1
-		request.session['reportRow{0}'.format(reportRowCount)] = ['Revenues (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]] + [str(round(sumTotalRevenues,2))]
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Revenues (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]] + [sumTotalRevenues]
 		reportRowCount += 1
 		request.session['reportRow{0}'.format(reportRowCount)] = ['OPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]] + [str(round(sumTotalOPEX,2))]
 		reportRowCount += 1
@@ -754,36 +756,36 @@ def index(request):
 		reportRowCount += 1
 		request.session['reportRow{0}'.format(reportRowCount)] = ['PRE-TAX CASH FLOW']
 		reportRowCount += 1
-		request.session['reportRow{0}'.format(reportRowCount)] = ['Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]] + [str(round(sumCashFlowPreTax,2))]
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]] + [sumCashFlowPreTax]
 		reportRowCount += 1
-		request.session['reportRow{0}'.format(reportRowCount)] = ['Cumulative Undiscounted Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]] + [str(round(sumCashFlowPreTax,2))]
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Cumulative Undiscounted Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]] + [sumCashFlowPreTax]
 		reportRowCount += 1
-		request.session['reportRow{0}'.format(reportRowCount)] = ['Payback Period (year)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]] + [str(round(sumPaybackPreTax,2))]
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Payback Period (year)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]] + [sumPaybackPreTax]
 		for rate in discountRates:
 			reportRowCount += 1
-			request.session['reportRow{0}'.format(reportRowCount)] = ['PRE-TAX NPV @ {0}%'.format(int(round(rate*100)))] + [*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]] + [str(round(sumPreTaxNPV[int(round(rate*100))],2))]
+			request.session['reportRow{0}'.format(reportRowCount)] = ['PRE-TAX NPV @ {0}%'.format(int(round(rate*100)))] + [*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]] + [sumPreTaxNPV[int(round(rate*100))]]
 		reportRowCount += 1
-		request.session['reportRow{0}'.format(reportRowCount)] = ['INTERNAL RATE OF RETURN (IRR)'] + [str(round(preTaxIRR,2))]
+		request.session['reportRow{0}'.format(reportRowCount)] = ['INTERNAL RATE OF RETURN (IRR)'] + [preTaxIRR]
 
 		reportRowCount += 1
 		request.session['reportRow{0}'.format(reportRowCount)] = ['']
 		reportRowCount += 1
 		request.session['reportRow{0}'.format(reportRowCount)] = ['POST-TAX CASH FLOW']
 		reportRowCount += 1
-		request.session['reportRow{0}'.format(reportRowCount)] = ['Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]] + [str(round(sumCashFlowPostTax,2))]
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]] + [sumCashFlowPostTax]
 		reportRowCount += 1
-		request.session['reportRow{0}'.format(reportRowCount)] = ['Cumulative Undiscounted Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]] + [str(round(sumCashFlowPostTax,2))]
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Cumulative Undiscounted Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]] + [sumCashFlowPostTax]
 		reportRowCount += 1
-		request.session['reportRow{0}'.format(reportRowCount)] = ['Payback Period (year)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]] + [str(round(sumPaybackPostTax,2))]
+		request.session['reportRow{0}'.format(reportRowCount)] = ['Payback Period (year)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]] + [sumPaybackPostTax]
 		for rate in discountRates:
 			reportRowCount += 1
-			request.session['reportRow{0}'.format(reportRowCount)] = ['POST-TAX NPV @ {0}%'.format(int(round(rate*100)))] + [*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]] + [str(round(sumPostTaxNPV[int(round(rate*100))],2))]
+			request.session['reportRow{0}'.format(reportRowCount)] = ['POST-TAX NPV @ {0}%'.format(int(round(rate*100)))] + [*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]] + [sumPostTaxNPV[int(round(rate*100))]]
 		reportRowCount += 1
-		request.session['reportRow{0}'.format(reportRowCount)] = ['INTERNAL RATE OF RETURN (IRR)'] + [str(round(postTaxIRR,2))]
+		request.session['reportRow{0}'.format(reportRowCount)] = ['INTERNAL RATE OF RETURN (IRR)'] + [postTaxIRR]
 
 		request.session['reportRowCount'] = reportRowCount
 
-		return render(request, 'report/report.html', {'yearVals': yearVals, 'fullYearVals': fullYearVals, 'commIDs': commIDs, 'commNameList': commNameList,
+		return render(request, 'report/report.html', {'form': form_class, 'yearVals': yearVals, 'fullYearVals': fullYearVals, 'commIDs': commIDs, 'commNameList': commNameList,
 			'numStockpiles': list(range(1, numStockpiles+1)),
 			'minePlanTonnageVals': minePlanTonnageVals, 'sumMinePlanTonnages': sumMinePlanTonnages,
 			# 'minePlanHGTonnageVals': minePlanHGTonnageVals, 'minePlanLGTonnageVals': minePlanLGTonnageVals,
@@ -1145,9 +1147,15 @@ def index(request):
 				currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 				penaltyEntries = tblSmelterTermsOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=1, commodityID=commIDs[i],
 					date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
-				sumPenalty = penaltyEntries.aggregate(sumPenalty=Sum('penalty'))
-				tempPenalties.append(round(Decimal(sumPenalty['sumPenalty']),2))
+				# sumPenalty = penaltyEntries.aggregate(sumPenalty=Sum('penalty'))
+				# tempPenalties.append(round(Decimal(sumPenalty['sumPenalty']),2))
 				# tempPenalties.append(round(Decimal(penaltyEntry.penalty),2))
+
+				dailyPens = []
+				for entry in penaltyEntries:
+					dailyPens.append(entry.penalty)
+				tempPenalties.append(round(Decimal(np.average(dailyPens, weights=lumpDailyTonnages[year])),2))
+
 			lumpPenaltyVals[commNameList[i]] = tempPenalties
 			penaltiesByYear.append(tempPenalties)
 
@@ -1556,7 +1564,7 @@ def index(request):
 					currNPVPreTax = round(toUpdate[i].cashFlowPreTax / Decimal(pow((1+rate),currPeriod.year)),2)
 					currNPVPostTax = round(toUpdate[i].cashFlowPostTax / Decimal(pow((1+rate),currPeriod.year)),2)
 					financialsEntry = tblFinancials(projectID=latestProject, mineID=mineMatch, date=toUpdate[i].date,
-						discountRate=int(rate*100), NPVPreTax=currNPVPreTax, NPVPostTax=currNPVPostTax, IRRPreTax=None, IRRPostTax=None, dateAdded=currTime)
+						discountRate=int(round(rate*100)), NPVPreTax=currNPVPreTax, NPVPostTax=currNPVPostTax, IRRPreTax=None, IRRPostTax=None, dateAdded=currTime)
 					financialsEntry.save()
 
 
@@ -2057,7 +2065,7 @@ def index(request):
 
 		request.session['reportRowCount'] = reportRowCount
 
-	return render(request, 'report/report.html', {'yearVals': yearVals, 'fullYearVals': fullYearVals, 'commIDs': commIDs, 'commNameList': commNameList,
+	return render(request, 'report/report.html', {'form': form_class, 'yearVals': yearVals, 'fullYearVals': fullYearVals, 'commIDs': commIDs, 'commNameList': commNameList,
 		'numStockpiles': list(range(1, numStockpiles+1)),
 		'minePlanTonnageVals': minePlanTonnageVals, 'sumMinePlanTonnages': sumMinePlanTonnages,
 		# 'minePlanHGTonnageVals': minePlanHGTonnageVals, 'minePlanLGTonnageVals': minePlanLGTonnageVals,
@@ -2229,6 +2237,22 @@ def index(request):
 	# 	'preTaxNPVs': preTaxNPVs, 'postTaxNPVs': postTaxNPVs, 'preTaxIRR': preTaxIRR, 'postTaxIRR': postTaxIRR})
 
 def reportDL(request):
+	if request.method == 'POST':
+		response = HttpResponse(content_type='text/csv')
+		response['Content-Disposition'] = 'attachment; filename="report.csv"'
+
+		writer = csv.writer(response)
+		# writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
+		# writer.writerow(['Second row', 'A', 'B', 234, '"Testing"', "Here's a quote"])
+		# writer.writerow(['This,row,splits,by,commas'])
+
+		reportRowCount = request.session['reportRowCount']
+		for i in range(1, reportRowCount+1):
+			writer.writerow(request.session['reportRow{0}'.format(i)])
+
+		return response
+
+def reportFilter(request):
 	if request.method == 'POST':
 		response = HttpResponse(content_type='text/csv')
 		response['Content-Disposition'] = 'attachment; filename="report.csv"'

@@ -467,6 +467,7 @@ class financialsForm(forms.Form):
 		# mineID = kwargs.pop('mineID')
 		# PPIDs = kwargs.pop('plantProducts')
 		numStockpiles = kwargs.pop('numStockpiles')
+		PPIDs = kwargs.pop('plantProducts')
 		super(financialsForm, self).__init__(*args, **kwargs)
 
 		# Get list of Plant Product IDs
@@ -476,26 +477,30 @@ class financialsForm(forms.Form):
 		# PPIDs = PPMatches.values_list('plantProductID', flat=True)
 
 		for curr in range(1, numStockpiles+1):
-			self.fields["Stockpile{0}Lump".format(curr)] = forms.DecimalField(required=True,
-	        		label="Stockpile {0} Lump Price".format(curr),
-	        		decimal_places=2, max_digits=12,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-			self.fields["Stockpile{0}LumpPrem".format(curr)] = forms.DecimalField(required=True,
-	        		label="Stockpile {0} Lump Premium".format(curr),
-	        		decimal_places=2, max_digits=12,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-			self.fields["Stockpile{0}Fines".format(curr)] = forms.DecimalField(required=True,
-	        		label="Stockpile {0} Fines Price".format(curr),
-	        		decimal_places=2, max_digits=12,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-			self.fields["Stockpile{0}UltraFines".format(curr)] = forms.DecimalField(required=True,
-	        		label="Stockpile {0} Ultra Fines Price".format(curr),
-	        		decimal_places=2, max_digits=12,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-			self.fields["Stockpile{0}LumpAvg".format(curr)] = forms.DecimalField(required=True,
-	        		label="Stockpile {0} Lump Average".format(curr),
-	        		decimal_places=2, max_digits=12,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+			if str(1) in PPIDs:
+				self.fields["Stockpile{0}Lump".format(curr)] = forms.DecimalField(required=True,
+		        		label="Stockpile {0} Lump Price".format(curr),
+		        		decimal_places=2, max_digits=12,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+				self.fields["Stockpile{0}LumpPrem".format(curr)] = forms.DecimalField(required=True,
+		        		label="Stockpile {0} Lump Premium".format(curr),
+		        		decimal_places=2, max_digits=12,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+			if str(2) in PPIDs:
+				self.fields["Stockpile{0}Fines".format(curr)] = forms.DecimalField(required=True,
+		        		label="Stockpile {0} Fines Price".format(curr),
+		        		decimal_places=2, max_digits=12,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+			if str(3) in PPIDs:
+				self.fields["Stockpile{0}UltraFines".format(curr)] = forms.DecimalField(required=True,
+		        		label="Stockpile {0} Ultra Fines Price".format(curr),
+		        		decimal_places=2, max_digits=12,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+			if str(1) in PPIDs:
+				self.fields["Stockpile{0}LumpAvg".format(curr)] = forms.DecimalField(required=True,
+		        		label="Stockpile {0} Lump Average".format(curr),
+		        		decimal_places=2, max_digits=12,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
 
 		# if str(1) in PPIDs:
 		# 	self.fields["HGLump"] = forms.DecimalField(required=True,
@@ -730,35 +735,35 @@ class inputsForm(forms.Form):
 		# 	widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 4 Decimal Places'}))
 
 		self.fields["discountRate2"] = forms.IntegerField(required=True,
-    		label="Discount Rate 1", min_value=0, max_value=100, initial=0)
+    		label="Discount Rate 2", min_value=0, max_value=100, initial=0)
 
 		# self.fields["discountRate2"] = forms.DecimalField(required=True,
   #   		label="Discount Rate 2", decimal_places=4, max_digits=20, max_value=100,
 		# 	widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 4 Decimal Places'}))
 
 		self.fields["discountRate3"] = forms.IntegerField(required=True,
-    		label="Discount Rate 1", min_value=0, max_value=100, initial=0)
+    		label="Discount Rate 3", min_value=0, max_value=100, initial=0)
 
 		# self.fields["discountRate3"] = forms.DecimalField(required=True,
   #   		label="Discount Rate 3", decimal_places=4, max_digits=20, max_value=100,
 		# 	widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 4 Decimal Places'}))
 
 		self.fields["discountRate4"] = forms.IntegerField(required=True,
-    		label="Discount Rate 1", min_value=0, max_value=100, initial=0)
+    		label="Discount Rate 4", min_value=0, max_value=100, initial=0)
 
 		# self.fields["discountRate4"] = forms.DecimalField(required=True,
   #   		label="Discount Rate 4", decimal_places=4, max_digits=20, max_value=100,
 		# 	widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 4 Decimal Places'}))
 
 		self.fields["discountRate5"] = forms.IntegerField(required=True,
-    		label="Discount Rate 1", min_value=0, max_value=100, initial=0)
+    		label="Discount Rate 5", min_value=0, max_value=100, initial=0)
 
     	# self.fields["discountRate5"] = forms.DecimalField(required=True,
   #   		label="Discount Rate 5", decimal_places=4, max_digits=20, max_value=100,
 		# 	widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 4 Decimal Places'}))		
 
 		self.fields["discountRate6"] = forms.IntegerField(required=True,
-    		label="Discount Rate 1", min_value=0, max_value=100, initial=0)
+    		label="Discount Rate 6", min_value=0, max_value=100, initial=0)
 
 		# self.fields["discountRate6"] = forms.DecimalField(required=True,
   #   		label="Discount Rate 6", decimal_places=4, max_digits=20, max_value=100,

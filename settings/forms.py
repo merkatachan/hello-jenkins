@@ -568,27 +568,60 @@ class smelterForm(forms.Form):
 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
 
 
-class priceForm(forms.Form):
-	HGLump = forms.DecimalField(required=True, label='High Grade Lump Price',
-		max_digits=12, decimal_places=2)
-	HGLumpPrem = forms.DecimalField(required=True, label='High Grade Lump Premium',
-		max_digits=12, decimal_places=2)
-	HGFines = forms.DecimalField(required=True, label='High Grade Fines Price',
-		max_digits=12, decimal_places=2)
-	HGUltraFines = forms.DecimalField(required=True, label='High Grade Ultra Fines',
-		max_digits=12, decimal_places=2)
-	LGLump = forms.DecimalField(required=True, label='Low Grade Lump Price',
-		max_digits=12, decimal_places=2)
-	LGLumpPrem = forms.DecimalField(required=True, label='Low Grade Lump Premium',
-		max_digits=12, decimal_places=2)
-	LGFines = forms.DecimalField(required=True, label='Low Grade Fines Price',
-		max_digits=12, decimal_places=2)
-	LGUltraFines = forms.DecimalField(required=True, label='Low Grade Ultra Fines',
-		max_digits=12, decimal_places=2)
-	HGLumpAvg = forms.DecimalField(required=True, label='High Grade Lump Average',
-		max_digits=12, decimal_places=2)
-	LGLumpAvg = forms.DecimalField(required=True, label='Low Grade Lump Average',
-		max_digits=12, decimal_places=2)
+# class priceForm(forms.Form):
+# 	HGLump = forms.DecimalField(required=True, label='High Grade Lump Price',
+# 		max_digits=12, decimal_places=2)
+# 	HGLumpPrem = forms.DecimalField(required=True, label='High Grade Lump Premium',
+# 		max_digits=12, decimal_places=2)
+# 	HGFines = forms.DecimalField(required=True, label='High Grade Fines Price',
+# 		max_digits=12, decimal_places=2)
+# 	HGUltraFines = forms.DecimalField(required=True, label='High Grade Ultra Fines',
+# 		max_digits=12, decimal_places=2)
+# 	LGLump = forms.DecimalField(required=True, label='Low Grade Lump Price',
+# 		max_digits=12, decimal_places=2)
+# 	LGLumpPrem = forms.DecimalField(required=True, label='Low Grade Lump Premium',
+# 		max_digits=12, decimal_places=2)
+# 	LGFines = forms.DecimalField(required=True, label='Low Grade Fines Price',
+# 		max_digits=12, decimal_places=2)
+# 	LGUltraFines = forms.DecimalField(required=True, label='Low Grade Ultra Fines',
+# 		max_digits=12, decimal_places=2)
+# 	HGLumpAvg = forms.DecimalField(required=True, label='High Grade Lump Average',
+# 		max_digits=12, decimal_places=2)
+# 	LGLumpAvg = forms.DecimalField(required=True, label='Low Grade Lump Average',
+# 		max_digits=12, decimal_places=2)
+
+
+class financialsForm(forms.Form):
+	def __init__(self, *args, **kwargs):
+		numStockpiles = kwargs.pop('numStockpiles')
+		PPIDs = kwargs.pop('plantProducts')
+		super(financialsForm, self).__init__(*args, **kwargs)
+
+		for curr in range(1, numStockpiles+1):
+			if 1 in PPIDs:
+				self.fields["Stockpile{0}Lump".format(curr)] = forms.DecimalField(required=True,
+		        		label="Stockpile {0} Lump Price".format(curr),
+		        		decimal_places=2, max_digits=12,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+				self.fields["Stockpile{0}LumpPrem".format(curr)] = forms.DecimalField(required=True,
+		        		label="Stockpile {0} Lump Premium".format(curr),
+		        		decimal_places=2, max_digits=12,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+			if 2 in PPIDs:
+				self.fields["Stockpile{0}Fines".format(curr)] = forms.DecimalField(required=True,
+		        		label="Stockpile {0} Fines Price".format(curr),
+		        		decimal_places=2, max_digits=12,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+			if 3 in PPIDs:
+				self.fields["Stockpile{0}UltraFines".format(curr)] = forms.DecimalField(required=True,
+		        		label="Stockpile {0} Ultra Fines Price".format(curr),
+		        		decimal_places=2, max_digits=12,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+			if 1 in PPIDs:
+				self.fields["Stockpile{0}LumpAvg".format(curr)] = forms.DecimalField(required=True,
+		        		label="Stockpile {0} Lump Average".format(curr),
+		        		decimal_places=2, max_digits=12,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
 
 
 class taxesForm(forms.Form):
@@ -661,187 +694,331 @@ class taxesForm(forms.Form):
 		# max_digits=12, decimal_places=4)
 
 class inputsForm(forms.Form):
-	Fe2O3Iron = forms.DecimalField(required=True, label='Fe2O3 Iron',
-		max_digits=12, decimal_places=6)
-	totalGrade = forms.DecimalField(required=True, label='Total Grade',
-		max_digits=12, decimal_places=6)
-	avgCommodity1Grade = forms.DecimalField(required=True, label='Average Commodity 1 Grade',
-		max_digits=12, decimal_places=6)
-	lumpRecovery = forms.DecimalField(required=True, label='Lump Percent Recovery',
-		max_digits=12, decimal_places=6, max_value=100)
-	finesRecovery = forms.DecimalField(required=True, label='Fines Percent Recovery',
-		max_digits=12, decimal_places=6, max_value=100)
-	lumpGrade = forms.DecimalField(required=True, label='Lump Percent Grade',
-		max_digits=12, decimal_places=6, max_value=100)
-	finesGrade = forms.DecimalField(required=True, label='Fines Percent Grade',
-		max_digits=12, decimal_places=6, max_value=100)
-	feedMoisture = forms.DecimalField(required=True, label='Feed Percent Moisture',
-		max_digits=12, decimal_places=6, max_value=100)
-	lumpMoisture = forms.DecimalField(required=True, label='Lump Percent Moisture',
-		max_digits=12, decimal_places=6, max_value=100)
-	finesMoisture = forms.DecimalField(required=True, label='Fines Percent Moisture',
-		max_digits=12, decimal_places=6, max_value=100)
-	ultraFinesMoisture = forms.DecimalField(required=True, label='Ultra Fines Percent Moisture',
-		max_digits=12, decimal_places=6, max_value=100)
-	rejectsMoisture = forms.DecimalField(required=True, label='Rejects Percent Moisture',
-		max_digits=12, decimal_places=6, max_value=100)
-	mineOpsDays = forms.DecimalField(required=True, label='Mine Operations (Days)', 
-		max_digits=12, decimal_places=6)
-	plantOpsDays = forms.DecimalField(required=True, label='Plant Operations (Days)',
-		max_digits=12, decimal_places=6)
-	mineCapacity = forms.DecimalField(required=True, label='Mine Capacity (TPD)',
-		max_digits=20, decimal_places=2)
-	plantCapacity = forms.DecimalField(required=True, label='Plant Capacity (TPD)',
-		max_digits=20, decimal_places=2)
-	discountRate1 = forms.DecimalField(required=True, label='Discount Rate 1',
-		max_digits=12, decimal_places=6, max_value=100)
-	discountRate2 = forms.DecimalField(required=True, label='Discount Rate 2',
-		max_digits=12, decimal_places=6, max_value=100)
-	discountRate3 = forms.DecimalField(required=True, label='Discount Rate 3',
-		max_digits=12, decimal_places=6, max_value=100)
-	discountRate4 = forms.DecimalField(required=True, label='Discount Rate 4',
-		max_digits=12, decimal_places=6, max_value=100)
-	discountRate5 = forms.DecimalField(required=True, label='Discount Rate 5',
-		max_digits=12, decimal_places=6, max_value=100)
-	discountRate6 = forms.DecimalField(required=True, label='Discount Rate 6',
-		max_digits=12, decimal_places=6, max_value=100)
-	exchangeRate = forms.DecimalField(required=True, label='Exchange Rate',
-		max_digits=12, decimal_places=4, max_value=100)
-		
-	# def __init__(self, *args, **kwargs):
-		# mineID = kwargs.pop('mineID')
-		# super(inputsForm, self).__init__(*args, **kwargs)
+	def __init__(self, *args, **kwargs):
+		PPIDs = kwargs.pop('plantProducts')
+		inputs = kwargs.pop('inputs')
+		super(inputsForm, self).__init__(*args, **kwargs)
 
-		# #Get list of Plant Product IDs
+		# Get list of Plant Product IDs
 		# latestPlantProduct = tblPlantProduct.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
 		# PPTimestamp = latestPlantProduct.dateAdded
 		# PPMatches = tblPlantProduct.objects.filter(mineID=int(mineID), dateAdded=PPTimestamp)
 		# PPIDs = PPMatches.values_list('plantProductID', flat=True)
 
-		# self.fields["Fe2O3Iron"] = forms.DecimalField(required=True,
-        	# label="Fe2O3Iron", decimal_places=6, max_digits=12,
-        	# widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
+		self.fields["Fe2O3Iron"] = forms.DecimalField(required=True,
+        	label="Fe2O3Iron", decimal_places=6, max_digits=12,
+        	initial=inputs.Fe2O3Iron,
+        	widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# self.fields["totalGrade"] = forms.DecimalField(required=True,
-    		# label="totalGrade", decimal_places=2, max_digits=12,
-    		# max_value=100,
-    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		self.fields["totalGrade"] = forms.DecimalField(required=True,
+    		label="totalGrade", decimal_places=6, max_digits=12,
+    		initial=inputs.totalGrade,
+    		widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# self.fields["avgCommodity1Grade"] = forms.DecimalField(required=True,
-    		# label="Average Commodity 1 Grade", decimal_places=2, max_digits=12,
-    		# max_value=100,
-    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		self.fields["avgCommodity1Grade"] = forms.DecimalField(required=True,
+    		label="Average Commodity 1 Grade", decimal_places=6, max_digits=12,
+    		initial=inputs.avgCommodity1Grade,
+    		widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# if 1 in PPIDs:
-			# self.fields["lumpRecovery"] = forms.DecimalField(required=True,
-	    		# label="Lump Percent Recovery", decimal_places=2, max_digits=12,
-	    		# max_value=100,
-	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 1 in PPIDs:
+			self.fields["lumpRecovery"] = forms.DecimalField(required=True,
+	    		label="Lump Percent Recovery", decimal_places=2, max_digits=12,
+	    		initial=inputs.lumpRecovery,
+	    		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
 
-		# if 2 in PPIDs:
-			# self.fields["finesRecovery"] = forms.DecimalField(required=True,
-	    		# label="Fines Percent Recovery", decimal_places=2, max_digits=12,
-	    		# max_value=100,
-	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 2 in PPIDs:
+			self.fields["finesRecovery"] = forms.DecimalField(required=True,
+	    		label="Fines Percent Recovery", decimal_places=6, max_digits=12,
+	    		initial=inputs.finesRecovery,
+	    		widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# if 3 in PPIDs:
-			# self.fields["ultraFinesRecovery"] = forms.DecimalField(required=True,
-    			# label="Ultra Fines Percent Recovery", decimal_places=2, max_digits=12,
-    			# max_value=100,
-    			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 3 in PPIDs:
+			self.fields["ultraFinesRecovery"] = forms.DecimalField(required=True,
+    			label="Ultra Fines Percent Recovery", decimal_places=6, max_digits=12,
+    			initial=inputs.ultraFinesRecovery,
+    			widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# if 4 in PPIDs:
-			# self.fields["rejectsRecovery"] = forms.DecimalField(required=True,
-    			# label="Rejects Percent Recovery", decimal_places=2, max_digits=12,
-    			# max_value=100,
-    			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 4 in PPIDs:
+			self.fields["rejectsRecovery"] = forms.DecimalField(required=True,
+    			label="Rejects Percent Recovery", decimal_places=6, max_digits=12,
+    			initial=inputs.rejectsRecovery,
+    			widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# if 1 in PPIDs:
-			# self.fields["lumpGrade"] = forms.DecimalField(required=True,
-	    		# label="Lump Percent Grade", decimal_places=2, max_digits=12,
-	    		# max_value=100,
-	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 1 in PPIDs:
+			self.fields["lumpGrade"] = forms.DecimalField(required=True,
+	    		label="Lump Percent Grade", decimal_places=6, max_digits=12,
+	    		initial=inputs.lumpGrade,
+	    		widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# if 2 in PPIDs:
-			# self.fields["finesGrade"] = forms.DecimalField(required=True,
-	    		# label="Fines Percent Grade", decimal_places=2, max_digits=12,
-	    		# max_value=100,
-	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 2 in PPIDs:
+			self.fields["finesGrade"] = forms.DecimalField(required=True,
+	    		label="Fines Percent Grade", decimal_places=6, max_digits=12,
+	    		initial=inputs.finesGrade,
+	    		widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# if 3 in PPIDs:
-			# self.fields["ultraFinesGrade"] = forms.DecimalField(required=True,
-    			# label="Ultra Fines Percent Grade", decimal_places=2, max_digits=12,
-    			# max_value=100,
-    			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 3 in PPIDs:
+			self.fields["ultraFinesGrade"] = forms.DecimalField(required=True,
+    			label="Ultra Fines Percent Grade", decimal_places=6, max_digits=12,
+    			initial=inputs.ultraFinesGrade,
+    			widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# if 4 in PPIDs:
-			# self.fields["rejectsGrade"] = forms.DecimalField(required=True,
-    			# label="Rejects Percent Grade", decimal_places=2, max_digits=12,
-    			# max_value=100,
-    			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 4 in PPIDs:
+			self.fields["rejectsGrade"] = forms.DecimalField(required=True,
+    			label="Rejects Percent Grade", decimal_places=2, max_digits=12,
+    			initial=inputs.rejectsGrade,
+    			widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
 
-		# self.fields["feedMoisture"] = forms.DecimalField(required=True,
-    		# label="Feed Percent Moisture", decimal_places=2, max_digits=12,
-    		# max_value=100,
-    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		self.fields["feedMoisture"] = forms.DecimalField(required=True,
+    		label="Feed Percent Moisture", decimal_places=2, max_digits=12,
+    		initial=inputs.feedMoisture,
+    		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
 
-		# if 1 in PPIDs:
-			# self.fields["lumpMoisture"] = forms.DecimalField(required=True,
-	    		# label="Lump Percent Moisture", decimal_places=2, max_digits=12,
-	    		# max_value=100,
-	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 1 in PPIDs:
+			self.fields["lumpMoisture"] = forms.DecimalField(required=True,
+	    		label="Lump Percent Moisture", decimal_places=6, max_digits=12,
+	    		initial=inputs.lumpMoisture,
+	    		widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# if 2 in PPIDs:
-			# self.fields["finesMoisture"] = forms.DecimalField(required=True,
-	    		# label="Fines Percent Moisture", decimal_places=2, max_digits=12,
-	    		# max_value=100,
-	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 2 in PPIDs:
+			self.fields["finesMoisture"] = forms.DecimalField(required=True,
+	    		label="Fines Percent Moisture", decimal_places=6, max_digits=12,
+	    		initial=inputs.finesMoisture,
+	    		widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# if 3 in PPIDs:
-			# self.fields["ultraFinesMoisture"] = forms.DecimalField(required=True,
-    			# label="Ultra Fines Percent Moisture", decimal_places=2, max_digits=12,
-    			# max_value=100,
-    			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 3 in PPIDs:
+			self.fields["ultraFinesMoisture"] = forms.DecimalField(required=True,
+    			label="Ultra Fines Percent Moisture", decimal_places=6, max_digits=12,
+    			initial=inputs.ultraFinesMoisture,
+    			widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# if 4 in PPIDs:
-			# self.fields["rejectsMoisture"] = forms.DecimalField(required=True,
-    			# label="Rejects Percent Moisture", decimal_places=2, max_digits=12,
-    			# max_value=100,
-    			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		if 4 in PPIDs:
+			self.fields["rejectsMoisture"] = forms.DecimalField(required=True,
+    			label="Rejects Percent Moisture", decimal_places=6, max_digits=12,
+    			initial=inputs.rejectsMoisture,
+    			widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 6 Decimal Places'}))
 
-		# self.fields["mineOpsDays"] = forms.DecimalField(required=True,
-    		# label="Mine Operations (Days)", max_digits=12, decimal_places=6,
-			# widget=forms.NumberInput(attrs={'placeholder': 'Between 0  - 365'}))
+		self.fields["mineOpsDays"] = forms.IntegerField(required=True,
+    		label="Mine Operations (Days)", min_value=1, max_value=365, initial=inputs.mineOpsDays)
 
-		# self.fields["plantOpsDays"] = forms.DecimalField(required=True,
-    		# label="Plant Operations (Days)", max_digits=12, decimal_places=6,
-			# widget=forms.NumberInput(attrs={'placeholder': 'Between 0 - 365'}))
+		self.fields["plantOpsDays"] = forms.IntegerField(required=True,
+    		label="Plant Operations (Days)", min_value=1, max_value=365, initial=inputs.plantOpsDays)
 
-		# self.fields["mineCapacity"] = forms.DecimalField(required=True,
-    		# label="Mine Capacity (TPD)", max_digits=20, decimal_places=2,
-    		# min_value=0, widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		self.fields["mineCapacity"] = forms.DecimalField(required=True,
+    		label="Mine Capacity (TPD)", decimal_places=2, max_digits=20,
+    		initial=round(inputs.mineCapacity,2),
+			widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
 
-		# self.fields["plantCapacity"] = forms.DecimalField(required=True,
-    		# label="Plant Capacity (TPD)", max_digits=20, decimal_places=2,
-    		# min_value=0, widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		self.fields["plantCapacity"] = forms.DecimalField(required=True,
+    		label="Plant Capacity (TPD)", decimal_places=2, max_digits=20,
+    		initial=round(inputs.plantCapacity,2),
+    		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
 
-		# self.fields["discountRate1"] = forms.DecimalField(required=True,
-    		# label="Discount Rate 1 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+		self.fields["discountRate1"] = forms.IntegerField(required=True,
+    		label="Discount Rate 1", min_value=0, max_value=100, initial=int(inputs.discountRate1))
 
-		# self.fields["discountRate2"] = forms.DecimalField(required=True,
-    		# label="Discount Rate 2 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+		self.fields["discountRate2"] = forms.IntegerField(required=True,
+    		label="Discount Rate 2", min_value=0, max_value=100, initial=int(inputs.discountRate2))
 
-		# self.fields["discountRate3"] = forms.DecimalField(required=True,
-    		# label="Discount Rate 3 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+		self.fields["discountRate3"] = forms.IntegerField(required=True,
+    		label="Discount Rate 3", min_value=0, max_value=100, initial=int(inputs.discountRate3))
 
-		# self.fields["discountRate4"] = forms.DecimalField(required=True,
-    		# label="Discount Rate 4 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+		self.fields["discountRate4"] = forms.IntegerField(required=True,
+    		label="Discount Rate 4", min_value=0, max_value=100, initial=int(inputs.discountRate4))
 
-		# self.fields["discountRate5"] = forms.DecimalField(required=True,
-    		# label="Discount Rate 5 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+		self.fields["discountRate5"] = forms.IntegerField(required=True,
+    		label="Discount Rate 5", min_value=0, max_value=100, initial=int(inputs.discountRate5))	
 
-		# self.fields["discountRate6"] = forms.DecimalField(required=True,
-    		# label="Discount Rate 6 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+		self.fields["discountRate6"] = forms.IntegerField(required=True,
+    		label="Discount Rate 6", min_value=0, max_value=100, initial=int(inputs.discountRate6))
 
-		# self.fields["exchangeRate"] = forms.DecimalField(label=" Exchange Rate (US$-CAN$)", decimal_places=6,
-			# max_digits=12, widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
+		self.fields["exchangeRate"] = forms.DecimalField(label="CADUSD Rate", decimal_places=4,
+			max_digits=12, min_value=0,
+			initial=inputs.exchangeRate,
+			widget=forms.NumberInput(attrs={'placeholder': 'Max 4 Decimal Places'}))
+
+
+# class inputsForm(forms.Form):
+# 	Fe2O3Iron = forms.DecimalField(required=True, label='Fe2O3 Iron',
+# 		max_digits=12, decimal_places=6)
+# 	totalGrade = forms.DecimalField(required=True, label='Total Grade',
+# 		max_digits=12, decimal_places=6)
+# 	avgCommodity1Grade = forms.DecimalField(required=True, label='Average Commodity 1 Grade',
+# 		max_digits=12, decimal_places=6)
+# 	lumpRecovery = forms.DecimalField(required=True, label='Lump Percent Recovery',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	finesRecovery = forms.DecimalField(required=True, label='Fines Percent Recovery',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	lumpGrade = forms.DecimalField(required=True, label='Lump Percent Grade',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	finesGrade = forms.DecimalField(required=True, label='Fines Percent Grade',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	feedMoisture = forms.DecimalField(required=True, label='Feed Percent Moisture',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	lumpMoisture = forms.DecimalField(required=True, label='Lump Percent Moisture',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	finesMoisture = forms.DecimalField(required=True, label='Fines Percent Moisture',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	ultraFinesMoisture = forms.DecimalField(required=True, label='Ultra Fines Percent Moisture',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	rejectsMoisture = forms.DecimalField(required=True, label='Rejects Percent Moisture',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	mineOpsDays = forms.DecimalField(required=True, label='Mine Operations (Days)', 
+# 		max_digits=12, decimal_places=6)
+# 	plantOpsDays = forms.DecimalField(required=True, label='Plant Operations (Days)',
+# 		max_digits=12, decimal_places=6)
+# 	mineCapacity = forms.DecimalField(required=True, label='Mine Capacity (TPD)',
+# 		max_digits=20, decimal_places=2)
+# 	plantCapacity = forms.DecimalField(required=True, label='Plant Capacity (TPD)',
+# 		max_digits=20, decimal_places=2)
+# 	discountRate1 = forms.DecimalField(required=True, label='Discount Rate 1',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	discountRate2 = forms.DecimalField(required=True, label='Discount Rate 2',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	discountRate3 = forms.DecimalField(required=True, label='Discount Rate 3',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	discountRate4 = forms.DecimalField(required=True, label='Discount Rate 4',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	discountRate5 = forms.DecimalField(required=True, label='Discount Rate 5',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	discountRate6 = forms.DecimalField(required=True, label='Discount Rate 6',
+# 		max_digits=12, decimal_places=6, max_value=100)
+# 	exchangeRate = forms.DecimalField(required=True, label='Exchange Rate',
+# 		max_digits=12, decimal_places=4, max_value=100)
+		
+# 	# def __init__(self, *args, **kwargs):
+# 		# mineID = kwargs.pop('mineID')
+# 		# super(inputsForm, self).__init__(*args, **kwargs)
+
+# 		# #Get list of Plant Product IDs
+# 		# latestPlantProduct = tblPlantProduct.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+# 		# PPTimestamp = latestPlantProduct.dateAdded
+# 		# PPMatches = tblPlantProduct.objects.filter(mineID=int(mineID), dateAdded=PPTimestamp)
+# 		# PPIDs = PPMatches.values_list('plantProductID', flat=True)
+
+# 		# self.fields["Fe2O3Iron"] = forms.DecimalField(required=True,
+#         	# label="Fe2O3Iron", decimal_places=6, max_digits=12,
+#         	# widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
+
+# 		# self.fields["totalGrade"] = forms.DecimalField(required=True,
+#     		# label="totalGrade", decimal_places=2, max_digits=12,
+#     		# max_value=100,
+#     		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# self.fields["avgCommodity1Grade"] = forms.DecimalField(required=True,
+#     		# label="Average Commodity 1 Grade", decimal_places=2, max_digits=12,
+#     		# max_value=100,
+#     		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 1 in PPIDs:
+# 			# self.fields["lumpRecovery"] = forms.DecimalField(required=True,
+# 	    		# label="Lump Percent Recovery", decimal_places=2, max_digits=12,
+# 	    		# max_value=100,
+# 	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 2 in PPIDs:
+# 			# self.fields["finesRecovery"] = forms.DecimalField(required=True,
+# 	    		# label="Fines Percent Recovery", decimal_places=2, max_digits=12,
+# 	    		# max_value=100,
+# 	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 3 in PPIDs:
+# 			# self.fields["ultraFinesRecovery"] = forms.DecimalField(required=True,
+#     			# label="Ultra Fines Percent Recovery", decimal_places=2, max_digits=12,
+#     			# max_value=100,
+#     			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 4 in PPIDs:
+# 			# self.fields["rejectsRecovery"] = forms.DecimalField(required=True,
+#     			# label="Rejects Percent Recovery", decimal_places=2, max_digits=12,
+#     			# max_value=100,
+#     			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 1 in PPIDs:
+# 			# self.fields["lumpGrade"] = forms.DecimalField(required=True,
+# 	    		# label="Lump Percent Grade", decimal_places=2, max_digits=12,
+# 	    		# max_value=100,
+# 	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 2 in PPIDs:
+# 			# self.fields["finesGrade"] = forms.DecimalField(required=True,
+# 	    		# label="Fines Percent Grade", decimal_places=2, max_digits=12,
+# 	    		# max_value=100,
+# 	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 3 in PPIDs:
+# 			# self.fields["ultraFinesGrade"] = forms.DecimalField(required=True,
+#     			# label="Ultra Fines Percent Grade", decimal_places=2, max_digits=12,
+#     			# max_value=100,
+#     			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 4 in PPIDs:
+# 			# self.fields["rejectsGrade"] = forms.DecimalField(required=True,
+#     			# label="Rejects Percent Grade", decimal_places=2, max_digits=12,
+#     			# max_value=100,
+#     			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# self.fields["feedMoisture"] = forms.DecimalField(required=True,
+#     		# label="Feed Percent Moisture", decimal_places=2, max_digits=12,
+#     		# max_value=100,
+#     		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 1 in PPIDs:
+# 			# self.fields["lumpMoisture"] = forms.DecimalField(required=True,
+# 	    		# label="Lump Percent Moisture", decimal_places=2, max_digits=12,
+# 	    		# max_value=100,
+# 	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 2 in PPIDs:
+# 			# self.fields["finesMoisture"] = forms.DecimalField(required=True,
+# 	    		# label="Fines Percent Moisture", decimal_places=2, max_digits=12,
+# 	    		# max_value=100,
+# 	    		# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 3 in PPIDs:
+# 			# self.fields["ultraFinesMoisture"] = forms.DecimalField(required=True,
+#     			# label="Ultra Fines Percent Moisture", decimal_places=2, max_digits=12,
+#     			# max_value=100,
+#     			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# if 4 in PPIDs:
+# 			# self.fields["rejectsMoisture"] = forms.DecimalField(required=True,
+#     			# label="Rejects Percent Moisture", decimal_places=2, max_digits=12,
+#     			# max_value=100,
+#     			# widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# self.fields["mineOpsDays"] = forms.DecimalField(required=True,
+#     		# label="Mine Operations (Days)", max_digits=12, decimal_places=6,
+# 			# widget=forms.NumberInput(attrs={'placeholder': 'Between 0  - 365'}))
+
+# 		# self.fields["plantOpsDays"] = forms.DecimalField(required=True,
+#     		# label="Plant Operations (Days)", max_digits=12, decimal_places=6,
+# 			# widget=forms.NumberInput(attrs={'placeholder': 'Between 0 - 365'}))
+
+# 		# self.fields["mineCapacity"] = forms.DecimalField(required=True,
+#     		# label="Mine Capacity (TPD)", max_digits=20, decimal_places=2,
+#     		# min_value=0, widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# self.fields["plantCapacity"] = forms.DecimalField(required=True,
+#     		# label="Plant Capacity (TPD)", max_digits=20, decimal_places=2,
+#     		# min_value=0, widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		# self.fields["discountRate1"] = forms.DecimalField(required=True,
+#     		# label="Discount Rate 1 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+
+# 		# self.fields["discountRate2"] = forms.DecimalField(required=True,
+#     		# label="Discount Rate 2 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+
+# 		# self.fields["discountRate3"] = forms.DecimalField(required=True,
+#     		# label="Discount Rate 3 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+
+# 		# self.fields["discountRate4"] = forms.DecimalField(required=True,
+#     		# label="Discount Rate 4 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+
+# 		# self.fields["discountRate5"] = forms.DecimalField(required=True,
+#     		# label="Discount Rate 5 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+
+# 		# self.fields["discountRate6"] = forms.DecimalField(required=True,
+#     		# label="Discount Rate 6 (%)", max_digits=12, decimal_places=6, max_value=100, widget=forms.NumberInput(attrs={'placeholder': '0-100%, Max 2 Decimal Places'}))
+
+# 		# self.fields["exchangeRate"] = forms.DecimalField(label=" Exchange Rate (US$-CAN$)", decimal_places=6,
+# 			# max_digits=12, widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))

@@ -224,16 +224,16 @@ class MineProductForm(forms.Form):
 						initial=round(lumpPens[ID],2),
 						widget=forms.HiddenInput())
 
-					# # Debug Mode
+					# Debug Mode
 					# self.fields["lumpGrade{0}".format(ID)] = forms.DecimalField(required=False,
-					# 	label="Lump Grade % {0}".format(commMatch.name),
 					# 	decimal_places=6, max_digits=20,
-					# 	initial=round(lumpGrades[ID],2), disabled=True)
+					# 	initial=round(lumpGrades[ID],2), disabled=True,
+					# 	widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
 
 					# self.fields["lumpPen{0}".format(ID)] = forms.DecimalField(required=False,
-					# 	label="Lump Penalty {0}".format(commMatch.name),
 					# 	decimal_places=6, max_digits=20,
-					# 	initial=round(lumpPens[ID],2), disabled=True)
+					# 	initial=round(lumpPens[ID],2), disabled=True,
+					# 	widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
 
 				if 2 in PPIDs:
 					self.fields["finesGrade{0}".format(ID)] = forms.DecimalField(required=False,
@@ -248,14 +248,14 @@ class MineProductForm(forms.Form):
 
 					# # Debug Mode
 					# self.fields["finesGrade{0}".format(ID)] = forms.DecimalField(required=False,
-					# 	label="Fines Grade % {0}".format(commMatch.name),
 					# 	decimal_places=6, max_digits=20,
-					# 	initial=round(finesGrades[ID],2), disabled=True)
+					# 	initial=round(finesGrades[ID],2), disabled=True,
+					# 	widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
 
 					# self.fields["finesPen{0}".format(ID)] = forms.DecimalField(required=False,
-					# 	label="Fines Penalty {0}".format(commMatch.name),
 					# 	decimal_places=6, max_digits=20,
-					# 	initial=round(finesPens[ID],2), disabled=True)
+					# 	initial=round(finesPens[ID],2), disabled=True,
+					# 	widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
 
 				if 3 in PPIDs:
 					self.fields["ultraFinesGrade{0}".format(ID)] = forms.DecimalField(required=False,
@@ -270,14 +270,14 @@ class MineProductForm(forms.Form):
 
 					# # Debug Mode
 					# self.fields["ultraFinesGrade{0}".format(ID)] = forms.DecimalField(required=False,
-					# 	label="Ultra Fines Grade % {0}".format(commMatch.name),
 					# 	decimal_places=6, max_digits=20,
-					# 	initial=round(ultraFinesGrades[ID],2), disabled=True)
+					# 	initial=round(ultraFinesGrades[ID],2), disabled=True,
+					# 	widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
 
 					# self.fields["ultraFinesPen{0}".format(ID)] = forms.DecimalField(required=False,
-					# 	label="Ultra Fines Penalty {0}".format(commMatch.name),
 					# 	decimal_places=6, max_digits=20,
-					# 	initial=round(ultraFinesPens[ID],2), disabled=True)
+					# 	initial=round(ultraFinesPens[ID],2), disabled=True,
+					# 	widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
 
 				if 4 in PPIDs:
 					self.fields["rejectsGrade{0}".format(ID)] = forms.DecimalField(required=False,
@@ -292,14 +292,14 @@ class MineProductForm(forms.Form):
 
 					# # Debug Mode
 					# self.fields["rejectsGrade{0}".format(ID)] = forms.DecimalField(required=False,
-					# 	label="Rejects Grade % {0}".format(commMatch.name),
 					# 	decimal_places=6, max_digits=20,
-					# 	initial=round(rejectsGrades[ID],2), disabled=True)
+					# 	initial=round(rejectsGrades[ID],2), disabled=True,
+					# 	widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
 
 					# self.fields["rejectsPen{0}".format(ID)] = forms.DecimalField(required=False,
-					# 	label="Rejects Penalty {0}".format(commMatch.name),
 					# 	decimal_places=6, max_digits=20,
-					# 	initial=round(rejectsPens[ID],2), disabled=True)
+					# 	initial=round(rejectsPens[ID],2), disabled=True,
+					# 	widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
 
 			# if 1 in MPIDs:
 			# 	self.fields["wmtHighGradeOW"] = forms.DecimalField(required=False, label="Overwrite High Grade Tonnage",

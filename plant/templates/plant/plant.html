@@ -1,0 +1,222 @@
+{% include "home/header.html" %}
+{% load index %}
+{% load get_item %}
+{% load humanize %}
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class='col-sm-4'>
+			<br>
+			<br>
+
+			<form class="form-signup" role="form" action="{% url 'plant:index' %}" method="POST">
+				<center>
+		        <h2 class="form-signup-heading">Plant:</h2>
+		        </center>
+		        <br>
+		        {% csrf_token %}
+
+		        <br>
+				<br>
+
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+
+	<div class="table-responsive">
+  		<table class="table table-bordered">
+            <thead> 
+                <tr> 
+                    <th>        </th>
+                    {% for i in "x"|rjust:yearCount %}
+                        <th>Year {{ forloop.counter0|add:"1" }}</th>
+                    {% endfor %}
+                    <th>Total</th>
+                </tr> 
+            </thead>
+            <tbody>
+                {% if 1 in PPIDs %}
+                    <tr>
+                        <th>Lump</th>
+                        {% for i in "x"|rjust:yearCount %}
+                            <th></th>
+                        {% endfor %}
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td>Tonnage (wmt)</td>
+                        {% for i in "x"|rjust:yearCount %}
+                            <td>$ <input id="id_year{{ forloop.counter0|add:'1' }}LumpWMT" name="year{{ forloop.counter0|add:'1' }}LumpWMT" type="text" value="{{ lumpWMTs|index:forloop.counter0|intcomma }}">
+                            </td>
+                        {% endfor %}
+                        <td>$ <input id="id_LumpWMTTotal" name="LumpWMTTotal" type="text" value="{{ lumpWMTTotal|intcomma }}"></td>
+                    </tr>
+                    <tr>
+                        <td>Tonnage (dmt)</td>
+                        {% for i in "x"|rjust:yearCount %}
+                            <td>$ <input id="id_year{{ forloop.counter0|add:'1' }}LumpDMT" name="year{{ forloop.counter0|add:'1' }}LumpDMT" type="text" value="{{ lumpDMTs|index:forloop.counter0|intcomma }}">
+                            </td>
+                        {% endfor %}
+                        <td>$ <input id="id_lumpDMTTotal" name="lumpDMTTotal" type="text" value="{{ lumpDMTTotal|intcomma }}"></td>
+                    </tr>
+                    {% for comm in commNameList %}
+                        <tr>
+                            <td>Grade % {{ comm }}</td>
+                            {% for i in "x"|rjust:yearCount %}
+                                <td><input id="id_year{{ forloop.counter0|add:'1' }}Lump{{ comm }}Grade" name="year{{ forloop.counter0|add:'1' }}Lump{{ comm }}Grade" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ lumpGradeVals|get_item:comm|index:forloop.counter0 }}">
+                            </td>
+                            {% endfor %}
+                            <td></td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+
+                {% if 2 in PPIDs %}
+                    <tr>
+                        <th>Fines</th>
+                        {% for i in "x"|rjust:yearCount %}
+                            <th></th>
+                        {% endfor %}
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td>Tonnage (wmt)</td>
+                        {% for i in "x"|rjust:yearCount %}
+                            <td>$ <input id="id_year{{ forloop.counter0|add:'1' }}FinesWMT" name="year{{ forloop.counter0|add:'1' }}FinesWMT" type="text" value="{{ finesWMTs|index:forloop.counter0|intcomma }}">
+                            </td>
+                        {% endfor %}
+                        <td>$ <input id="id_finesWMTTotal" name="finesWMTTotal" type="text" value="{{ finesWMTTotal|intcomma }}"></td>
+                    </tr>
+                    <tr>
+                        <td>Tonnage (dmt)</td>
+                        {% for i in "x"|rjust:yearCount %}
+                            <td>$ <input id="id_year{{ forloop.counter0|add:'1' }}FinesDMT" name="year{{ forloop.counter0|add:'1' }}FinesDMT" type="text" value="{{ finesDMTs|index:forloop.counter0|intcomma }}">
+                            </td>
+                        {% endfor %}
+                        <td>$ <input id="id_finesDMTTotal" name="finesDMTTotal" type="text" value="{{ finesDMTTotal|intcomma }}"></td>
+                    </tr>
+                    {% for comm in commNameList %}
+                        <tr>
+                            <td>Grade % {{ comm }}</td>
+                            {% for i in "x"|rjust:yearCount %}
+                                <td><input id="id_year{{ forloop.counter0|add:'1' }}Fines{{ comm }}Grade" name="year{{ forloop.counter0|add:'1' }}Fines{{ comm }}Grade" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ finesGradeVals|get_item:comm|index:forloop.counter0 }}">
+                            </td>
+                            {% endfor %}
+                            <td></td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+
+                {% if 3 in PPIDs %}
+                    <tr>
+                        <th>Ultra Fines</th>
+                        {% for i in "x"|rjust:yearCount %}
+                            <th></th>
+                        {% endfor %}
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td>Tonnage (wmt)</td>
+                        {% for i in "x"|rjust:yearCount %}
+                            <td>$ <input id="id_year{{ forloop.counter0|add:'1' }}UltraFinesWMT" name="year{{ forloop.counter0|add:'1' }}UltraFinesWMT" type="text" value="{{ ultraFinesWMTs|index:forloop.counter0|intcomma }}">
+                            </td>
+                        {% endfor %}
+                        <td>$ <input id="id_ultraFinesWMTTotal" name="ultraFinesWMTTotal" type="text" value="{{ ultraFinesWMTTotal|intcomma }}"></td>
+                    </tr>
+                    <tr>
+                        <td>Tonnage (dmt)</td>
+                        {% for i in "x"|rjust:yearCount %}
+                            <td>$ <input id="id_year{{ forloop.counter0|add:'1' }}UltraFinesDMT" name="year{{ forloop.counter0|add:'1' }}UltraFinesDMT" type="text" value="{{ ultraFinesDMTs|index:forloop.counter0|intcomma }}">
+                            </td>
+                        {% endfor %}
+                        <td>$ <input id="id_ultraFinesDMTTotal" name="ultraFinesDMTTotal" type="text" value="{{ ultraFinesDMTTotal|intcomma }}"></td>
+                    </tr>
+                    {% for comm in commNameList %}
+                        <tr>
+                            <td>Grade % {{ comm }}</td>
+                            {% for i in "x"|rjust:yearCount %}
+                                <td><input id="id_year{{ forloop.counter0|add:'1' }}UltraFines{{ comm }}Grade" name="year{{ forloop.counter0|add:'1' }}UltraFines{{ comm }}Grade" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ ultraFinesGradeVals|get_item:comm|index:forloop.counter0 }}">
+                            </td>
+                            {% endfor %}
+                            <td></td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+
+                {% if 4 in PPIDs %}
+                    <tr>
+                        <th>Rejects</th>
+                        {% for i in "x"|rjust:yearCount %}
+                            <th></th>
+                        {% endfor %}
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td>Tonnage (wmt)</td>
+                        {% for i in "x"|rjust:yearCount %}
+                            <td>$ <input id="id_year{{ forloop.counter0|add:'1' }}RejectsWMT" name="year{{ forloop.counter0|add:'1' }}RejectsWMT" type="text" value="{{ rejectsWMTs|index:forloop.counter0|intcomma }}">
+                            </td>
+                        {% endfor %}
+                        <td><input id="id_rejectsWMTTotal" name="rejectsWMTTotal" type="text" value="{{ rejectsWMTTotal|intcomma}}"></td>
+                    </tr>
+                    <tr>
+                        <td>Tonnage (dmt)</td>
+                        {% for i in "x"|rjust:yearCount %}
+                            <td>$ <input id="id_year{{ forloop.counter0|add:'1' }}RejectsDMT" name="year{{ forloop.counter0|add:'1' }}RejectsDMT" type="text" value="{{ rejectsDMTs|index:forloop.counter0|intcomma }}">
+                            </td>
+                        {% endfor %}
+                        <td>$ <input id="id_rejectsDMTTotal" name="rejectsDMTTotal" type="text" value="{{ rejectsDMTTotal|intcomma }}"></td>
+                    </tr>
+                {% endif %}
+
+                <tr>
+                    <th>Total</th>
+                    {% for i in "x"|rjust:yearCount %}
+                        <th></th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+                <tr>
+                    <td>Tonnage (wmt)</td>
+                    {% for i in "x"|rjust:yearCount %}
+                        <td>$ <input id="id_year{{ forloop.counter0|add:'1' }}SumWMT" name="year{{ forloop.counter0|add:'1' }}SumWMT" type="text" value="{{ sumWMTs|index:forloop.counter0|intcomma }}">
+                        </td>
+                    {% endfor %}
+                    <td>$ <input id="id_sumWMTTotal" name="sumWMTTotal" type="text" value="{{ sumWMTTotal|intcomma }}"></td>
+                </tr>
+                <tr>
+                    <td>Tonnage (dmt)</td>
+                    {% for i in "x"|rjust:yearCount %}
+                        <td>$ <input id="id_year{{ forloop.counter0|add:'1' }}SumDMT" name="year{{ forloop.counter0|add:'1' }}SumDMT" type="text" value="{{ sumDMTs|index:forloop.counter0|intcomma }}">
+                        </td>
+                    {% endfor %}
+                    <td>$ <input id="id_sumDMTTotal" name="sumDMTTotal" type="text" value="{{ sumDMTTotal|intcomma }}"></td>
+                </tr>
+            </tbody>
+  		</table>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4">
+		</div>
+
+		<div class="col-sm-4">
+            <center>
+            <button class="btn btn-group-lg btn-primary" type="button" onClick="location.href='{% url 'home:index' %}'">Cancel</button>
+            </form>
+            </center>
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+	</div>
+
+	<p></p>
+
+{% include "home/footer.html" %}

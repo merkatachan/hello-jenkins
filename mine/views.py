@@ -114,6 +114,7 @@ def index(request):
 				# if len(tonnageEntries) > 1:
 				# 	tonnageEntries[0], tonnageEntries[1] = tonnageEntries[1], tonnageEntries[0]
 				tonnageVectors = [*[np.linspace(0.0, float(curr), curr+1) for curr in tonnageEntries]]
+				# tonnageVectors = [[Decimal(x) for x in y] for y in tonnageVectors]
 				tonnageSpaces = np.meshgrid(*tonnageVectors)
 
 
@@ -187,164 +188,181 @@ def index(request):
 
 
 				# NEW: Lump, Fines, UltraFines, Rejects calculations
+				# latestInputEntry = tblInputs.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+				# if 1 in PPIDs:
+				# 	constant1 = (latestInputEntry.lumpGrade/100.0) * (latestInputEntry.lumpRecovery/100.0) / (latestInputEntry.avgCommodity1Grade/100.0)
+				# 	constant2 = 1.0 / (latestInputEntry.lumpRecovery/100.0)
+				# 	for ID in commIDs:
+				# 		lumpGradeMats[ID] = constant1 * constant2 * intermediateMats[ID]
+				# 		smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), stockpileID=1,
+				# 			commodityID=ID, projectID=latestProject.projectID)
+				# 		lumpGradePenMats[ID] = np.empty(shape=lumpGradeMats[ID].shape)
+				# 		lumpGradePenMats[ID] = np.where(lumpGradeMats[ID] >= smelterEntry.maxGrade,
+				# 			(-1)*(smelterEntry.maxGrade - lumpGradeMats[ID])*smelterEntry.premium, lumpGradePenMats[ID])
+				# 		lumpGradePenMats[ID] = np.where((lumpGradeMats[ID] < smelterEntry.maxGrade) & (lumpGradeMats[ID] >= smelterEntry.minGrade), 
+				# 			(lumpGradeMats[ID] - smelterEntry.minGrade)*smelterEntry.minMaxPenalty, 
+				# 			(smelterEntry.minGrade - lumpGradeMats[ID])*smelterEntry.minPenalty + (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.minMaxPenalty)
+
+
 				latestInputEntry = tblInputs.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
 				if 1 in PPIDs:
-					constant1 = (latestInputEntry.lumpGrade/100.0) * (latestInputEntry.lumpRecovery/100.0) / (latestInputEntry.avgCommodity1Grade/100.0)
-					constant2 = 1.0 / (latestInputEntry.lumpRecovery/100.0)
+					constant1 = latestInputEntry.lumpGrade / latestInputEntry.avgCommodity1Grade
 					for ID in commIDs:
-						lumpGradeMats[ID] = constant1 * constant2 * intermediateMats[ID]
+						lumpGradeMats[ID] = constant1 * intermediateMats[ID]
 						smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), stockpileID=1,
 							commodityID=ID, projectID=latestProject.projectID)
-						lumpGradePenMats[ID] = np.empty(shape=lumpGradeMats[ID].shape)
-						lumpGradePenMats[ID] = np.where(lumpGradeMats[ID] >= smelterEntry.maxGrade,
-							(-1)*(smelterEntry.maxGrade - lumpGradeMats[ID])*smelterEntry.premium, lumpGradePenMats[ID])
-						lumpGradePenMats[ID] = np.where((lumpGradeMats[ID] < smelterEntry.maxGrade) & (lumpGradeMats[ID] >= smelterEntry.minGrade), 
-							(lumpGradeMats[ID] - smelterEntry.minGrade)*smelterEntry.minMaxPenalty, 
-							(smelterEntry.minGrade - lumpGradeMats[ID])*smelterEntry.minPenalty + (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.minMaxPenalty)
 
-				if 2 in PPIDs:
-					constant1 = (latestInputEntry.finesGrade/100.0) * (latestInputEntry.finesRecovery/100.0) / (latestInputEntry.avgCommodity1Grade/100.0)
-					constant2 = 1.0 / (latestInputEntry.finesRecovery/100.0)
-					for ID in commIDs:
-						finesGradeMats[ID] = constant1 * constant2 * intermediateMats[ID]
-						smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), stockpileID=1,
-							commodityID=ID, projectID=latestProject.projectID)
-						finesGradePenMats[ID] = np.empty(shape=finesGradeMats[ID].shape)
-						finesGradePenMats[ID] = np.where(finesGradeMats[ID] >= smelterEntry.maxGrade,
-							(-1)*(smelterEntry.maxGrade - finesGradeMats[ID])*smelterEntry.premium, finesGradePenMats[ID])
-						finesGradePenMats[ID] = np.where((finesGradeMats[ID] < smelterEntry.maxGrade) & (finesGradeMats[ID] >= smelterEntry.minGrade), 
-							(finesGradeMats[ID] - smelterEntry.minGrade)*smelterEntry.minMaxPenalty, 
-							(smelterEntry.minGrade - finesGradeMats[ID])*smelterEntry.minPenalty + (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.minMaxPenalty)
+						if smelterEntry.minPenalty == smelterEntry.minMaxPenalty == smelterEntry.premium == 0.0:
+							lumpGradePenMats[ID] = np.zeros(shape=lumpGradeMats[ID].shape)
+						else:
+							lumpGradePenMats[ID] = np.empty(shape=lumpGradeMats[ID].shape)
+							additionalPen = (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.increments*smelterEntry.minMaxPenalty
+							if smelterEntry.premium > 0.0:
+								lumpGradePenMats[ID] = np.where(
+									lumpGradeMats[ID] >= smelterEntry.maxGrade,
+									(lumpGradeMats[ID] - smelterEntry.maxGrade)*smelterEntry.increments*smelterEntry.premium,
+									np.where(
+										(lumpGradeMats[ID] < smelterEntry.maxGrade) & (lumpGradeMats[ID] >= smelterEntry.minGrade),
+										(smelterEntry.maxGrade - lumpGradeMats[ID])*smelterEntry.increments*smelterEntry.minMaxPenalty,
+										(smelterEntry.minGrade - lumpGradeMats[ID])*smelterEntry.increments*smelterEntry.minPenalty + additionalPen
+										)
+									)
+							else:
+								lumpGradePenMats[ID] = np.where(lumpGradeMats[ID] >= smelterEntry.maxGrade,
+									(lumpGradeMats[ID] - smelterEntry.maxGrade)*smelterEntry.increments*smelterEntry.premium,
+									0.0)
+						lumpGradePenMats[ID][firstIndex] = 0.0
 
-				if 3 in PPIDs:
-					constant1 = (latestInputEntry.ultraFinesGrade/100.0) * (latestInputEntry.ultraFinesRecovery/100.0) / (latestInputEntry.avgCommodity1Grade/100.0)
-					constant2 = 1.0 / (latestInputEntry.ultraFinesRecovery/100.0)
-					for ID in commIDs:
-						ultraFinesGradeMats[ID] = constant1 * constant2 * intermediateMats[ID]
-						smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), stockpileID=1,
-							commodityID=ID, projectID=latestProject.projectID)
-						ultraFinesGradePenMats[ID] = np.empty(shape=ultraFinesGradeMats[ID].shape)
-						ultraFinesGradePenMats[ID] = np.where(ultraFinesGradeMats[ID] >= smelterEntry.maxGrade,
-							(-1)*(smelterEntry.maxGrade - ultraFinesGradeMats[ID])*smelterEntry.premium, ultraFinesGradePenMats[ID])
-						ultraFinesGradePenMats[ID] = np.where((ultraFinesGradeMats[ID] < smelterEntry.maxGrade) & (ultraFinesGradeMats[ID] >= smelterEntry.minGrade), 
-							(ultraFinesGradeMats[ID] - smelterEntry.minGrade)*smelterEntry.minMaxPenalty, 
-							(smelterEntry.minGrade - ultraFinesGradeMats[ID])*smelterEntry.minPenalty + (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.minMaxPenalty)
-
-				if 4 in PPIDs:
-					constant1 = (latestInputEntry.rejectsGrade/100.0) * (latestInputEntry.rejectsRecovery/100.0) / (latestInputEntry.avgCommodity1Grade/100.0)
-					constant2 = 1.0 / (latestInputEntry.rejectsRecovery/100.0)
-					for ID in commIDs:
-						rejectsGradeMats[ID] = constant1 * constant2 * intermediateMats[ID]
-						smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), stockpileID=1,
-							commodityID=ID, projectID=latestProject.projectID)
-						rejectsGradePenMats[ID] = np.empty(shape=rejectsGradeMats[ID].shape)
-						rejectsGradePenMats[ID] = np.where(rejectsGradeMats[ID] >= smelterEntry.maxGrade,
-							(-1)*(smelterEntry.maxGrade - rejectsGradeMats[ID])*smelterEntry.premium, rejectsGradePenMats[ID])
-						rejectsGradePenMats[ID] = np.where((rejectsGradeMats[ID] < smelterEntry.maxGrade) & (rejectsGradeMats[ID] >= smelterEntry.minGrade), 
-							(rejectsGradeMats[ID] - smelterEntry.minGrade)*smelterEntry.minMaxPenalty, 
-							(smelterEntry.minGrade - rejectsGradeMats[ID])*smelterEntry.minPenalty + (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.minMaxPenalty)
-
-
-
-				# # Perform the Lump Penalty calculation here
-				# if 1 in PPIDs:
-				# 	latestSmelterEntry = tblSmelterTerms.objects.filter(mineID=int(mineID), commodityID=ID).order_by('-dateAdded')[0]
-				# 	smelterTimestamp = latestSmelterEntry.dateAdded
-				# 	for ID in commIDs:
-				# 		smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), commodityID=ID, dateAdded=smelterTimestamp)
-				# 		for i in range(lgEntries+1):
-				# 			for j in range(hgEntries+1):
-				# 				# if lumpGradeMats[ID][i][j] >= (smelterEntry.HGMaxGrade/100.0):
-				# 				if lumpGradeMats[ID][i][j] >= smelterEntry.HGMaxGrade:
-				# 					# lumpGradePenMats[ID][i][j] = (smelterEntry.HGMaxGrade/100.0 - lumpGradeMats[ID][i][j])*smelterEntry.HGPremium
-				# 					lumpGradePenMats[ID][i][j] = (-1)*(smelterEntry.HGMaxGrade - lumpGradeMats[ID][i][j])*smelterEntry.HGPremium
-				# 				# elif lumpGradeMats[ID][i][j] > (smelterEntry.HGMinGrade/100.0):
-				# 				elif lumpGradeMats[ID][i][j] >= smelterEntry.HGMinGrade:
-				# 					# lumpGradePenMats[ID][i][j] = (lumpGradeMats[ID][i][j] - smelterEntry.HGMinGrade/100.0)*smelterEntry.HGMinMaxPenalty
-				# 					lumpGradePenMats[ID][i][j] = (lumpGradeMats[ID][i][j] - smelterEntry.HGMinGrade)*smelterEntry.HGMinMaxPenalty
-				# 				# elif lumpGradeMats[ID][i][j] == (smelterEntry.HGMinGrade/100.0):
-				# 				# 	lumpGradePenMats[ID][i][j] = smelterEntry.HGMinPenalty + ((smelterEntry.HGMaxGrade - smelterEntry.HGMinGrade)/100.0)*smelterEntry.HGMinMaxPenalty
-				# 				else:
-				# 					# lumpGradePenMats[ID][i][j] = (1.0+lumpGradeMats[ID][i][j]-smelterEntry.HGMinGrade/100.0)*smelterEntry.HGMinPenalty
-				# 					lumpGradePenMats[ID][i][j] = (smelterEntry.HGMinGrade - lumpGradeMats[ID][i][j])*smelterEntry.HGMinPenalty + (smelterEntry.HGMaxGrade - smelterEntry.HGMinGrade)*smelterEntry.HGMinMaxPenalty
 
 				# if 2 in PPIDs:
-				# 	# Perform the Fines Grade % calcuation here
 				# 	constant1 = (latestInputEntry.finesGrade/100.0) * (latestInputEntry.finesRecovery/100.0) / (latestInputEntry.avgCommodity1Grade/100.0)
 				# 	constant2 = 1.0 / (latestInputEntry.finesRecovery/100.0)
 				# 	for ID in commIDs:
 				# 		finesGradeMats[ID] = constant1 * constant2 * intermediateMats[ID]
+				# 		smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), stockpileID=1,
+				# 			commodityID=ID, projectID=latestProject.projectID)
+				# 		finesGradePenMats[ID] = np.empty(shape=finesGradeMats[ID].shape)
+				# 		finesGradePenMats[ID] = np.where(finesGradeMats[ID] >= smelterEntry.maxGrade,
+				# 			(-1)*(smelterEntry.maxGrade - finesGradeMats[ID])*smelterEntry.premium, finesGradePenMats[ID])
+				# 		finesGradePenMats[ID] = np.where((finesGradeMats[ID] < smelterEntry.maxGrade) & (finesGradeMats[ID] >= smelterEntry.minGrade), 
+				# 			(finesGradeMats[ID] - smelterEntry.minGrade)*smelterEntry.minMaxPenalty, 
+				# 			(smelterEntry.minGrade - finesGradeMats[ID])*smelterEntry.minPenalty + (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.minMaxPenalty)
 
-				# 	# Perform the Fines Penalty calculation here
-				# 	for ID in commIDs:
-				# 		smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), commodityID=ID, dateAdded=smelterTimestamp)
-				# 		for i in range(lgEntries+1):
-				# 			for j in range(hgEntries+1):
-				# 				# if finesGradeMats[ID][i][j] >= (smelterEntry.HGMaxGrade/100.0):
-				# 				if finesGradeMats[ID][i][j] >= smelterEntry.HGMaxGrade:
-				# 					# finesGradePenMats[ID][i][j] = (smelterEntry.HGMaxGrade/100.0 - finesGradeMats[ID][i][j])*smelterEntry.HGPremium
-				# 					finesGradePenMats[ID][i][j] = (-1)*(smelterEntry.HGMaxGrade - finesGradeMats[ID][i][j])*smelterEntry.HGPremium
-				# 				# elif finesGradeMats[ID][i][j] > (smelterEntry.HGMinGrade/100.0):
-				# 				elif finesGradeMats[ID][i][j] >= smelterEntry.HGMinGrade:
-				# 					# finesGradePenMats[ID][i][j] = (finesGradeMats[ID][i][j] - smelterEntry.HGMinGrade/100.0)*smelterEntry.HGMinMaxPenalty
-				# 					finesGradePenMats[ID][i][j] = (finesGradeMats[ID][i][j] - smelterEntry.HGMinGrade)*smelterEntry.HGMinMaxPenalty
-				# 				# elif finesGradeMats[ID][i][j] == (smelterEntry.HGMinGrade/100.0):
-				# 				# 	finesGradePenMats[ID][i][j] = smelterEntry.HGMinPenalty + ((smelterEntry.HGMaxGrade - smelterEntry.HGMinGrade)/100.0)*smelterEntry.HGMinMaxPenalty
-				# 				else:
-				# 					# finesGradePenMats[ID][i][j] = (1.0+finesGradeMats[ID][i][j]-smelterEntry.HGMinGrade/100.0)*smelterEntry.HGMinPenalty
-				# 					finesGradePenMats[ID][i][j] = (smelterEntry.HGMinGrade - finesGradeMats[ID][i][j])*smelterEntry.HGMinPenalty + (smelterEntry.HGMaxGrade - smelterEntry.HGMinGrade)*smelterEntry.HGMinMaxPenalty
+
+				if 2 in PPIDs:
+					constant1 = latestInputEntry.finesGrade / latestInputEntry.avgCommodity1Grade
+					for ID in commIDs:
+						finesGradeMats[ID] = constant1 * intermediateMats[ID]
+						smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), stockpileID=1,
+							commodityID=ID, projectID=latestProject.projectID)
+
+						if smelterEntry.minPenalty == smelterEntry.minMaxPenalty == smelterEntry.premium == 0.0:
+							finesGradePenMats[ID] = np.zeros(shape=finesGradeMats[ID].shape)
+						else:
+							finesGradePenMats[ID] = np.empty(shape=finesGradeMats[ID].shape)
+							additionalPen = (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.increments*smelterEntry.minMaxPenalty
+							if smelterEntry.premium > 0.0:
+								finesGradePenMats[ID] = np.where(
+									finesGradeMats[ID] >= smelterEntry.maxGrade,
+									(finesGradeMats[ID] - smelterEntry.maxGrade)*smelterEntry.increments*smelterEntry.premium,
+									np.where(
+										(finesGradeMats[ID] < smelterEntry.maxGrade) & (finesGradeMats[ID] >= smelterEntry.minGrade),
+										(smelterEntry.maxGrade - finesGradeMats[ID])*smelterEntry.increments*smelterEntry.minMaxPenalty,
+										(smelterEntry.minGrade - finesGradeMats[ID])*smelterEntry.increments*smelterEntry.minPenalty + additionalPen
+										)
+									)
+							else:
+								finesGradePenMats[ID] = np.where(finesGradeMats[ID] >= smelterEntry.maxGrade,
+									(finesGradeMats[ID] - smelterEntry.maxGrade)*smelterEntry.increments*smelterEntry.premium,
+									0.0)
+						finesGradePenMats[ID][firstIndex] = 0.0
 
 				# if 3 in PPIDs:
-				# 	# Perform the Ultra Fines Grade % calcuation here
 				# 	constant1 = (latestInputEntry.ultraFinesGrade/100.0) * (latestInputEntry.ultraFinesRecovery/100.0) / (latestInputEntry.avgCommodity1Grade/100.0)
 				# 	constant2 = 1.0 / (latestInputEntry.ultraFinesRecovery/100.0)
 				# 	for ID in commIDs:
 				# 		ultraFinesGradeMats[ID] = constant1 * constant2 * intermediateMats[ID]
+				# 		smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), stockpileID=1,
+				# 			commodityID=ID, projectID=latestProject.projectID)
+				# 		ultraFinesGradePenMats[ID] = np.empty(shape=ultraFinesGradeMats[ID].shape)
+				# 		ultraFinesGradePenMats[ID] = np.where(ultraFinesGradeMats[ID] >= smelterEntry.maxGrade,
+				# 			(-1)*(smelterEntry.maxGrade - ultraFinesGradeMats[ID])*smelterEntry.premium, ultraFinesGradePenMats[ID])
+				# 		ultraFinesGradePenMats[ID] = np.where((ultraFinesGradeMats[ID] < smelterEntry.maxGrade) & (ultraFinesGradeMats[ID] >= smelterEntry.minGrade), 
+				# 			(ultraFinesGradeMats[ID] - smelterEntry.minGrade)*smelterEntry.minMaxPenalty, 
+				# 			(smelterEntry.minGrade - ultraFinesGradeMats[ID])*smelterEntry.minPenalty + (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.minMaxPenalty)
 
-				# 	# Perform the Ultra Fines Penalty Calculation here
-				# 	for ID in commIDs:
-				# 		smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), commodityID=ID, dateAdded=smelterTimestamp)
-				# 		for i in range(lgEntries+1):
-				# 			for j in range(hgEntries+1):
-				# 				# if ultraFinesGradeMats[ID][i][j] >= (smelterEntry.HGMaxGrade/100.0):
-				# 				if ultraFinesGradeMats[ID][i][j] >= smelterEntry.HGMaxGrade:
-				# 					# ultraFinesPenMats[ID][i][j] = (smelterEntry.HGMaxGrade/100.0 - ultraFinesGradeMats[ID][i][j])*smelterEntry.HGPremium
-				# 					ultraFinesPenMats[ID][i][j] = (-1)*(smelterEntry.HGMaxGrade - ultraFinesGradeMats[ID][i][j])*smelterEntry.HGPremium
-				# 				# elif ultraFinesGradeMats[ID][i][j] > (smelterEntry.HGMinGrade/100.0):
-				# 				elif ultraFinesGradeMats[ID][i][j] >= smelterEntry.HGMinGrade:
-				# 					# ultraFinesPenMats[ID][i][j] = (ultraFinesGradeMats[ID][i][j] - smelterEntry.HGMinGrade/100.0)*smelterEntry.HGMinMaxPenalty
-				# 					ultraFinesPenMats[ID][i][j] = (ultraFinesGradeMats[ID][i][j] - smelterEntry.HGMinGrade)*smelterEntry.HGMinMaxPenalty
-				# 				# elif ultraFinesGradeMats[ID][i][j] == (smelterEntry.HGMinGrade/100.0):
-				# 				# 	ultraFinesPenMats[ID][i][j] = smelterEntry.HGMinPenalty + ((smelterEntry.HGMaxGrade - smelterEntry.HGMinGrade)/100.0)*smelterEntry.HGMinMaxPenalty
-				# 				else:
-				# 					# ultraFinesPenMats[ID][i][j] = (1.0+ultraFinesGradeMats[ID][i][j]-smelterEntry.HGMinGrade/100.0)*smelterEntry.HGMinPenalty
-				# 					ultraFinesPenMats[ID][i][j] = (smelterEntry.HGMinGrade - ultraFinesGradeMats[ID][i][j])*smelterEntry.HGMinPenalty + (smelterEntry.HGMaxGrade - smelterEntry.HGMinGrade)*smelterEntry.HGMinMaxPenalty
+
+				if 3 in PPIDs:
+					constant1 = latestInputEntry.ultraFinesGrade / latestInputEntry.avgCommodity1Grade
+					for ID in commIDs:
+						ultraFinesGradeMats[ID] = constant1 * intermediateMats[ID]
+						smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), stockpileID=1,
+							commodityID=ID, projectID=latestProject.projectID)
+
+						if smelterEntry.minPenalty == smelterEntry.minMaxPenalty == smelterEntry.premium == 0.0:
+							ultraFinesGradePenMats[ID] = np.zeros(shape=ultraFinesGradeMats[ID].shape)
+						else:
+							ultraFinesGradePenMats[ID] = np.empty(shape=ultraFinesGradeMats[ID].shape)
+							additionalPen = (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.increments*smelterEntry.minMaxPenalty
+							if smelterEntry.premium > 0.0:
+								ultraFinesGradePenMats[ID] = np.where(
+									ultraFinesGradeMats[ID] >= smelterEntry.maxGrade,
+									(ultraFinesGradeMats[ID] - smelterEntry.maxGrade)*smelterEntry.increments*smelterEntry.premium,
+									np.where(
+										(ultraFinesGradeMats[ID] < smelterEntry.maxGrade) & (ultraFinesGradeMats[ID] >= smelterEntry.minGrade),
+										(smelterEntry.maxGrade - ultraFinesGradeMats[ID])*smelterEntry.increments*smelterEntry.minMaxPenalty,
+										(smelterEntry.minGrade - ultraFinesGradeMats[ID])*smelterEntry.increments*smelterEntry.minPenalty + additionalPen
+										)
+									)
+							else:
+								ultraFinesGradePenMats[ID] = np.where(ultraFinesGradeMats[ID] >= smelterEntry.maxGrade,
+									(ultraFinesGradeMats[ID] - smelterEntry.maxGrade)*smelterEntry.increments*smelterEntry.premium,
+									0.0)
+						ultraFinesGradePenMats[ID][firstIndex] = 0.0
+
 
 				# if 4 in PPIDs:
-				# 	# Perform the Rejects Grade % calcuation here
 				# 	constant1 = (latestInputEntry.rejectsGrade/100.0) * (latestInputEntry.rejectsRecovery/100.0) / (latestInputEntry.avgCommodity1Grade/100.0)
 				# 	constant2 = 1.0 / (latestInputEntry.rejectsRecovery/100.0)
 				# 	for ID in commIDs:
 				# 		rejectsGradeMats[ID] = constant1 * constant2 * intermediateMats[ID]
+				# 		smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), stockpileID=1,
+				# 			commodityID=ID, projectID=latestProject.projectID)
+				# 		rejectsGradePenMats[ID] = np.empty(shape=rejectsGradeMats[ID].shape)
+				# 		rejectsGradePenMats[ID] = np.where(rejectsGradeMats[ID] >= smelterEntry.maxGrade,
+				# 			(-1)*(smelterEntry.maxGrade - rejectsGradeMats[ID])*smelterEntry.premium, rejectsGradePenMats[ID])
+				# 		rejectsGradePenMats[ID] = np.where((rejectsGradeMats[ID] < smelterEntry.maxGrade) & (rejectsGradeMats[ID] >= smelterEntry.minGrade), 
+				# 			(rejectsGradeMats[ID] - smelterEntry.minGrade)*smelterEntry.minMaxPenalty, 
+				# 			(smelterEntry.minGrade - rejectsGradeMats[ID])*smelterEntry.minPenalty + (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.minMaxPenalty)
 
-				# 	# Perform the Rejects Penalty Calculation here
-				# 	for ID in commIDs:
-				# 		smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), commodityID=ID, dateAdded=smelterTimestamp)
-				# 		for i in range(lgEntries+1):
-				# 			for j in range(hgEntries+1):
-				# 				# if rejectsGradeMats[ID][i][j] >= (smelterEntry.HGMaxGrade/100.0):
-				# 				if rejectsGradeMats[ID][i][j] >= smelterEntry.HGMaxGrade:
-				# 					# rejectsPenMats[ID][i][j] = (smelterEntry.HGMaxGrade/100.0 - rejectsGradeMats[ID][i][j])*smelterEntry.HGPremium
-				# 					rejectsPenMats[ID][i][j] = (-1)*(smelterEntry.HGMaxGrade - rejectsGradeMats[ID][i][j])*smelterEntry.HGPremium
-				# 				# elif rejectsGradeMats[ID][i][j] > (smelterEntry.HGMinGrade/100.0):
-				# 				elif rejectsGradeMats[ID][i][j] >= smelterEntry.HGMinGrade:
-				# 					# rejectsPenMats[ID][i][j] = (rejectsGradeMats[ID][i][j] - smelterEntry.HGMinGrade/100.0)*smelterEntry.HGMinMaxPenalty
-				# 					rejectsPenMats[ID][i][j] = (rejectsGradeMats[ID][i][j] - smelterEntry.HGMinGrade)*smelterEntry.HGMinMaxPenalty
-				# 				# elif rejectsGradeMats[ID][i][j] == (smelterEntry.HGMinGrade/100.0):
-				# 				# 	rejectsPenMats[ID][i][j] = smelterEntry.HGMinPenalty + ((smelterEntry.HGMaxGrade - smelterEntry.HGMinGrade)/100.0)*smelterEntry.HGMinMaxPenalty
-				# 				else:
-				# 					# rejectsPenMats[ID][i][j] = (1.0+rejectsGradeMats[ID][i][j]-smelterEntry.HGMinGrade/100.0)*smelterEntry.HGMinPenalty
-				# 					rejectsPenMats[ID][i][j] = (smelterEntry.HGMinGrade - rejectsGradeMats[ID][i][j])*smelterEntry.HGMinPenalty + (smelterEntry.HGMaxGrade - smelterEntry.HGMinGrade)*smelterEntry.HGMinMaxPenalty
+
+				if 4 in PPIDs:
+					constant1 = latestInputEntry.rejectsGrade / latestInputEntry.avgCommodity1Grade
+					for ID in commIDs:
+						rejectsGradeMats[ID] = constant1 * intermediateMats[ID]
+						smelterEntry = tblSmelterTerms.objects.get(mineID=int(mineID), stockpileID=1,
+							commodityID=ID, projectID=latestProject.projectID)
+
+						if smelterEntry.minPenalty == smelterEntry.minMaxPenalty == smelterEntry.premium == 0.0:
+							rejectsGradePenMats[ID] = np.zeros(shape=rejectsGradeMats[ID].shape)
+						else:
+							rejectsGradePenMats[ID] = np.empty(shape=rejectsGradeMats[ID].shape)
+							additionalPen = (smelterEntry.maxGrade - smelterEntry.minGrade)*smelterEntry.increments*smelterEntry.minMaxPenalty
+							if smelterEntry.premium > 0.0:
+								rejectsGradePenMats[ID] = np.where(
+									rejectsGradeMats[ID] >= smelterEntry.maxGrade,
+									(rejectsGradeMats[ID] - smelterEntry.maxGrade)*smelterEntry.increments*smelterEntry.premium,
+									np.where(
+										(rejectsGradeMats[ID] < smelterEntry.maxGrade) & (rejectsGradeMats[ID] >= smelterEntry.minGrade),
+										(smelterEntry.maxGrade - rejectsGradeMats[ID])*smelterEntry.increments*smelterEntry.minMaxPenalty,
+										(smelterEntry.minGrade - rejectsGradeMats[ID])*smelterEntry.increments*smelterEntry.minPenalty + additionalPen
+										)
+									)
+							else:
+								rejectsGradePenMats[ID] = np.where(rejectsGradeMats[ID] >= smelterEntry.maxGrade,
+									(rejectsGradeMats[ID] - smelterEntry.maxGrade)*smelterEntry.increments*smelterEntry.premium,
+									0.0)
+						rejectsGradePenMats[ID][firstIndex] = 0.0
 
 
 				# Perform the Net Price calculation here
@@ -377,7 +395,7 @@ def index(request):
 
 				priceEntry = tblPrice.objects.get(projectID=latestProject.projectID, stockpileID=1)
 				# priceEntry = tblPrice.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
-				opexPT = tblOPEX.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+				opex = tblOPEX.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
 
 				# netHG = np.tile(np.arange(hgEntries+1), (lgEntries+1,1)) * (priceEntry.HGLump - sumLumpPenalties)
 				# netLG = np.tile(np.arange(lgEntries+1), (hgEntries+1,1)).transpose() * (priceEntry.HGFines - sumFinesPenalties)
@@ -391,19 +409,34 @@ def index(request):
 
 				# netLump = (lumpSubMX + finesSubMX) * latestInputEntry.lumpRecovery * (priceEntry.HGLump - sumLumpPenalties - opexPT.opexPT)
 				# netFines = (lumpSubMX + finesSubMX) * latestInputEntry.finesRecovery * (priceEntry.HGFines - sumFinesPenalties - opexPT.opexPT)
-				
+				opexPT = float(opex.opexPT)
+				shipping = float(opex.shipping)
+
 				if 1 in PPIDs:
-					netLump = denominator * latestInputEntry.lumpRecovery * (priceEntry.lump - opexPT.opexPT - sumLumpPenalties)
+					lumpRecovery = float(latestInputEntry.lumpRecovery)
+					lumpMoisture = float(latestInputEntry.lumpMoisture)
+					lump = float(priceEntry.lump)
+
+					netLump = denominator*lumpRecovery*(100.0-lumpMoisture)*(lump-opexPT-shipping+sumLumpPenalties)/10000.0
+					# netLump = denominator*latestInputEntry.lumpRecovery*(100.0-latestInputEntry.lumpMoisture)*(priceEntry.lump-opexPT.opexPT-opexPT.shipping+sumLumpPenalties)/10000.0
 					# netLump = denominator * latestInputEntry.lumpRecovery * (priceEntry.HGLump - opexPT.opexPT - sumLumpPenalties)
 				else:
 					netLump = 0
 				if 2 in PPIDs:
-					netFines = denominator * latestInputEntry.finesRecovery * (priceEntry.fines - opexPT.opexPT - sumFinesPenalties)
+					finesRecovery = float(latestInputEntry.finesRecovery)
+					finesMoisture = float(latestInputEntry.finesMoisture)
+					fines = float(priceEntry.fines)
+
+					netFines = denominator*finesRecovery*(100.0-finesMoisture)*(fines-opexPT-shipping+sumFinesPenalties)/10000.0
 					# netFines = denominator * latestInputEntry.finesRecovery * (priceEntry.HGFines - opexPT.opexPT - sumFinesPenalties)
 				else:
 					netFines = 0
 				if 3 in PPIDs:
-					netUltraFines = denominator * latestInputEntry.ultraFinesRecovery * (priceEntry.ultraFines - opexPT.opexPT - sumUltraFinesPenalties)
+					ultraFinesRecovery = float(latestInputEntry.ultraFinesRecovery)
+					ultraFinesMoisture = float(latestInputEntry.ultraFinesMoisture)
+					ultraFines = float(priceEntry.ultraFines)
+
+					netUltraFines = denominator*ultraFinesRecovery*(100.0-ultraFinesMoisture)*(ultraFines-opexPT-shipping+sumUltraFinesPenalties)/10000.0
 					# netUltraFines = denominator * latestInputEntry.ultraFinesRecovery * (priceEntry.HGUltraFines - opexPT.opexPT - sumUltraFinesPenalties)
 				else:
 					netUltraFines = 0

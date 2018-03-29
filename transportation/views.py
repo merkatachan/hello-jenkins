@@ -54,9 +54,15 @@ def index(request):
 				transportation.append(row.transportation)
 				shipping.append(row.shipping)
 
+		totalHauling = sum(hauling)
+		totalRailTransport = sum(railTransport)
+		totalTransportation = sum(transportation)
+		totalShipping = sum(shipping)
+
 		return render(request, "transportation/transportation.html", {'form': form_class, 'LOM': LOM,
-			'hauling': hauling,
-			'railTransport': railTransport,
-			'transportation': transportation, 
-			'shipping': shipping})
+			'hauling': hauling, 'railTransport': railTransport,
+			'transportation': transportation, 'shipping': shipping,
+			'totalHauling': totalHauling, 'totalRailTransport': totalRailTransport,
+			'totalTransportation': totalTransportation, 'totalShipping': totalShipping
+			})
 	

@@ -300,14 +300,32 @@ def editCAPEX(request):
 				EPCM = request.POST.get("year{0}EPCM".format(year), '')
 				ownerCost = request.POST.get("year{0}OwnersCosts".format(year), '')
 
-				tblCAPEXObj = tblCAPEX(mineID=mineMatch, year=year, preStrip=preStrip,
-					mineEquipInitial=mineEquipInitial, mineEquipSustain=mineEquipSustain,
-					infraDirectCost=infraDirectCost, infraIndirectCost=infraIndirectCost,
-					contingency=contingency, railcars=railcars, otherMobEquip=otherMobEquip,
-					closureRehabAssure=closureRehabAssure, depoProvisionPay=depoProvisionPay,
-					workCapCurrentProd=workCapCurrentProd, workCapCostsLG=workCapCostsLG,
-					EPCM=EPCM, ownerCost=ownerCost, dateAdded=dateAdded)
-				tblCAPEXObj.save()
+				latestCAPEX = tblCAPEX.objects.filter(mineID=int(mineID), year=year).order_by('-dateAdded')[0]
+				latestCAPEX.preStrip = preStrip
+				latestCAPEX.mineEquipInitial = mineEquipInitial
+				latestCAPEX.mineEquipSustain = mineEquipSustain
+				latestCAPEX.infraDirectCost = infraDirectCost
+				latestCAPEX.infraIndirectCost = infraIndirectCost
+				latestCAPEX.contingency = contingency
+				latestCAPEX.railcars = railcars
+				latestCAPEX.otherMobEquip = otherMobEquip
+				latestCAPEX.closureRehabAssure = closureRehabAssure
+				latestCAPEX.depoProvisionPay = depoProvisionPay
+				latestCAPEX.workCapCurrentProd = workCapCurrentProd
+				latestCAPEX.workCapCostsLG = workCapCostsLG
+				latestCAPEX.EPCM = EPCM
+				latestCAPEX.ownerCost = ownerCost
+				latestCAPEX.dateAdded = dateAdded
+				latestCAPEX.save()
+
+				# tblCAPEXObj = tblCAPEX(mineID=mineMatch, year=year, preStrip=preStrip,
+				# 	mineEquipInitial=mineEquipInitial, mineEquipSustain=mineEquipSustain,
+				# 	infraDirectCost=infraDirectCost, infraIndirectCost=infraIndirectCost,
+				# 	contingency=contingency, railcars=railcars, otherMobEquip=otherMobEquip,
+				# 	closureRehabAssure=closureRehabAssure, depoProvisionPay=depoProvisionPay,
+				# 	workCapCurrentProd=workCapCurrentProd, workCapCostsLG=workCapCostsLG,
+				# 	EPCM=EPCM, ownerCost=ownerCost, dateAdded=dateAdded)
+				# tblCAPEXObj.save()
 
 			return render(request, 'settings/success.html', { }) #Redirect
 
@@ -423,14 +441,35 @@ def editOPEX(request):
 				shipping = request.POST.get("year{0}ShippingCost".format(year), '')
 				opexPT = request.POST.get("year{0}OpexPT".format(year), '')
 
-				tblOPEXObj = tblOPEX(mineID=mineMatch, year=year, mining=mining,
-					infrastructure=infrastructure, stockpileLG=stockpileLG,
-					dewatering=dewatering, processing=processing, hauling=hauling,
-					loadOutRailLoop=loadOutRailLoop, GASite=GASite,
-					GARoomBoardFIFO=GARoomBoardFIFO, railTransport=railTransport,
-					GACorp=GACorp, royalties=royalties, transportation=transportation,
-					GA=GA, shipping=shipping, opexPT=opexPT, dateAdded=dateAdded)
-				tblOPEXObj.save()
+				latestOPEX = tblOPEX.objects.filter(mineID=int(mineID), year=year).order_by('-dateAdded')[0]
+				latestOPEX.mining = mining
+				latestOPEX.infrastructure = infrastructure
+				latestOPEX.stockpileLG = stockpileLG
+				latestOPEX.dewatering = dewatering
+				latestOPEX.processing = processing
+				latestOPEX.hauling = hauling
+				latestOPEX.loadOutRailLoop = loadOutRailLoop
+				latestOPEX.GASite = GASite
+				latestOPEX.GARoomBoardFIFO = GARoomBoardFIFO
+				latestOPEX.railTransport = railTransport
+				latestOPEX.GACorp = GACorp
+				latestOPEX.royalties = royalties
+				latestOPEX.transportation = transportation
+				latestOPEX.GA = GA
+				latestOPEX.shipping = shipping
+				latestOPEX.opexPT = opexPT
+				latestOPEX.dateAdded = dateAdded
+
+				latestOPEX.save()
+
+				# tblOPEXObj = tblOPEX(mineID=mineMatch, year=year, mining=mining,
+				# 	infrastructure=infrastructure, stockpileLG=stockpileLG,
+				# 	dewatering=dewatering, processing=processing, hauling=hauling,
+				# 	loadOutRailLoop=loadOutRailLoop, GASite=GASite,
+				# 	GARoomBoardFIFO=GARoomBoardFIFO, railTransport=railTransport,
+				# 	GACorp=GACorp, royalties=royalties, transportation=transportation,
+				# 	GA=GA, shipping=shipping, opexPT=opexPT, dateAdded=dateAdded)
+				# tblOPEXObj.save()
 
 			return render(request, 'settings/success.html', { }) #Redirect
 
@@ -629,80 +668,193 @@ def editSmelter(request):
 
 def editPrices(request):
 	mineID = request.session["mineID"]
-	priceFields = (
-		'HGLump',
-		'HGLumpPrem',
-		'HGFines',
-		'HGUltraFines',
-		'LGLump',
-		'LGLumpPrem',
-		'LGFines',
-		'LGUltraFines',
-		'HGLumpAvg',
-		'LGLumpAvg'
-		)
+	latestProject = tblProject.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+	numStockpiles = latestProject.numStockpiles
+
+	# Get list of Plant Product IDs
+	PPMatches = tblPlantProduct.objects.filter(projectID=latestProject.projectID)
+	PPIDs = PPMatches.values_list('plantProductID', flat=True)
+
+	# priceFields = (
+	# 	'HGLump',
+	# 	'HGLumpPrem',
+	# 	'HGFines',
+	# 	'HGUltraFines',
+	# 	'LGLump',
+	# 	'LGLumpPrem',
+	# 	'LGFines',
+	# 	'LGUltraFines',
+	# 	'HGLumpAvg',
+	# 	'LGLumpAvg'
+	# 	)
 
 	if request.method == 'POST':
-		form = priceForm(request.POST)
+		form = financialsForm(request.POST, numStockpiles=numStockpiles, plantProducts=PPIDs)
 		if form.is_valid():
+			cleanData = form.cleaned_data
 			dateAdded = timezone.localtime(timezone.now())
-			mineMatch = tblMine.objects.get(mineID=int(mineID))
-			tblPriceObj = tblPrice(mineID=mineMatch,
-				dateAdded=dateAdded,
-				**{ f:request.POST.get(f, '') for f in priceFields })
-			tblPriceObj.save()
+
+			for curr in range(1, numStockpiles+1):
+				currPrice = tblPrice.objects.get(projectID=latestProject.projectID, stockpileID=curr)
+				if 1 in PPIDs:
+					currPrice.lump = float(cleanData["Stockpile{0}Lump".format(curr)])
+					currPrice.lumpPrem = float(cleanData["Stockpile{0}LumpPrem".format(curr)])
+					currPrice.lumpAvg = float(cleanData["Stockpile{0}LumpAvg".format(curr)])
+				if 2 in PPIDs:
+					currPrice.fines = float(cleanData["Stockpile{0}Fines".format(curr)])
+				if 3 in PPIDs:
+					currPrice.ultraFines = float(cleanData["Stockpile{0}UltraFines".format(curr)])
+				currPrice.dateAdded = dateAdded
+				currPrice.save()
+
+			# mineMatch = tblMine.objects.get(mineID=int(mineID))
+			# tblPriceObj = tblPrice(mineID=mineMatch,
+			# 	dateAdded=dateAdded,
+			# 	**{ f:request.POST.get(f, '') for f in priceFields })
+			# tblPriceObj.save()
 
 			return render(request, 'settings/success.html', { }) #Redirect
 	else:
-		priceMatch = tblPrice.objects.filter(mineID=int(mineID)).order_by('-dateAdded').values().first()
-		form = priceForm({ f:priceMatch[f] for f in priceFields })
+		lumps = {}
+		lumpPrems = {}
+		fines = {}
+		ultraFines = {}
+		lumpAvgs = {}
 
-		return render(request, "settings/prices.html", {'form': form})
+		for curr in range(1, numStockpiles+1):
+			currPrice = tblPrice.objects.get(projectID=latestProject.projectID, stockpileID=curr)
+			if 1 in PPIDs:
+				lumps[curr] = currPrice.lump
+				lumpPrems[curr] = currPrice.lumpPrem
+				lumpAvgs[curr] = currPrice.lumpAvg
+			if 2 in PPIDs:
+				fines[curr] = currPrice.fines
+			if 3 in PPIDs:
+				ultraFines[curr] = currPrice.ultraFines
+
+		form = financialsForm(numStockpiles=numStockpiles, plantProducts=PPIDs)
+		return render(request, 'settings/prices.html', {'form': form, 'lumps':lumps, 'lumpPrems':lumpPrems,
+		'fines': fines, 'ultraFines': ultraFines, 'lumpAvgs': lumpAvgs, 
+		'PPIDs': PPIDs, 'numStockpiles': list(range(1, numStockpiles+1)) })
+
+		# priceMatch = tblPrice.objects.filter(mineID=int(mineID)).order_by('-dateAdded').values().first()
+		# form = priceForm({ f:priceMatch[f] for f in priceFields })
+		# return render(request, "settings/prices.html", {'form': form})
 
 
 def editInputs(request):
 	mineID = request.session["mineID"]
-	inputFields = (
-		'Fe2O3Iron',
-		'totalGrade',
-		'avgCommodity1Grade',
-		'lumpRecovery',
-		'finesRecovery',
-		'ultraFinesRecovery',
-		'lumpGrade',
-		'finesGrade',
-		'ultraFinesGrade',
-		'rejectsGrade',
-		'feedMoisture',
-		'lumpMoisture',
-		'finesMoisture',
-		'ultraFinesMoisture',
-		'rejectsMoisture',
-		'mineOpsDays',
-		'plantOpsDays',
-		'mineCapacity',
-		'plantCapacity',
-		'discountRate1',
-		'discountRate2',
-		'discountRate3',
-		'discountRate4',
-		'discountRate5',
-		'discountRate6',
-		'exchangeRate'
-		)
+	# inputFields = (
+	# 	'Fe2O3Iron',
+	# 	'totalGrade',
+	# 	'avgCommodity1Grade',
+	# 	'lumpRecovery',
+	# 	'finesRecovery',
+	# 	'ultraFinesRecovery',
+	# 	'lumpGrade',
+	# 	'finesGrade',
+	# 	'ultraFinesGrade',
+	# 	'rejectsGrade',
+	# 	'feedMoisture',
+	# 	'lumpMoisture',
+	# 	'finesMoisture',
+	# 	'ultraFinesMoisture',
+	# 	'rejectsMoisture',
+	# 	'mineOpsDays',
+	# 	'plantOpsDays',
+	# 	'mineCapacity',
+	# 	'plantCapacity',
+	# 	'discountRate1',
+	# 	'discountRate2',
+	# 	'discountRate3',
+	# 	'discountRate4',
+	# 	'discountRate5',
+	# 	'discountRate6',
+	# 	'exchangeRate'
+	# 	)
+
+	# Obtain latest projectID
+	latestProject = tblProject.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+	inputsMatch = tblInputs.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+	
+	# Get list of Plant Product IDs
+	PPMatches = tblPlantProduct.objects.filter(projectID=latestProject.projectID)
+	PPIDs = PPMatches.values_list('plantProductID', flat=True)
 
 	if request.method == 'POST':
-		form = inputsForm(request.POST)
+		form = inputsForm(request.POST, inputs=inputsMatch, plantProducts=PPIDs)
 		if form.is_valid():
 			dateAdded = timezone.localtime(timezone.now())
 			mineMatch = tblMine.objects.get(mineID=int(mineID))
 			
-			# Get list of Plant Product IDs
-			latestPlantProduct = tblPlantProduct.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
-			PPTimestamp = latestPlantProduct.dateAdded
-			PPMatches = tblPlantProduct.objects.filter(mineID=int(mineID), dateAdded=PPTimestamp)
-			PPIDs = PPMatches.values_list('plantProductID', flat=True)
-			
+			# if 3 in PPIDs:
+			# 	ultraFinesRecovery = request.POST.get('ultraFinesRecovery', '')
+			# 	ultraFinesGrade = request.POST.get('ultraFinesGrade', '')
+			# 	ultraFinesMoisture = request.POST.get('ultraFinesMoisture', '')
+			# else:
+			# 	ultraFinesRecovery = None
+			# 	ultraFinesGrade = None
+			# 	ultraFinesMoisture = None
+
+			# if 4 in PPIDs:
+			# 	#rejectsRecovery = request.POST.get('rejectsRecovery', '')
+			# 	rejectsGrade = request.POST.get('rejectsGrade', '')
+			# 	rejectsMoisture = request.POST.get('rejectsMoisture', '')
+			# else:
+			# 	#rejectsRecovery = None
+			# 	rejectsGrade = None
+			# 	rejectsMoisture = None
+				
+			# tblInputsObj = tblInputs(mineID=mineMatch,
+			# 	dateAdded=dateAdded,
+			# 	**{ f:request.POST.get(f, '') for f in inputFields })
+			# tblInputsObj.save()
+
+			# return render(request, 'settings/success.html', { }) #Redirect
+
+			# Insert into tblInputs
+			Fe2O3Iron = request.POST.get('Fe2O3Iron', '')
+			totalGrade = request.POST.get('totalGrade', '')
+			avgCommodity1Grade = request.POST.get('avgCommodity1Grade', '')
+			# lumpRecovery = request.POST.get('lumpRecovery', '')
+			# finesRecovery = request.POST.get('finesRecovery', '')
+			# lumpGrade = request.POST.get('lumpGrade', '')
+			# finesGrade = request.POST.get('finesGrade', '')
+			feedMoisture = request.POST.get('feedMoisture', '')
+			# lumpMoisture = request.POST.get('lumpMoisture', '')
+			# finesMoisture = request.POST.get('finesMoisture', '')
+			# ultraFinesMoisture = request.POST.get('ultraFinesMoisture', '')
+			# rejectsMoisture = request.POST.get('rejectsMoisture', '')
+			mineOpsDays = request.POST.get('mineOpsDays', '')
+			plantOpsDays = request.POST.get('plantOpsDays', '')
+			mineCapacity = request.POST.get('mineCapacity', '')
+			plantCapacity = request.POST.get('plantCapacity', '')
+			discountRate1 = request.POST.get('discountRate1', '')
+			discountRate2 = request.POST.get('discountRate2', '')
+			discountRate3 = request.POST.get('discountRate3', '')
+			discountRate4 = request.POST.get('discountRate4', '')
+			discountRate5 = request.POST.get('discountRate5', '')
+			discountRate6 = request.POST.get('discountRate6', '')
+			exchangeRate = request.POST.get('exchangeRate', '')
+
+			if 1 in PPIDs:
+				lumpRecovery = request.POST.get('lumpRecovery', '')
+				lumpGrade = request.POST.get('lumpGrade', '')
+				lumpMoisture = request.POST.get('lumpMoisture', '')
+			else:
+				lumpRecovery = None
+				lumpGrade = None
+				lumpMoisture = None
+
+			if 2 in PPIDs:
+				finesRecovery = request.POST.get('finesRecovery', '')
+				finesGrade = request.POST.get('finesGrade', '')
+				finesMoisture = request.POST.get('finesMoisture', '')
+			else:
+				finesRecovery = None
+				finesGrade = None
+				finesMoisture = None
+
 			if 3 in PPIDs:
 				ultraFinesRecovery = request.POST.get('ultraFinesRecovery', '')
 				ultraFinesGrade = request.POST.get('ultraFinesGrade', '')
@@ -713,22 +865,65 @@ def editInputs(request):
 				ultraFinesMoisture = None
 
 			if 4 in PPIDs:
-				#rejectsRecovery = request.POST.get('rejectsRecovery', '')
+				rejectsRecovery = request.POST.get('rejectsRecovery', '')
 				rejectsGrade = request.POST.get('rejectsGrade', '')
 				rejectsMoisture = request.POST.get('rejectsMoisture', '')
 			else:
-				#rejectsRecovery = None
+				rejectsRecovery = None
 				rejectsGrade = None
 				rejectsMoisture = None
-				
-			tblInputsObj = tblInputs(mineID=mineMatch,
-				dateAdded=dateAdded,
-				**{ f:request.POST.get(f, '') for f in inputFields })
-			tblInputsObj.save()
 
+			inputsMatch.Fe2O3Iron = Fe2O3Iron
+			inputsMatch.totalGrade = totalGrade
+			inputsMatch.avgCommodity1Grade = avgCommodity1Grade
+			inputsMatch.lumpRecovery = lumpRecovery
+			inputsMatch.finesRecovery = finesRecovery
+			inputsMatch.lumpGrade = lumpGrade
+			inputsMatch.finesGrade = finesGrade
+			inputsMatch.feedMoisture = feedMoisture
+			inputsMatch.lumpMoisture = lumpMoisture
+			inputsMatch.finesMoisture = finesMoisture
+			inputsMatch.ultraFinesMoisture = ultraFinesMoisture
+			inputsMatch.rejectsMoisture = rejectsMoisture
+			inputsMatch.mineOpsDays = mineOpsDays
+			inputsMatch.plantOpsDays = plantOpsDays
+			inputsMatch.mineCapacity = mineCapacity
+			inputsMatch.plantCapacity = plantCapacity
+			inputsMatch.discountRate1 = discountRate1
+			inputsMatch.discountRate2 = discountRate2
+			inputsMatch.discountRate3 = discountRate3
+			inputsMatch.discountRate4 = discountRate4
+			inputsMatch.discountRate5 = discountRate5
+			inputsMatch.discountRate6 = discountRate6
+			inputsMatch.exchangeRate = exchangeRate
+			inputsMatch.dateAdded = dateAdded
+			inputsMatch.ultraFinesRecovery = ultraFinesRecovery
+			inputsMatch.ultraFinesGrade = ultraFinesGrade
+			inputsMatch.rejectsRecovery = rejectsRecovery
+			inputsMatch.rejectsGrade = rejectsGrade
+
+			inputsMatch.save()
 			return render(request, 'settings/success.html', { }) #Redirect
-	else:
-		inputsMatch = tblInputs.objects.filter(mineID=int(mineID)).order_by('-dateAdded').values().first()
-		form = inputsForm({ f:inputsMatch[f] for f in inputFields })
 
+			# tblInputsObj = tblInputs(mineID=mineMatch, Fe2O3Iron=Fe2O3Iron, 
+			# 	totalGrade=totalGrade, avgCommodity1Grade=avgCommodity1Grade,
+			# 	lumpRecovery=lumpRecovery, finesRecovery=finesRecovery,
+			# 	lumpGrade=lumpGrade, finesGrade=finesGrade,
+			# 	feedMoisture=feedMoisture, lumpMoisture=lumpMoisture,
+			# 	finesMoisture=finesMoisture, ultraFinesMoisture=ultraFinesMoisture,
+			# 	rejectsMoisture=rejectsMoisture, mineOpsDays=mineOpsDays,
+			# 	plantOpsDays=plantOpsDays, mineCapacity=mineCapacity,
+			# 	plantCapacity=plantCapacity, discountRate1=Decimal(discountRate1),
+			# 	discountRate2=Decimal(discountRate2), discountRate3=Decimal(discountRate3),
+			# 	discountRate4=Decimal(discountRate4), discountRate5=Decimal(discountRate5),
+			# 	discountRate6=Decimal(discountRate6), exchangeRate=exchangeRate, dateAdded=dateAdded,
+			# 	ultraFinesRecovery=ultraFinesRecovery, ultraFinesGrade=ultraFinesGrade,
+			# 	rejectsRecovery=rejectsRecovery, rejectsGrade=rejectsGrade)
+			# tblInputsObj.save()
+
+	else:
+		# inputsMatch = tblInputs.objects.filter(mineID=int(mineID)).order_by('-dateAdded').values().first()
+		# form = inputsForm({ f:inputsMatch[f] for f in inputFields })
+
+		form = inputsForm(inputs=inputsMatch, plantProducts=PPIDs)
 		return render(request, "settings/inputs.html", {'form': form})

@@ -475,6 +475,7 @@ def index7(request):
 			nameMatch = tblCommodityList.objects.get(commodityID=int(match))
 			commNameList.append(nameMatch.name)
 		numStockpiles = request.session["numStockpiles"]
+		PPIDs = request.session["projectPlantProducts"]
 
 		form = smelterForm(request.POST, idList=idList, nameList=commNameList, numStockpiles=numStockpiles)
 		if form.is_valid():
@@ -509,9 +510,9 @@ def index7(request):
 				
 			# Load up the Financials form
 			# next_form = financialsForm(mineID=int(mineID), plantProducts=request.session["projectPlantProducts"])
-			next_form = financialsForm(numStockpiles=numStockpiles)
+			next_form = financialsForm(numStockpiles=numStockpiles, plantProducts=PPIDs)
 			return render(request, 'setup/financials.html', {'form': next_form,
-				'smelterRegistered': True, 'numStockpiles': list(range(1, numStockpiles+1))})
+				'smelterRegistered': True, 'numStockpiles': list(range(1, numStockpiles+1)), 'PPIDs': PPIDs})
 
 		else:
 			return render(request, 'setup/smelter.html', {'form': form_class,
@@ -524,20 +525,32 @@ def index7(request):
 def index8(request):
 	mineID = request.session["mineID"]
 	numStockpiles = request.session["numStockpiles"]
+	PPIDs = request.session["projectPlantProducts"]
 
 	if request.method == 'POST':
-		form = financialsForm(request.POST, numStockpiles=numStockpiles)
+		form = financialsForm(request.POST, numStockpiles=numStockpiles, plantProducts=PPIDs)
 		if form.is_valid():
 			# Get list of Plant Product IDs
 
 			# PPIDs = request.session["projectPlantProducts"]
 			cleanData = form.cleaned_data
 			for curr in range(1, numStockpiles+1):
-				request.session["Stockpile{0}Lump".format(curr)] = float(cleanData["Stockpile{0}Lump".format(curr)])
-				request.session["Stockpile{0}LumpPrem".format(curr)] = float(cleanData["Stockpile{0}LumpPrem".format(curr)])
-				request.session["Stockpile{0}Fines".format(curr)] = float(cleanData["Stockpile{0}Fines".format(curr)])
-				request.session["Stockpile{0}UltraFines".format(curr)] = float(cleanData["Stockpile{0}UltraFines".format(curr)])
-				request.session["Stockpile{0}LumpAvg".format(curr)] = float(cleanData["Stockpile{0}LumpAvg".format(curr)])
+				if str(1) in PPIDs:
+					request.session["Stockpile{0}Lump".format(curr)] = float(cleanData["Stockpile{0}Lump".format(curr)])
+					request.session["Stockpile{0}LumpPrem".format(curr)] = float(cleanData["Stockpile{0}LumpPrem".format(curr)])
+					request.session["Stockpile{0}LumpAvg".format(curr)] = float(cleanData["Stockpile{0}LumpAvg".format(curr)])
+				else:
+					request.session["Stockpile{0}Lump".format(curr)] = None
+					request.session["Stockpile{0}LumpPrem".format(curr)] = None
+					request.session["Stockpile{0}LumpAvg".format(curr)] = None
+				if str(2) in PPIDs:
+					request.session["Stockpile{0}Fines".format(curr)] = float(cleanData["Stockpile{0}Fines".format(curr)])
+				else:
+					request.session["Stockpile{0}Fines".format(curr)] = None
+				if str(3) in PPIDs:
+					request.session["Stockpile{0}UltraFines".format(curr)] = float(cleanData["Stockpile{0}UltraFines".format(curr)])
+				else:
+					request.session["Stockpile{0}UltraFines".format(curr)] = None
 
 			# if str(1) in PPIDs:	
 			# 	request.session["HGLump"] = float(cleanData["HGLump"])
@@ -576,7 +589,7 @@ def index8(request):
 			return render(request, 'setup/taxes.html', {'form': next_form_class,
 				'financialsRegistered':True, 'LOM': request.session["yearCount"]}) #Redirect
 
-	form_class = financialsForm(numStockpiles=numStockpiles)
+	form_class = financialsForm(numStockpiles=numStockpiles, plantProducts=PPIDs)
 	return render(request, 'setup/financials.html', {'form': form_class })
 
 
@@ -887,15 +900,15 @@ def index10(request):
 			Fe2O3Iron = request.POST.get('Fe2O3Iron', '')
 			totalGrade = request.POST.get('totalGrade', '')
 			avgCommodity1Grade = request.POST.get('avgCommodity1Grade', '')
-			lumpRecovery = request.POST.get('lumpRecovery', '')
-			finesRecovery = request.POST.get('finesRecovery', '')
-			lumpGrade = request.POST.get('lumpGrade', '')
-			finesGrade = request.POST.get('finesGrade', '')
+			# lumpRecovery = request.POST.get('lumpRecovery', '')
+			# finesRecovery = request.POST.get('finesRecovery', '')
+			# lumpGrade = request.POST.get('lumpGrade', '')
+			# finesGrade = request.POST.get('finesGrade', '')
 			feedMoisture = request.POST.get('feedMoisture', '')
-			lumpMoisture = request.POST.get('lumpMoisture', '')
-			finesMoisture = request.POST.get('finesMoisture', '')
-			ultraFinesMoisture = request.POST.get('ultraFinesMoisture', '')
-			rejectsMoisture = request.POST.get('rejectsMoisture', '')
+			# lumpMoisture = request.POST.get('lumpMoisture', '')
+			# finesMoisture = request.POST.get('finesMoisture', '')
+			# ultraFinesMoisture = request.POST.get('ultraFinesMoisture', '')
+			# rejectsMoisture = request.POST.get('rejectsMoisture', '')
 			mineOpsDays = request.POST.get('mineOpsDays', '')
 			plantOpsDays = request.POST.get('plantOpsDays', '')
 			mineCapacity = request.POST.get('mineCapacity', '')
@@ -907,6 +920,24 @@ def index10(request):
 			discountRate5 = request.POST.get('discountRate5', '')
 			discountRate6 = request.POST.get('discountRate6', '')
 			exchangeRate = request.POST.get('exchangeRate', '')
+
+			if str(1) in PPIDs:
+				lumpRecovery = request.POST.get('lumpRecovery', '')
+				lumpGrade = request.POST.get('lumpGrade', '')
+				lumpMoisture = request.POST.get('lumpMoisture', '')
+			else:
+				lumpRecovery = None
+				lumpGrade = None
+				lumpMoisture = None
+
+			if str(2) in PPIDs:
+				finesRecovery = request.POST.get('finesRecovery', '')
+				finesGrade = request.POST.get('finesGrade', '')
+				finesMoisture = request.POST.get('finesMoisture', '')
+			else:
+				finesRecovery = None
+				finesGrade = None
+				finesMoisture = None
 
 			if str(3) in PPIDs:
 				ultraFinesRecovery = request.POST.get('ultraFinesRecovery', '')

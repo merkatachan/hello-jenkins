@@ -1,0 +1,166 @@
+{% include "home/header.html" %}
+{% load index %}
+{% load get_item %}
+{% load humanize %}
+
+	<div class="row">
+
+		<div class="col-sm-4">
+		</div>
+
+		<div class='col-sm-4'>
+			<br>
+			<br>
+
+			<form class="form-signup" role="form" action="{% url 'smelter:index' %}" method="POST">
+				<center>
+		        <h2 class="form-signup-heading">Smelter Terms:</h2>
+		        </center>
+		        <br>
+		        {% csrf_token %}
+
+<!-- 				<div class="table-responsive">
+					<table class="table table-condensed">
+					{{ form.as_table }}
+					</table>
+				</div> -->
+			
+			<br>
+			<br>
+
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+
+	</div>
+
+	<div class="table-responsive">
+
+	{% for curr in yearCount %}
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+					<th>Year {{ curr|add:"1" }} Penalties</th>
+					{% for comm in commNameList %}
+						<th>{{ comm }}</th>
+					{% endfor %}
+				</tr>
+			</thead>
+			<tbody>
+			{% if 1 in PPIDs %}
+				<tr>
+					<td>Lump Penalty</td>
+					{% for comm in commNameList %}
+					<td>
+						<!-- $<input id="id_year{{curr|add:'1'}}Lump{{comm}}Pen" name="year{{curr|add:'1'}}Lump{{comm}}Pen" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ lumpPenaltyVals|get_item:comm|index:curr}}"> -->
+						$ <input id="id_year{{curr|add:'1'}}Lump{{comm}}Pen" name="year{{curr|add:'1'}}Lump{{comm}}Pen" type="text" value="{{ lumpPenaltyVals|get_item:comm|index:curr|intcomma}}">
+					</td>
+					{% endfor %}
+				</tr>
+			{% endif %}
+			{% if 2 in PPIDs %}
+				<tr>
+					<td>Fines Penalty</td>
+					{% for comm in commNameList %}
+					<td>
+						<!-- $<input id="id_year{{curr|add:'1'}}Fines{{comm}}Pen" name="year{{curr|add:'1'}}Fines{{comm}}Pen" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ finesPenaltyVals|get_item:comm|index:curr}}"> -->
+						$ <input id="id_year{{curr|add:'1'}}Fines{{comm}}Pen" name="year{{curr|add:'1'}}Fines{{comm}}Pen" type="text" value="{{ finesPenaltyVals|get_item:comm|index:curr|intcomma}}">
+					</td>
+					{% endfor %}
+				</tr>
+			{% endif %}
+			{% if 3 in PPIDs %}
+				<tr>
+					<td>Ultra Fines Penalty</td>
+					{% for comm in commNameList %}
+					<td>
+						<!-- $<input id="id_year{{curr|add:'1'}}UltraFines{{comm}}Pen" name="year{{curr|add:'1'}}UltraFines{{comm}}Pen" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ ultraFinesPenaltyVals|get_item:comm|index:curr}}"> -->
+						$ <input id="id_year{{curr|add:'1'}}UltraFines{{comm}}Pen" name="year{{curr|add:'1'}}UltraFines{{comm}}Pen" type="text" value="{{ ultraFinesPenaltyVals|get_item:comm|index:curr|intcomma}}">
+					</td>
+					{% endfor %}
+				</tr>
+			{% endif %}
+			</tbody>
+		</table>
+	{% endfor %}
+
+	</div>
+
+	<div class="table-responsive">
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+					<th>Revenues</th>
+					{% for curr in yearCount %}
+                        <th>Year {{curr|add:"1"}}</th>
+                    {% endfor %}
+                    <th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% if 1 in PPIDs %}
+					<tr>
+						<td>Lump</td>
+						{% for curr in yearCount %}
+							<td>
+								<!-- $<input id="id_year{{ curr|add:'1' }}LumpRevenue" name="year{{ curr|add:'1' }}LumpRevenue" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ lumpRevenues|index:curr }}"> -->
+								$ <input id="id_year{{ curr|add:'1' }}LumpRevenue" name="year{{ curr|add:'1' }}LumpRevenue" type="text" value="{{ lumpRevenues|index:curr|intcomma }}">
+							</td>
+						{% endfor %}
+						<td>
+							<!-- $<input id="id_sumLumpRevenues" name="sumLumpRevenues" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ sumLumpRevenues }}"> -->
+							$ <input id="id_sumLumpRevenues" name="sumLumpRevenues" type="text" value="{{ sumLumpRevenues|intcomma }}">
+						</td>
+					</tr>
+				{% endif %}
+				{% if 2 in PPIDs %}
+					<tr>
+						<td>Fines</td>
+						{% for curr in yearCount %}
+							<td>
+								<!-- $<input id="id_year{{ curr|add:'1' }}FinesRevenue" name="year{{ curr|add:'1' }}FinesRevenue" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ finesRevenues|index:curr }}"> -->
+								$ <input id="id_year{{ curr|add:'1' }}FinesRevenue" name="year{{ curr|add:'1' }}FinesRevenue" type="text" value="{{ finesRevenues|index:curr|intcomma }}">
+							</td>
+						{% endfor %}
+						<td>
+							<!-- $<input id="id_sumFinesRevenues" name="sumFinesRevenues" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ sumFinesRevenues }}"> -->
+							$ <input id="id_sumFinesRevenues" name="sumFinesRevenues" type="text" value="{{ sumFinesRevenues|intcomma }}">
+						</td>
+					</tr>
+				{% endif %}
+				{% if 3 in PPIDs %}
+					<tr>
+						<td>Ultra Fines</td>
+						{% for curr in yearCount %}
+							<td>
+								<!-- $<input id="id_year{{ curr|add:'1' }}UltraFinesRevenue" name="year{{ curr|add:'1' }}UltraFinesRevenue" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ ultraFinesRevenues|index:curr }}"> -->
+								$ <input id="id_year{{ curr|add:'1' }}UltraFinesRevenue" name="year{{ curr|add:'1' }}UltraFinesRevenue" type="text" value="{{ ultraFinesRevenues|index:curr|intcomma }}">
+							</td>
+						{% endfor %}
+						<td>
+							<!-- $<input id="id_sumUltraFinesRevenues" name="sumUltraFinesRevenues" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ sumUltraFinesRevenues }}"> -->
+							$ <input id="id_sumUltraFinesRevenues" name="sumUltraFinesRevenues" type="text" value="{{ sumUltraFinesRevenues|intcomma }}">
+						</td>
+					</tr>
+				{% endif %}
+			</tbody>
+		</table>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4">
+		</div>
+
+		<div class="col-sm-4">
+            <center>
+            <button class="btn btn-group-lg btn-primary" type="button" onClick="location.href='{% url 'home:index' %}'">Cancel</button>
+            </form>
+            </center>
+		</div>
+
+		<div class="col-sm-4">
+		</div>
+	</div>
+
+{% include "home/footer.html" %}
