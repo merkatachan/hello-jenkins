@@ -138,11 +138,12 @@ def editProject(request):
 def editMinePlan(request):
 	mineID = request.session["mineID"]
 	latestProject = tblProject.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+	numStockpiles = latestProject.numStockpiles
 	LOM = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).count()
 
-	# Get list of Mine Product IDs
-	mineProductMatches = tblMineProduct.objects.filter(projectID=latestProject.projectID)
-	MPIDs = mineProductMatches.values_list('mineProductID', flat=True)
+	# # Get list of Mine Product IDs
+	# mineProductMatches = tblMineProduct.objects.filter(projectID=latestProject.projectID)
+	# MPIDs = mineProductMatches.values_list('mineProductID', flat=True)
 
 	# Get list of Commodity IDs
 	commodities = tblCommodity.objects.filter(projectID=latestProject.projectID)
@@ -153,122 +154,110 @@ def editMinePlan(request):
 		commodityMatch = tblCommodityList.objects.get(commodityID=ID)
 		commNameList.append(commodityMatch.name)
 
-	form_class = mineProductionForm(mineID=mineID, LOM=LOM, mineProducts=MPIDs, idList=idList, commNameList=commNameList)
+	form_class = mineProductionForm(LOM=LOM, numStockpiles=numStockpiles, idList=idList, commNameList=commNameList)
 	if request.method == 'POST':
-		form = mineProductionForm(request.POST, mineID=mineID, LOM=LOM, mineProducts=MPIDs, idList=idList, commNameList=commNameList)
+		form = mineProductionForm(request.POST, LOM=LOM, numStockpiles=numStockpiles, idList=idList, commNameList=commNameList)
 
 		if form.is_valid():
 			cleanData = form.cleaned_data
-			# Update tblMineProductTonnage and tblMineProductGrade entries
-			if 1 in MPIDs:
-				for i in range(LOM):
-					i += 1
-					tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=1, year=i)
-					tblMineProductTonnageObj.tonnage = float(cleanData["year{0}MinePlanHighGradeTonnage".format(i)])
+			dateAdded = timezone.localtime(timezone.now())
+
+			for curr in range(1, numStockpiles+1):
+				for year in range(1, LOM+1):
+					tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, stockpileID=curr, year=year)
+					tblMineProductTonnageObj.tonnage = float(cleanData["year{0}MinePlanStockpile{1}Tonnage".format(year, curr)])
+					tblMineProductTonnageObj.dateAdded = dateAdded
 					tblMineProductTonnageObj.save()
 
 				for i in range(len(commNameList)):
-					for year in range(LOM):
-						year += 1
-						tblMineProductGradeObj = tblMineProductGrade.objects.get(projectID=latestProject.projectID, mineProductID=1,
+					for year in range(1, LOM+1):
+						tblMineProductGradeObj = tblMineProductGrade.objects.get(projectID=latestProject.projectID, stockpileID=curr,
 							commodityID=idList[i], year=year)
-						tblMineProductGradeObj.grade = float(cleanData["year{0}MinePlanHGGrade{1}".format(year,commNameList[i])])
+						tblMineProductGradeObj.grade = float(cleanData["year{0}MinePlanSP{1}Grade{2}".format(year, curr, commNameList[i])])
+						tblMineProductGradeObj.dateAdded = dateAdded
 						tblMineProductGradeObj.save()
-
-			if 2 in MPIDs:
-				for i in range(LOM):
-					i += 1
-					tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=2, year=i)
-					tblMineProductTonnageObj.tonnage = float(cleanData["year{0}MinePlanLowGradeTonnage".format(i)])
-					tblMineProductTonnageObj.save()
-
-				for i in range(len(commNameList)):
-					for year in range(LOM):
-						year += 1
-						tblMineProductGradeObj = tblMineProductGrade.objects.get(projectID=latestProject.projectID, mineProductID=2,
-							commodityID=idList[i], year=year)
-						tblMineProductGradeObj.grade = float(cleanData["year{0}MinePlanLGGrade{1}".format(year,commNameList[i])])
-						tblMineProductGradeObj.save()
-
-			if 3 in MPIDs:
-				for i in range(LOM):
-					i += 1
-					tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=3, year=i)
-					tblMineProductTonnageObj.tonnage = float(cleanData["year{0}MinePlanWasteTonnage".format(i)])
-					tblMineProductTonnageObj.save()
-
-			if 4 in MPIDs:
-				for i in range(LOM):
-					i += 1
-					tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=4, year=i)
-					tblMineProductTonnageObj.tonnage = float(cleanData["year{0}MinePlanOverburdenTonnage".format(i)])
-					tblMineProductTonnageObj.save()
 
 			return render(request, 'settings/success.html', { }) #Redirect
 
 		return render(request, 'settings/mineProduction.html', {'form': form_class,
-			'LOM': LOM, 'mineProducts': MPIDs,
+			'LOM': LOM, 'numStockpiles': list(range(1, numStockpiles+1)),
 			'idList': idList, 'commNameList': commNameList})
 	else:
-		minePlanHGTonnages = None
-		minePlanLGTonnages = None
-		minePlanWasteTonnages = None
-		minePlanOverburdenTonnages = None
-		minePlanHGGrades = {}
-		minePlanLGGrades = {}
+		# minePlanHGTonnages = None
+		# minePlanLGTonnages = None
+		# minePlanWasteTonnages = None
+		# minePlanOverburdenTonnages = None
+		# minePlanHGGrades = {}
+		# minePlanLGGrades = {}
 
-		if 1 in MPIDs:
-			minePlanHGTonnages = []
-			for i in range(LOM):
-				i += 1
-				tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=1, year=i)
-				minePlanHGTonnages.append(tblMineProductTonnageObj.tonnage)
+		minePlanTonnages = {}
+		minePlanGrades = {}
 
-				for i in range(len(commNameList)):
-					tempGrades = []
-					for year in range(LOM):
-						year += 1
-						tblMineProductGradeObj = tblMineProductGrade.objects.get(projectID=latestProject.projectID, mineProductID=1,
-							commodityID=idList[i], year=year)
-						tempGrades.append(tblMineProductGradeObj.grade)
-					minePlanHGGrades[commNameList[i]] = tempGrades
+		for curr in range(1, numStockpiles+1):
+			minePlanTonnages[curr] = {}
+			for year in range(1, LOM+1):
+				tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, stockpileID=curr, year=year)
+				minePlanTonnages[curr][year] = tblMineProductTonnageObj.tonnage
 
-		if 2 in MPIDs:
-			minePlanLGTonnages = []
-			for i in range(LOM):
-				i += 1
-				tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=2, year=i)
-				minePlanLGTonnages.append(tblMineProductTonnageObj.tonnage)
+			minePlanGrades[curr] = {}
+			for i in range(len(commNameList)):
+				tempGrades = {}
+				for year in range(1, LOM+1):
+					tblMineProductGradeObj = tblMineProductGrade.objects.get(projectID=latestProject.projectID, stockpileID=curr,
+						commodityID=idList[i], year=year)
+					tempGrades[year] = tblMineProductGradeObj.grade
+				minePlanGrades[curr][commNameList[i]] = tempGrades
 
-				for i in range(len(commNameList)):
-					tempGrades = []
-					for year in range(LOM):
-						year += 1
-						tblMineProductGradeObj = tblMineProductGrade.objects.get(projectID=latestProject.projectID, mineProductID=2,
-							commodityID=idList[i], year=year)
-						tempGrades.append(tblMineProductGradeObj.grade)
-					minePlanLGGrades[commNameList[i]] = tempGrades
+		# if 1 in MPIDs:
+		# 	minePlanHGTonnages = []
+		# 	for i in range(LOM):
+		# 		i += 1
+		# 		tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=1, year=i)
+		# 		minePlanHGTonnages.append(tblMineProductTonnageObj.tonnage)
 
-		if 3 in MPIDs:
-			minePlanWasteTonnages = []
-			for i in range(LOM):
-				i += 1
-				tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=3, year=i)
-				minePlanWasteTonnages.append(tblMineProductTonnageObj.tonnage)
+		# 		for i in range(len(commNameList)):
+		# 			tempGrades = []
+		# 			for year in range(LOM):
+		# 				year += 1
+		# 				tblMineProductGradeObj = tblMineProductGrade.objects.get(projectID=latestProject.projectID, mineProductID=1,
+		# 					commodityID=idList[i], year=year)
+		# 				tempGrades.append(tblMineProductGradeObj.grade)
+		# 			minePlanHGGrades[commNameList[i]] = tempGrades
 
-		if 4 in MPIDs:
-			minePlanOverburdenTonnages = []
-			for i in range(LOM):
-				i += 1
-				tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=4, year=i)
-				minePlanOverburdenTonnages.append(tblMineProductTonnageObj.tonnage)
+		# if 2 in MPIDs:
+		# 	minePlanLGTonnages = []
+		# 	for i in range(LOM):
+		# 		i += 1
+		# 		tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=2, year=i)
+		# 		minePlanLGTonnages.append(tblMineProductTonnageObj.tonnage)
+
+		# 		for i in range(len(commNameList)):
+		# 			tempGrades = []
+		# 			for year in range(LOM):
+		# 				year += 1
+		# 				tblMineProductGradeObj = tblMineProductGrade.objects.get(projectID=latestProject.projectID, mineProductID=2,
+		# 					commodityID=idList[i], year=year)
+		# 				tempGrades.append(tblMineProductGradeObj.grade)
+		# 			minePlanLGGrades[commNameList[i]] = tempGrades
+
+		# if 3 in MPIDs:
+		# 	minePlanWasteTonnages = []
+		# 	for i in range(LOM):
+		# 		i += 1
+		# 		tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=3, year=i)
+		# 		minePlanWasteTonnages.append(tblMineProductTonnageObj.tonnage)
+
+		# if 4 in MPIDs:
+		# 	minePlanOverburdenTonnages = []
+		# 	for i in range(LOM):
+		# 		i += 1
+		# 		tblMineProductTonnageObj = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=4, year=i)
+		# 		minePlanOverburdenTonnages.append(tblMineProductTonnageObj.tonnage)
 
 		return render(request, 'settings/mineProduction.html', {'form': form_class,
-			'LOM': LOM, 'mineProducts': MPIDs,
+			'LOM': list(range(1,LOM+1)), 'numStockpiles': list(range(1, numStockpiles+1)),
 			'idList': idList, 'commNameList': commNameList,
-			'minePlanHGTonnages': minePlanHGTonnages, 'minePlanLGTonnages': minePlanLGTonnages,
-			'minePlanWasteTonnages': minePlanWasteTonnages, 'minePlanOverburdenTonnages': minePlanOverburdenTonnages,
-			'minePlanHGGrades': minePlanHGGrades, 'minePlanLGGrades': minePlanLGGrades}) #Redirect
+			'minePlanTonnages': minePlanTonnages, 'minePlanGrades': minePlanGrades}) #Redirect
 
 
 # Function editCAPEX handles CAPEX edits and updates by the user

@@ -1,5 +1,4 @@
 {% include "home/header.html" %}
-
 {% load index %}
 {% load get_item %}
 
@@ -19,8 +18,6 @@
 		        <br>
 		        {% csrf_token %}
 
-				<input type="hidden" value="{{ LOM }}" name="LOM" />
-
 		        <br>
 				<br>
 
@@ -36,47 +33,22 @@
     		<thead> 
     			<tr> 
     				<th>Mine Plan Tonnage</th>
-    				{% for i in "x"|rjust:LOM %}
-    					<th>Year {{ forloop.counter0|add:"1" }}</th>
+    				{% for year in LOM %}
+    					<th>Year {{ year }}</th>
     				{% endfor %}
     			</tr> 
     		</thead>
     		<tbody>
-            {% if 1 in mineProducts %}
-                <tr>
-                    <th>High Grade Ore</th>
-                    {% for i in "x"|rjust:LOM %}
-                        <td><input id="id_year{{ forloop.counter0|add:'1' }}MinePlanHighGradeTonnage" name="year{{ forloop.counter0|add:'1' }}MinePlanHighGradeTonnage" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ minePlanHGTonnages|index:forloop.counter0 }}" required=""></td>
-                    {% endfor %}
-                </tr>
-            {% endif %}
 
-            {% if 2 in mineProducts %}
+            {% for curr in numStockpiles %}
                 <tr>
-                    <th>Low Grade Ore</th>
-                    {% for i in "x"|rjust:LOM %}
-                        <td><input id="id_year{{ forloop.counter0|add:'1' }}MinePlanLowGradeTonnage" name="year{{ forloop.counter0|add:'1' }}MinePlanLowGradeTonnage" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ minePlanLGTonnages|index:forloop.counter0 }}" required=""></td>
+                    <th>Stockpile {{ curr }}</th>
+                    {% for year in LOM %}
+                        <td><input id="id_year{{ year }}MinePlanStockpile{{curr}}Tonnage" name="year{{ year }}MinePlanStockpile{{curr}}Tonnage" placeholder="Max 2 Decimals" step="0.01" type="number" value='{{ minePlanTonnages|get_item:curr|get_item:year }}' required=""></td>
                     {% endfor %}
                 </tr>
-            {% endif %}
+            {% endfor %}
 
-            {% if 3 in mineProducts %}
-                <tr>
-                    <th>Waste</th>
-                    {% for i in "x"|rjust:LOM %}
-                        <td><input id="id_year{{ forloop.counter0|add:'1' }}MinePlanWasteTonnage" name="year{{ forloop.counter0|add:'1' }}MinePlanWasteTonnage" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ minePlanWasteTonnages|index:forloop.counter0 }}" required=""></td>
-                    {% endfor %}
-                </tr>
-            {% endif %}
-
-            {% if 4 in mineProducts %}
-                <tr>
-                    <th>Overburden</th>
-                    {% for i in "x"|rjust:LOM %}
-                        <td><input id="id_year{{ forloop.counter0|add:'1' }}MinePlanOverburdenTonnage" name="year{{ forloop.counter0|add:'1' }}MinePlanOverburdenTonnage" placeholder="Max 2 Decimals" step="0.01" type="number" value="{{ minePlanOverburdenTonnages|index:forloop.counter0 }}" required=""></td>
-                    {% endfor %}
-                </tr>
-            {% endif %}    			
     		</tbody>
   		</table>
 
@@ -84,28 +56,24 @@
             <thead> 
                 <tr>
                     <th>Mine Plan Grade</th>
-                    {% for i in "x"|rjust:LOM %}
-                        <th>Year {{ forloop.counter0|add:"1" }}</th>
+                    {% for year in LOM %}
+                        <th>Year {{ year }}</th>
                     {% endfor %}
                 </tr> 
             </thead>
             <tbody>
-                {% for name in commNameList %}
-                    <tr>
-                        <th>High Grade {{ name }} (%)</th>
-                        {% for j in "x"|rjust:LOM %}
-                            <td><input id="id_year{{ forloop.counter0|add:'1' }}MinePlanHGGrade{{ name }}" name="year{{ forloop.counter0|add:'1' }}MinePlanHGGrade{{ name }}" placeholder="Max 6 Decimals" step="0.000001" value="{{ minePlanHGGrades|get_item:name|index:forloop.counter0 }}" type="number" required=""></td>
-                        {% endfor %}
-                    </tr>
+
+                {% for curr in numStockpiles %}
+                    {% for name in commNameList %}
+                        <tr>
+                            <th>Stockpile {{ curr }} {{ name }} (%)</th>
+                            {% for year in LOM %}
+                                <td><input id="id_year{{ year }}MinePlanSP{{ curr }}Grade{{ name }}" name="year{{ year }}MinePlanSP{{ curr }}Grade{{ name }}" placeholder="Max 6 Decimals" step="0.000001" type="number" value="{{ minePlanGrades|get_item:curr|get_item:name|get_item:year }}" required=""></td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
-                {% for name in commNameList %}
-                    <tr>
-                        <th>Low Grade {{ name }} (%)</th>
-                        {% for j in "x"|rjust:LOM %}
-                            <td><input id="id_year{{ forloop.counter0|add:'1' }}MinePlanLGGrade{{ name }}" name="year{{ forloop.counter0|add:'1' }}MinePlanLGGrade{{ name }}" placeholder="Max 6 Decimals" step="0.000001" value="{{ minePlanLGGrades|get_item:name|index:forloop.counter0 }}" type="number" required=""></td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
+
             </tbody>
         </table>
 	</div>

@@ -282,72 +282,92 @@ class productsForm(forms.Form):
 
 class mineProductionForm(forms.Form):
 	def __init__(self, *args, **kwargs):
-		mineID = kwargs.pop('mineID')
 		LOM = kwargs.pop('LOM')
-		MPIDs = kwargs.pop('mineProducts')
+		numStockpiles = kwargs.pop('numStockpiles')
 		idList = kwargs.pop('idList')
 		commNameList = kwargs.pop('commNameList')
 		super(mineProductionForm, self).__init__(*args, **kwargs)
 
-		latestProject = tblProject.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
-		LOM = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).count()
-
-		# Get list of Mine Product IDs
-		mineProductMatches = tblMineProduct.objects.filter(projectID=latestProject.projectID)
-		MPIDs = mineProductMatches.values_list('mineProductID', flat=True)
-
-		# Get list of Commodity IDs
-		commodities = tblCommodity.objects.filter(projectID=latestProject.projectID)
-		idList = commodities.values_list('commodityID', flat=True)
-
-		commNameList = []
-		for ID in idList:
-			commodityMatch = tblCommodityList.objects.get(commodityID=ID)
-			commNameList.append(commodityMatch.name)
-
-		if 1 in MPIDs:
+		for curr in range(1, numStockpiles+1):
 			for i in range(int(LOM)):
 				i += 1
-				# currEntry = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=1, year=i)
-				self.fields["year{0}MinePlanHighGradeTonnage".format(i)] = forms.DecimalField(required=True, 
-					label="Year{0} Mine Plan High Grade Tonnage".format(i), decimal_places=2, max_digits=20,
+				self.fields["year{0}MinePlanStockpile{1}Tonnage".format(i, curr)] = forms.DecimalField(required=True, 
+					label="Year{0} Mine Plan Stockpile {1} Tonnage".format(i, curr), decimal_places=2, max_digits=20,
 					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
 				for j in range(len(idList)):
-					# currEntry = tblMineProductGrade.objects.get(projectID=latestProject.projectID, mineProductID=1,
-					# 		commodityID=idList[j], year=i)
-					self.fields["year{0}MinePlanHGGrade{1}".format(i, commNameList[j])] = forms.DecimalField(required=True, 
-						label="Year{0} Mine Plan High Grade {1} %".format(i, commNameList[j]), decimal_places=6, max_digits=20,
+					self.fields["year{0}MinePlanSP{1}Grade{2}".format(i, curr, commNameList[j])] = forms.DecimalField(required=True, 
+						label="Year{0} Mine Plan Stockpile {1} Grade {2} %".format(i, curr, commNameList[j]), decimal_places=6, max_digits=20,
 						widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
 
-		if 2 in MPIDs:
-			for i in range(int(LOM)):
-				i += 1
-				# currEntry = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=2, year=i)
-				self.fields["year{0}MinePlanLowGradeTonnage".format(i)] = forms.DecimalField(required=True, 
-					label="Year{0} Mine Plan Low Grade Tonnage".format(i), decimal_places=2, max_digits=20,
-					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-				for j in range(len(idList)):
-					# currEntry = tblMineProductGrade.objects.get(projectID=latestProject.projectID, mineProductID=2,
-					# 		commodityID=idList[j], year=i)
-					self.fields["year{0}MinePlanLGGrade{1}".format(i, commNameList[j])] = forms.DecimalField(required=True, 
-						label="Year{0} Mine Plan Low Grade {1} %".format(i, commNameList[j]), decimal_places=6, max_digits=20,
-						widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
 
-		if 3 in MPIDs:
-			for i in range(int(LOM)):
-				i += 1
-				# currEntry = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=3, year=i)
-				self.fields["year{0}MinePlanWasteTonnage".format(i)] = forms.DecimalField(required=True, 
-					label="Year{0} Mine Plan Waste Tonnage".format(i), decimal_places=2, max_digits=20,
-					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# class mineProductionForm(forms.Form):
+# 	def __init__(self, *args, **kwargs):
+# 		mineID = kwargs.pop('mineID')
+# 		LOM = kwargs.pop('LOM')
+# 		MPIDs = kwargs.pop('mineProducts')
+# 		idList = kwargs.pop('idList')
+# 		commNameList = kwargs.pop('commNameList')
+# 		super(mineProductionForm, self).__init__(*args, **kwargs)
 
-		if 4 in MPIDs:
-			for i in range(int(LOM)):
-				i += 1
-				# currEntry = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=4, year=i)
-				self.fields["year{0}MinePlanOverburdenTonnage".format(i)] = forms.DecimalField(required=True, 
-					label="Year{0} Mine Plan Overburden Tonnage".format(i), decimal_places=2, max_digits=20,
-					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 		latestProject = tblProject.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+# 		LOM = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).count()
+
+# 		# Get list of Mine Product IDs
+# 		mineProductMatches = tblMineProduct.objects.filter(projectID=latestProject.projectID)
+# 		MPIDs = mineProductMatches.values_list('mineProductID', flat=True)
+
+# 		# Get list of Commodity IDs
+# 		commodities = tblCommodity.objects.filter(projectID=latestProject.projectID)
+# 		idList = commodities.values_list('commodityID', flat=True)
+
+# 		commNameList = []
+# 		for ID in idList:
+# 			commodityMatch = tblCommodityList.objects.get(commodityID=ID)
+# 			commNameList.append(commodityMatch.name)
+
+# 		if 1 in MPIDs:
+# 			for i in range(int(LOM)):
+# 				i += 1
+# 				# currEntry = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=1, year=i)
+# 				self.fields["year{0}MinePlanHighGradeTonnage".format(i)] = forms.DecimalField(required=True, 
+# 					label="Year{0} Mine Plan High Grade Tonnage".format(i), decimal_places=2, max_digits=20,
+# 					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 				for j in range(len(idList)):
+# 					# currEntry = tblMineProductGrade.objects.get(projectID=latestProject.projectID, mineProductID=1,
+# 					# 		commodityID=idList[j], year=i)
+# 					self.fields["year{0}MinePlanHGGrade{1}".format(i, commNameList[j])] = forms.DecimalField(required=True, 
+# 						label="Year{0} Mine Plan High Grade {1} %".format(i, commNameList[j]), decimal_places=6, max_digits=20,
+# 						widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
+
+# 		if 2 in MPIDs:
+# 			for i in range(int(LOM)):
+# 				i += 1
+# 				# currEntry = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=2, year=i)
+# 				self.fields["year{0}MinePlanLowGradeTonnage".format(i)] = forms.DecimalField(required=True, 
+# 					label="Year{0} Mine Plan Low Grade Tonnage".format(i), decimal_places=2, max_digits=20,
+# 					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 				for j in range(len(idList)):
+# 					# currEntry = tblMineProductGrade.objects.get(projectID=latestProject.projectID, mineProductID=2,
+# 					# 		commodityID=idList[j], year=i)
+# 					self.fields["year{0}MinePlanLGGrade{1}".format(i, commNameList[j])] = forms.DecimalField(required=True, 
+# 						label="Year{0} Mine Plan Low Grade {1} %".format(i, commNameList[j]), decimal_places=6, max_digits=20,
+# 						widget=forms.NumberInput(attrs={'placeholder': 'Max 6 Decimal Places'}))
+
+# 		if 3 in MPIDs:
+# 			for i in range(int(LOM)):
+# 				i += 1
+# 				# currEntry = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=3, year=i)
+# 				self.fields["year{0}MinePlanWasteTonnage".format(i)] = forms.DecimalField(required=True, 
+# 					label="Year{0} Mine Plan Waste Tonnage".format(i), decimal_places=2, max_digits=20,
+# 					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+# 		if 4 in MPIDs:
+# 			for i in range(int(LOM)):
+# 				i += 1
+# 				# currEntry = tblMineProductTonnage.objects.get(projectID=latestProject.projectID, mineProductID=4, year=i)
+# 				self.fields["year{0}MinePlanOverburdenTonnage".format(i)] = forms.DecimalField(required=True, 
+# 					label="Year{0} Mine Plan Overburden Tonnage".format(i), decimal_places=2, max_digits=20,
+# 					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
 
 
 class CAPEXForm(forms.Form):
