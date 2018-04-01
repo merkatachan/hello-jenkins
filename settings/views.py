@@ -524,19 +524,33 @@ def editOPEX(request):
 
 # Function index6 handles Smelter Term declarations
 def editSmelter(request):
-	form_class = smelterForm
-	mineID = request.session["mineID"]
-	latestCommodity = tblCommodity.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
-	timestamp = latestCommodity.dateAdded
-	commodityMatches = tblCommodity.objects.filter(mineID=int(mineID), dateAdded=timestamp)
+	# form_class = smelterForm
+	# mineID = request.session["mineID"]
+	# latestCommodity = tblCommodity.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+	# timestamp = latestCommodity.dateAdded
+	# commodityMatches = tblCommodity.objects.filter(mineID=int(mineID), dateAdded=timestamp)
 
-	idList = []
+	# idList = []
+	# commNameList = []
+	# tempIDs = commodityMatches.values_list('commodityID', flat=True)
+	# for match in tempIDs:
+	# 	idList.append(match)
+	# 	nameMatch = tblCommodityList.objects.get(commodityID=match)
+	# 	commNameList.append(nameMatch.name)
+
+	mineID = request.session["mineID"]
+	latestProject = tblProject.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+	numStockpiles = latestProject.numStockpiles
+	LOM = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).count()
+
+	# Get list of Commodity IDs
+	commodities = tblCommodity.objects.filter(projectID=latestProject.projectID)
+	idList = commodities.values_list('commodityID', flat=True)
+
 	commNameList = []
-	tempIDs = commodityMatches.values_list('commodityID', flat=True)
-	for match in tempIDs:
-		idList.append(match)
-		nameMatch = tblCommodityList.objects.get(commodityID=match)
-		commNameList.append(nameMatch.name)	
+	for ID in idList:
+		commodityMatch = tblCommodityList.objects.get(commodityID=ID)
+		commNameList.append(commodityMatch.name)
 
 	if request.method == 'POST':
 		# mineID = request.session["mineID"]
@@ -552,87 +566,30 @@ def editSmelter(request):
 		# 	nameMatch = tblCommodityList.objects.get(commodityID=match)
 		# 	commNameList.append(nameMatch.name)
 
-		form = smelterForm(request.POST, idList=idList, nameList=commNameList)
+		form = smelterForm(request.POST, idList=idList, nameList=commNameList, numStockpiles=numStockpiles)
 		if form.is_valid():
-			mineMatch = tblMine.objects.get(mineID=int(mineID))
+			cleanData = form.cleaned_data
 			dateAdded = timezone.localtime(timezone.now())
 
-			for i in range(len(idList)):
-				commodityID = tblCommodityList.objects.get(commodityID=tempIDs[i])
-				LGMinGrade = request.POST.get("LGMinGrade{0}".format(idList[i]), '')
-				LGMaxGrade = request.POST.get("LGMaxGrade{0}".format(idList[i]), '')
-				LGMinPenalty = request.POST.get("LGMinPenalty{0}".format(idList[i]), '')
-				LGMaxPenalty = request.POST.get("LGMaxPenalty{0}".format(idList[i]), '')
-				LGMinMaxPenalty = request.POST.get("LGMinMaxPenalty{0}".format(idList[i]), '')
-				LGPremium = request.POST.get("LGPremium{0}".format(idList[i]), '')
-				HGMinGrade = request.POST.get("HGMinGrade{0}".format(idList[i]), '')
-				HGMaxGrade = request.POST.get("HGMaxGrade{0}".format(idList[i]), '')
-				HGMinPenalty = request.POST.get("HGMinPenalty{0}".format(idList[i]), '')
-				HGMaxPenalty = request.POST.get("HGMaxPenalty{0}".format(idList[i]), '')
-				HGMinMaxPenalty = request.POST.get("HGMinMaxPenalty{0}".format(idList[i]), '')
-				HGPremium = request.POST.get("HGPremium{0}".format(idList[i]), '')
-				increments = request.POST.get("increments{0}".format(idList[i]), '')
-				# LGPFMinGrade = request.POST.get("LGPlantMinGrade{0}".format(idList[i]), '')
-				# LGPFMinPenalty = request.POST.get("LGPlantMinPenalty{0}".format(idList[i]), '')
-				# HGPFMinGrade = request.POST.get("HGPlantMinGrade{0}".format(idList[i]), '')
-				# HGPFMinPenalty = request.POST.get("HGPlantMinPenalty{0}".format(idList[i]), '')
+			for curr in range(1, numStockpiles+1):
+				for i in range(len(idList)):
+					currSmelter = tblSmelterTerms.objects.get(projectID=latestProject.projectID, stockpileID=curr, commodityID=idList[i])
+					currSmelter.minGrade = float(cleanData["Stockpile{0}MinGrade{1}".format(curr,idList[i])])
+					currSmelter.maxGrade = float(cleanData["Stockpile{0}MaxGrade{1}".format(curr,idList[i])])
+					currSmelter.minPenalty = float(cleanData["Stockpile{0}MinPenalty{1}".format(curr,idList[i])])
+					currSmelter.maxPenalty = float(cleanData["Stockpile{0}MaxPenalty{1}".format(curr,idList[i])])
+					currSmelter.minMaxPenalty = float(cleanData["Stockpile{0}MinMaxPenalty{1}".format(curr,idList[i])])
+					currSmelter.premium = float(cleanData["Stockpile{0}Premium{1}".format(curr,idList[i])])
+					currSmelter.increments = float(cleanData["Stockpile{0}Increments{1}".format(curr,idList[i])])
+					currSmelter.dateAdded = dateAdded
+					currSmelter.save()
 
-				tblSmelterTermsObj = tblSmelterTerms(mineID=mineMatch, commodityID=commodityID,
-					LGMinGrade=LGMinGrade, LGMaxGrade=LGMaxGrade, LGMinPenalty=LGMinPenalty,
-					LGMaxPenalty=LGMaxPenalty, LGMinMaxPenalty=LGMinMaxPenalty,
-					LGPremium=LGPremium, HGMinGrade=HGMinGrade, HGMaxGrade=HGMaxGrade,
-					HGMinPenalty=HGMinPenalty, HGMaxPenalty=HGMaxPenalty, HGMinMaxPenalty=HGMinMaxPenalty,
-					HGPremium=HGPremium, increments=increments, LGPFMinGrade=LGPFMinGrade,
-					LGPFMinPenalty=LGPFMinPenalty, HGPFMinGrade=HGPFMinGrade, HGPFMinPenalty=HGPFMinPenalty,
-					dateAdded=dateAdded)
-				tblSmelterTermsObj.save()
+		# form = smelterForm(request.POST, idList=idList, nameList=commNameList)
+		# if form.is_valid():
+		# 	mineMatch = tblMine.objects.get(mineID=int(mineID))
+		# 	dateAdded = timezone.localtime(timezone.now())
 
-			# Load up the Financials form
-			# next_form = financialsForm
-			# return render(request, 'settings/prices.html', {'form': next_form,
-				# 'smelterRegistered': True})
-			return render (request, 'settings/success.html', {})
-
-		return render(request, 'settings/smelter.html', {'form': form_class, 'idList': idList, 'nameList': commNameList })		
-	else:
-		# latestCommodity = tblCommodity.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
-		# timestamp = latestCommodity.dateAdded
-		# commodityMatches = tblCommodity.objects.filter(mineID=int(mineID), dateAdded=timestamp)
-
-		# idList = []
-		# commNameList = []
-		# tempIDs = commodityMatches.values_list('commodityID', flat=True)
-		LGMinGrade = []
-		LGMaxGrade = []
-		LGMinPenalty = []
-		LGMaxPenalty = []
-		LGMinMaxPenalty = []
-		LGPremium = []
-		HGMinGrade = []
-		HGMaxGrade = []
-		HGMinPenalty = []
-		HGMaxPenalty = []
-		HGMinMaxPenalty = []
-		HGPremium = []
-		increments = []
-
-		for ID in idList:
-			smelterEntry = tblSmelterTerms.objects.filter(mineID=mineID, commodityID=ID).order_by('-dateAdded')[0]
-			LGMinGrade.append(smelterEntry.LGMinGrade)
-			LGMaxGrade.append(smelterEntry.LGMaxGrade)
-			LGMinPenalty.append(smelterEntry.LGMinPenalty)
-			LGMaxPenalty.append(smelterEntry.LGMaxPenalty)
-			LGMinMaxPenalty.append(smelterEntry.LGMinMaxPenalty)
-			LGPremium.append(smelterEntry.LGPremium)
-			HGMinGrade.append(smelterEntry.HGMinGrade)
-			HGMaxGrade.append(smelterEntry.HGMaxGrade)
-			HGMinPenalty.append(smelterEntry.HGMinPenalty)
-			HGMaxPenalty.append(smelterEntry.HGMaxPenalty)
-			HGMinMaxPenalty.append(smelterEntry.HGMinMaxPenalty)
-			HGPremium.append(smelterEntry.HGPremium)
-			increments.append(smelterEntry.increments)
-		
-		# for i in range(len(idList)):
+		# 	for i in range(len(idList)):
 		# 		commodityID = tblCommodityList.objects.get(commodityID=tempIDs[i])
 		# 		LGMinGrade = request.POST.get("LGMinGrade{0}".format(idList[i]), '')
 		# 		LGMaxGrade = request.POST.get("LGMaxGrade{0}".format(idList[i]), '')
@@ -647,13 +604,62 @@ def editSmelter(request):
 		# 		HGMinMaxPenalty = request.POST.get("HGMinMaxPenalty{0}".format(idList[i]), '')
 		# 		HGPremium = request.POST.get("HGPremium{0}".format(idList[i]), '')
 		# 		increments = request.POST.get("increments{0}".format(idList[i]), '')
-		
-		return render (request, "settings/smelter.html", {'form': form_class, 'idList': idList, 'nameList': commNameList, 'LGMinGrade': LGMinGrade,
-				'LGMaxGrade': LGMaxGrade, 'LGMinPenalty': LGMinPenalty, 'LGMaxPenalty': LGMaxPenalty, 'LGMinMaxPenalty': LGMinMaxPenalty, 
-				'LGPremium': LGPremium, 'HGMinGrade': HGMinGrade,
-				'HGMaxGrade': HGMaxGrade, 'HGMinPenalty': HGMinPenalty, 'HGMaxPenalty': HGMaxPenalty, 'HGMinMaxPenalty': HGMinMaxPenalty, 
-				'HGPremium': LGPremium, 'increments': increments})
+		# 		# LGPFMinGrade = request.POST.get("LGPlantMinGrade{0}".format(idList[i]), '')
+		# 		# LGPFMinPenalty = request.POST.get("LGPlantMinPenalty{0}".format(idList[i]), '')
+		# 		# HGPFMinGrade = request.POST.get("HGPlantMinGrade{0}".format(idList[i]), '')
+		# 		# HGPFMinPenalty = request.POST.get("HGPlantMinPenalty{0}".format(idList[i]), '')
 
+		# 		tblSmelterTermsObj = tblSmelterTerms(mineID=mineMatch, commodityID=commodityID,
+		# 			LGMinGrade=LGMinGrade, LGMaxGrade=LGMaxGrade, LGMinPenalty=LGMinPenalty,
+		# 			LGMaxPenalty=LGMaxPenalty, LGMinMaxPenalty=LGMinMaxPenalty,
+		# 			LGPremium=LGPremium, HGMinGrade=HGMinGrade, HGMaxGrade=HGMaxGrade,
+		# 			HGMinPenalty=HGMinPenalty, HGMaxPenalty=HGMaxPenalty, HGMinMaxPenalty=HGMinMaxPenalty,
+		# 			HGPremium=HGPremium, increments=increments, LGPFMinGrade=LGPFMinGrade,
+		# 			LGPFMinPenalty=LGPFMinPenalty, HGPFMinGrade=HGPFMinGrade, HGPFMinPenalty=HGPFMinPenalty,
+		# 			dateAdded=dateAdded)
+		# 		tblSmelterTermsObj.save()
+
+			# Load up the Financials form
+			# next_form = financialsForm
+			# return render(request, 'settings/prices.html', {'form': next_form,
+				# 'smelterRegistered': True})
+			return render (request, 'settings/success.html', {})
+
+		return render(request, 'settings/smelter.html', {'form': form_class, 'idList': idList, 'nameList': commNameList })		
+	else:
+		minGrades = {}
+		maxGrades = {}
+		minPenalties = {}
+		maxPenalties = {}
+		minMaxPenalties = {}
+		premiums = {}
+		increments = {}
+
+		for curr in range(1, numStockpiles+1):
+			minGrades[curr] = {}
+			maxGrades[curr] = {}
+			minPenalties[curr] = {}
+			maxPenalties[curr] = {}
+			minMaxPenalties[curr] = {}
+			premiums[curr] = {}
+			increments[curr] = {}
+  
+			for i in range(len(idList)):
+				currSmelter = tblSmelterTerms.objects.get(projectID=latestProject.projectID, stockpileID=curr, commodityID=idList[i])
+				minGrades[curr][idList[i]] = currSmelter.minGrade
+				maxGrades[curr][idList[i]] = currSmelter.maxGrade
+				minPenalties[curr][idList[i]] = currSmelter.minPenalty
+				maxPenalties[curr][idList[i]] = currSmelter.maxPenalty
+				minMaxPenalties[curr][idList[i]] = currSmelter.minMaxPenalty
+				premiums[curr][idList[i]] = currSmelter.premium
+				increments[curr][idList[i]] = currSmelter.increments
+
+		form = smelterForm(idList=idList, nameList=commNameList, numStockpiles=numStockpiles)
+		
+		return render (request, "settings/smelter.html", {'form': form, 'idList': idList, 'nameList': commNameList,
+			'numStockpiles': list(range(1, numStockpiles+1)),
+			'minGrades': minGrades, 'maxGrades': maxGrades, 'minPenalties': minPenalties, 'maxPenalties': maxPenalties,
+			'minMaxPenalties': minMaxPenalties, 'premiums': premiums, 'increments': increments})
 
 def editPrices(request):
 	mineID = request.session["mineID"]

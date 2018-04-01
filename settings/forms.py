@@ -535,57 +535,102 @@ class OPEXForm(forms.Form):
 	        		decimal_places=2, max_digits=20,
 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
 
+# class smelterForm(forms.Form):
+# 	def __init__(self, *args, **kwargs):
+# 		idList = kwargs.pop('idList')
+# 		nameList = kwargs.pop('nameList')
+# 		super(smelterForm, self).__init__(*args, **kwargs)
+
+# 		for i in range(len(idList)):
+# 	        	self.fields["LGMinGrade{0}".format(idList[i])] = forms.DecimalField(required=True,
+# 	        		label=nameList[i] + " Low Grade Min Grade",
+# 	        		decimal_places=2, max_digits=20,
+# 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 	        	self.fields["LGMaxGrade{0}".format(idList[i])] = forms.DecimalField(required=True,
+# 	        		label=nameList[i] + " Low Grade Max Grade",
+# 	        		decimal_places=2, max_digits=20,
+# 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 	        	self.fields["LGMinPenalty{0}".format(idList[i])] = forms.DecimalField(required=True,
+# 	        		label=nameList[i] + " Low Grade Min Penalty",
+# 	        		decimal_places=2, max_digits=20,
+# 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 	        	self.fields["LGMaxPenalty{0}".format(idList[i])] = forms.DecimalField(required=True,
+# 	        		label=nameList[i] + " Low Grade Max Penalty",
+# 	        		decimal_places=2, max_digits=20,
+# 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 	        	self.fields["LGPremium{0}".format(idList[i])] = forms.DecimalField(required=True,
+# 	        		label=nameList[i] + " Low Grade Premium",
+# 	        		decimal_places=2, max_digits=20,
+# 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 	        	self.fields["HGMinGrade{0}".format(idList[i])] = forms.DecimalField(required=True,
+# 	        		label=nameList[i] + " High Grade Min Grade",
+# 	        		decimal_places=2, max_digits=20,
+# 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 	        	self.fields["HGMaxGrade{0}".format(idList[i])] = forms.DecimalField(required=True,
+# 	        		label=nameList[i] + " High Grade Max Grade",
+# 	        		decimal_places=2, max_digits=20,
+# 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 	        	self.fields["HGMinPenalty{0}".format(idList[i])] = forms.DecimalField(required=True,
+# 	        		label=nameList[i] + " High Grade Min Penalty",
+# 	        		decimal_places=2, max_digits=20,
+# 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 	        	self.fields["HGMaxPenalty{0}".format(idList[i])] = forms.DecimalField(required=True,
+# 	        		label=nameList[i] + " High Grade Max Penalty",
+# 	        		decimal_places=2, max_digits=20,
+# 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 	        	self.fields["HGPremium{0}".format(idList[i])] = forms.DecimalField(required=True,
+# 	        		label=nameList[i] + " High Grade Premium",
+# 	        		decimal_places=2, max_digits=20,
+# 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+# 	        	self.fields["increments{0}".format(idList[i])] = forms.DecimalField(required=True,
+# 	        		label=nameList[i] + " Increments",
+# 	        		decimal_places=2, max_digits=20,
+# 	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+
+
 class smelterForm(forms.Form):
 	def __init__(self, *args, **kwargs):
 		idList = kwargs.pop('idList')
 		nameList = kwargs.pop('nameList')
+		numStockpiles = kwargs.pop('numStockpiles')
 		super(smelterForm, self).__init__(*args, **kwargs)
 
-		for i in range(len(idList)):
-	        	self.fields["LGMinGrade{0}".format(idList[i])] = forms.DecimalField(required=True,
-	        		label=nameList[i] + " Low Grade Min Grade",
-	        		decimal_places=2, max_digits=20,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-	        	self.fields["LGMaxGrade{0}".format(idList[i])] = forms.DecimalField(required=True,
-	        		label=nameList[i] + " Low Grade Max Grade",
-	        		decimal_places=2, max_digits=20,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-	        	self.fields["LGMinPenalty{0}".format(idList[i])] = forms.DecimalField(required=True,
-	        		label=nameList[i] + " Low Grade Min Penalty",
-	        		decimal_places=2, max_digits=20,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-	        	self.fields["LGMaxPenalty{0}".format(idList[i])] = forms.DecimalField(required=True,
-	        		label=nameList[i] + " Low Grade Max Penalty",
-	        		decimal_places=2, max_digits=20,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-	        	self.fields["LGPremium{0}".format(idList[i])] = forms.DecimalField(required=True,
-	        		label=nameList[i] + " Low Grade Premium",
-	        		decimal_places=2, max_digits=20,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-	        	self.fields["HGMinGrade{0}".format(idList[i])] = forms.DecimalField(required=True,
-	        		label=nameList[i] + " High Grade Min Grade",
-	        		decimal_places=2, max_digits=20,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-	        	self.fields["HGMaxGrade{0}".format(idList[i])] = forms.DecimalField(required=True,
-	        		label=nameList[i] + " High Grade Max Grade",
-	        		decimal_places=2, max_digits=20,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-	        	self.fields["HGMinPenalty{0}".format(idList[i])] = forms.DecimalField(required=True,
-	        		label=nameList[i] + " High Grade Min Penalty",
-	        		decimal_places=2, max_digits=20,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-	        	self.fields["HGMaxPenalty{0}".format(idList[i])] = forms.DecimalField(required=True,
-	        		label=nameList[i] + " High Grade Max Penalty",
-	        		decimal_places=2, max_digits=20,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-	        	self.fields["HGPremium{0}".format(idList[i])] = forms.DecimalField(required=True,
-	        		label=nameList[i] + " High Grade Premium",
-	        		decimal_places=2, max_digits=20,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
-	        	self.fields["increments{0}".format(idList[i])] = forms.DecimalField(required=True,
-	        		label=nameList[i] + " Increments",
-	        		decimal_places=2, max_digits=20,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+		for curr in range(1, numStockpiles+1):
+			for i in range(len(idList)):
+				self.fields["Stockpile{0}MinGrade{1}".format(curr,idList[i])] = forms.DecimalField(required=True,
+					label=nameList[i] + " Stockpile {0} Min Grade %".format(curr),
+					decimal_places=2, max_digits=20, 
+					widget=forms.NumberInput(attrs={'placeholder': 'Between 0-100%'}))
+				self.fields["Stockpile{0}MaxGrade{1}".format(curr,idList[i])] = forms.DecimalField(required=True,
+					label=nameList[i] + " Stockpile {0} Max Grade %".format(curr),
+					decimal_places=2, max_digits=20, 
+					widget=forms.NumberInput(attrs={'placeholder': 'Between 0-100%'}))
+				self.fields["Stockpile{0}MinPenalty{1}".format(curr,idList[i])] = forms.DecimalField(required=True,
+					label=nameList[i] + " Stockpile {0} Min Penalty".format(curr),
+					decimal_places=2, max_digits=20,
+					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+				self.fields["Stockpile{0}MaxPenalty{1}".format(curr,idList[i])] = forms.DecimalField(required=True,
+					label=nameList[i] + " Stockpile {0} Max Penalty".format(curr),
+					decimal_places=2, max_digits=20,
+					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+				self.fields["Stockpile{0}MinMaxPenalty{1}".format(curr,idList[i])] = forms.DecimalField(required=True,
+					label=nameList[i] + " Stockpile {0} Penalty Between Min and Max".format(curr),
+					decimal_places=2, max_digits=20,
+					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+				self.fields["Stockpile{0}Premium{1}".format(curr,idList[i])] = forms.DecimalField(required=True,
+					label=nameList[i] + " Stockpile {0} Premium".format(curr),
+					decimal_places=2, max_digits=20,
+					widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+				self.fields["Stockpile{0}Increments{1}".format(curr,idList[i])] = forms.DecimalField(required=True,
+					label=nameList[i] + " Stockpile {0} Increments %".format(curr),
+					decimal_places=2, max_digits=20,
+					widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 2 Decimal Places'}))
+
+		# for i in range(len(idList)):
+		# 	self.fields["Increments{0}".format(idList[i])] = forms.DecimalField(required=True,
+		# 		label=nameList[i] + " Stockpile {0} Increments %".format(curr),
+		# 		decimal_places=2, max_digits=20,
+		# 		widget=forms.NumberInput(attrs={'placeholder': '1-100%, Max 2 Decimal Places'}))
 
 
 # class priceForm(forms.Form):
