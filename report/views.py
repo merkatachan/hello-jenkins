@@ -2249,6 +2249,7 @@ def reportDL(request):
 		reportRowCount = request.session['reportRowCount']
 		for i in range(1, reportRowCount+1):
 			writer.writerow(request.session['reportRow{0}'.format(i)])
+			del request.session['reportRow{0}'.format(i)]
 
 		return response
 
