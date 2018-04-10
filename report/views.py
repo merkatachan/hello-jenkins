@@ -38,8 +38,6 @@ def index(request):
 	mineID = request.session["mineID"]
 	mineMatch = tblMine.objects.get(mineID=int(mineID))
 
-	form_class = filterForm(mineID=mineID)
-
 	# Check project exists
 	projectsList  = tblProject.objects.filter(mineID=mineID)
 	if not projectsList:
@@ -2235,7 +2233,9 @@ def index(request):
 
 		# request.session['reportRowCount'] = reportRowCount
 
-		request.session['reportData'] = reportData
+		# request.session['reportData'] = reportData
+
+		form_class = filterForm(mineID=mineID, reportData=reportData)
 
 	return render(request, 'report/report.html', {'form': form_class, 'yearVals': yearVals, 'fullYearVals': fullYearVals, 'commIDs': commIDs, 'commNameList': commNameList,
 		'numStockpiles': list(range(1, numStockpiles+1)),
@@ -2410,6 +2410,7 @@ def index(request):
 
 def reportDL(request):
 	if request.method == 'POST':
+		mineID = request.session["mineID"]
 		response = HttpResponse(content_type='text/csv')
 		response['Content-Disposition'] = 'attachment; filename="report.csv"; newline=""'
 
@@ -2420,10 +2421,15 @@ def reportDL(request):
 		# writer.writerow(['Second row', 'A', 'B', 234, '"Testing"', "Here's a quote"])
 		# writer.writerow(['This,row,splits,by,commas'])
 
-		reportRows = request.session['reportData'].split(';')
+		form = filterForm(request.POST, mineID=mineID, reportData=None)
+		if form.is_valid():
+			cleanData = form.cleaned_data
+			reportData = cleanData["reportData"]
+
+		reportRows = reportData.split(';')
 		for row in reportRows:
 			writer.writerow(row.split(','))
-		del request.session['reportData']
+		# del request.session['reportData']
 
 		# reportRowCount = request.session['reportRowCount']
 		# for i in range(1, reportRowCount+1):
