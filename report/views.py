@@ -318,19 +318,20 @@ def index(request):
 		sumMinePlanTonnages[curr] = (sum(currTonnageVals))
 
 	if not yearVals:
-		totalProducts = ['N/A']*yearCount
-		sumTotalProducts = 'N/A'
+		filler = " - "
+		totalProducts = [filler]*yearCount
+		sumTotalProducts = filler
 
 		tonnageVals = {}
 		tonnageTotals = {}
 		gradeVals = {}
 		moistures = {}
 		for curr in range(1, numStockpiles+1):
-			tonnageVals[curr] = padList(yearVals, yearCount, [], 'N/A')
-			tonnageTotals[curr] = 'N/A'
+			tonnageVals[curr] = padList(yearVals, yearCount, [], filler)
+			tonnageTotals[curr] = filler
 			currGrades = {}
 			for i in range(len(commIDs)):
-				currGrades[commNameList[i]] = ['N/A']*yearCount
+				currGrades[commNameList[i]] = [filler]*yearCount
 			gradeVals[curr] = currGrades
 			moistures[curr] = padList(yearVals, yearCount, [], round(latestInput.feedMoisture,2))
 
@@ -353,39 +354,39 @@ def index(request):
 		# 	LGMoistures = padList(yearVals, yearCount, [], round(latestInput.feedMoisture,2))
 
 		if 1 in PPIDs:
-			lumpTonnageVals = padList(yearVals, yearCount, [], 'N/A')
-			lumpTonnageTotal = 'N/A'
+			lumpTonnageVals = padList(yearVals, yearCount, [], filler)
+			lumpTonnageTotal = filler
 			lumpGradeVals = {}
 			for i in range(len(commIDs)):
-				lumpGradeVals[commNameList[i]] = ['N/A']*yearCount
+				lumpGradeVals[commNameList[i]] = [filler]*yearCount
 			# lumpGradeVals = padList(yearVals, yearCount, [], "N/A")
 			lumpMoistures = padList(yearVals, yearCount, [], round(latestInput.lumpMoisture,2))
 		
 		if 2 in PPIDs:
-			finesTonnageVals = padList(yearVals, yearCount, [], 'N/A')
-			finesTonnageTotal = 'N/A'
+			finesTonnageVals = padList(yearVals, yearCount, [], filler)
+			finesTonnageTotal = filler
 			finesGradeVals = {}
 			for i in range(len(commIDs)):
-				finesGradeVals[commNameList[i]] = ['N/A']*yearCount
+				finesGradeVals[commNameList[i]] = [filler]*yearCount
 			# finesGradeVals = padList(yearVals, yearCount, [], "N/A")
 			finesMoistures = padList(yearVals, yearCount, [], round(latestInput.finesMoisture,2))
 
 		if 3 in PPIDs:
-			ultraFinesTonnageVals = padList(yearVals, yearCount, [], 'N/A')
-			ultraFinesTonnageTotal = 'N/A'
+			ultraFinesTonnageVals = padList(yearVals, yearCount, [], filler)
+			ultraFinesTonnageTotal = filler
 			ultraFinesGradeVals = {}
 			for i in range(len(commIDs)):
-				ultraFinesGradeVals[commNameList[i]] = ['N/A']*yearCount
+				ultraFinesGradeVals[commNameList[i]] = [filler]*yearCount
 			ultraFinesMoistures = padList(yearVals, yearCount, [], round(latestInput.ultraFinesMoisture,2))
 
-		sumTotalProducts = 'N/A'
+		sumTotalProducts = filler
 
 		if 4 in PPIDs:
-			rejectsTonnageVals = padList(yearVals, yearCount, [], 'N/A')
-			rejectsTonnageTotal = 'N/A'
+			rejectsTonnageVals = padList(yearVals, yearCount, [], filler)
+			rejectsTonnageTotal = filler
 			rejectsGradeVals = {}
 			for i in range(len(commIDs)):
-				rejectsGradeVals[commNameList[i]] = ['N/A']*yearCount
+				rejectsGradeVals[commNameList[i]] = [filler]*yearCount
 			rejectsMoistures = padList(yearVals, yearCount, [], round(latestInput.rejectsMoisture,2))
 
 		if 1 in PPIDs:
@@ -393,55 +394,55 @@ def index(request):
 			HGLumps = [round(Decimal(priceEntry.lump),2)]*yearCount
 			lumpPenaltyVals = {}
 			for i in range(len(commIDs)):
-				lumpPenaltyVals[commNameList[i]] = ['N/A']*yearCount
-			lumpSellingPrices = ['N/A']*yearCount
-			avgLumpSellingPrice = 'N/A'
-			netLumpPrices = ['N/A']*yearCount
-			avgNetLumpPrice = 'N/A'
-			exchangeNetLumpPrices = ['N/A']*yearCount
-			avgExchangeNetLumpPrice = 'N/A'
-			lumpRevenues = ['N/A']*yearCount
-			sumLumpRevenues = 'N/A'
+				lumpPenaltyVals[commNameList[i]] = [filler]*yearCount
+			lumpSellingPrices = [filler]*yearCount
+			avgLumpSellingPrice = filler
+			netLumpPrices = [filler]*yearCount
+			avgNetLumpPrice = filler
+			exchangeNetLumpPrices = [filler]*yearCount
+			avgExchangeNetLumpPrice = filler
+			lumpRevenues = [filler]*yearCount
+			sumLumpRevenues = filler
 
 		if 2 in PPIDs:
 			# HGFines = [round(Decimal(priceEntry.HGFines),2)]*yearCount
 			HGFines = [round(Decimal(priceEntry.fines),2)]*yearCount
 			finesPenaltyVals = {}
 			for i in range(len(commIDs)):
-				finesPenaltyVals[commNameList[i]] = ['N/A']*yearCount
-			finesSellingPrices = ['N/A']*yearCount
-			avgFinesSellingPrice = 'N/A'
-			netFinesPrices = ['N/A']*yearCount
-			avgNetFinesPrice = 'N/A'
-			exchangeNetFinesPrices = ['N/A']*yearCount
-			avgExchangeNetFinesPrice = 'N/A'
-			finesRevenues = ['N/A']*yearCount
-			sumFinesRevenues = 'N/A'
+				finesPenaltyVals[commNameList[i]] = [filler]*yearCount
+			finesSellingPrices = [filler]*yearCount
+			avgFinesSellingPrice = filler
+			netFinesPrices = [filler]*yearCount
+			avgNetFinesPrice = filler
+			exchangeNetFinesPrices = [filler]*yearCount
+			avgExchangeNetFinesPrice = filler
+			finesRevenues = [filler]*yearCount
+			sumFinesRevenues = filler
 
 		if 3 in PPIDs:
 			# HGUltraFines = [round(Decimal(priceEntry.HGUltraFines),2)]*yearCount
 			HGUltraFines = [round(Decimal(priceEntry.ultraFines),2)]*yearCount
 			ultraFinesPenaltyVals = {}
 			for i in range(len(commIDs)):
-				ultraFinesPenaltyVals[commNameList[i]] = ['N/A']*yearCount
-			ultraFinesSellingPrices = ['N/A']*yearCount
-			avgUltraFinesSellingPrice = 'N/A'
-			netUltraFinesPrices = ['N/A']*yearCount
-			avgNetUltraFinesPrice = 'N/A'
-			exchangeNetUltraFinesPrices = ['N/A']*yearCount
-			avgExchangeNetUltraFinesPrice = 'N/A'
-			ultraFinesRevenues = ['N/A']*yearCount
-			sumUltraFinesRevenues = 'N/A'
+				ultraFinesPenaltyVals[commNameList[i]] = [filler]*yearCount
+			ultraFinesSellingPrices = [filler]*yearCount
+			avgUltraFinesSellingPrice = filler
+			netUltraFinesPrices = [filler]*yearCount
+			avgNetUltraFinesPrice = filler
+			exchangeNetUltraFinesPrices = [filler]*yearCount
+			avgExchangeNetUltraFinesPrice = filler
+			ultraFinesRevenues = [filler]*yearCount
+			sumUltraFinesRevenues = filler
 
-		totalRevenues = ['N/A']*yearCount
-		sumTotalRevenues = 'N/A'
+		totalRevenues = [filler]*yearCount
+		sumTotalRevenues = filler
 
-		cashFlowPreTax = cashFlowPostTax = cumCashFlowPreTax = cumCashFlowPostTax = ['N/A']*yearCount
-		sumCashFlowPreTax = sumCashFlowPostTax = 'N/A'
-		paybackPreTax = paybackPostTax = ['N/A']*yearCount
-		sumPaybackPreTax = sumPaybackPostTax = 'N/A'
-		preTaxNPVs = postTaxNPVs = ['N/A']*yearCount
-		preTaxIRR = postTaxIRR = 'N/A'
+		cashFlowPreTax = cashFlowPostTax = cumCashFlowPreTax = cumCashFlowPostTax = [filler]*yearCount
+		sumCashFlowPreTax = sumCashFlowPostTax = filler
+		paybackPreTax = paybackPostTax = [filler]*yearCount
+		sumPaybackPreTax = sumPaybackPostTax = filler
+		preTaxNPVs = postTaxNPVs = [filler]*yearCount
+		preTaxIRR = postTaxIRR = filler
 
 
 		preTaxPVs = {}
@@ -450,10 +451,10 @@ def index(request):
 		sumPostTaxNPV = {}
 		for rate in discountRates:
 			rate = int(round(rate*100))
-			preTaxPVs[rate] = ['N/A']*yearCount
-			postTaxPVs[rate] = ['N/A']*yearCount
-			sumPreTaxNPV[rate] = 'N/A'
-			sumPostTaxNPV[rate] = 'N/A'
+			preTaxPVs[rate] = [filler]*yearCount
+			postTaxPVs[rate] = [filler]*yearCount
+			sumPreTaxNPV[rate] = filler
+			sumPostTaxNPV[rate] = filler
 
 		# reportRowCount = 1
 		reportData = ""
@@ -472,7 +473,7 @@ def index(request):
 		reportData += ";Processing;"
 		for curr in range(1, numStockpiles+1):
 			reportData += "Stockpile {0} Ore;".format(curr)
-			currRow = 'Tonnage (kt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in tonnageVals[curr]]]) + ',' + 'N/A' + ";"
+			currRow = 'Tonnage (kt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in tonnageVals[curr]]]) + ',' + filler + ";"
 			reportData += currRow
 			for i in range(len(commIDs)):
 				currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in gradeVals[curr][commNameList[i]]]]) + ';'
@@ -483,7 +484,7 @@ def index(request):
 
 		if 1 in PPIDs:
 			reportData += "Lump;"
-			currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpTonnageVals]]) + ',' + 'N/A' + ';'
+			currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpTonnageVals]]) + ',' + filler + ';'
 			reportData += currRow
 			for i in range(len(commIDs)):
 				currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpGradeVals[commNameList[i]]]]) + ';'
@@ -492,7 +493,7 @@ def index(request):
 
 		if 2 in PPIDs:
 			reportData += "Fines;"
-			currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesTonnageVals]]) + ',' + 'N/A' + ';'
+			currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesTonnageVals]]) + ',' + filler + ';'
 			reportData += currRow
 			for i in range(len(commIDs)):
 				currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesGradeVals[commNameList[i]]]]) + ';'
@@ -501,18 +502,18 @@ def index(request):
 
 		if 3 in PPIDs:
 			reportData += "Ultra Fines;"
-			currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesTonnageVals]]) + ',' + 'N/A' + ';'
+			currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesTonnageVals]]) + ',' + filler + ';'
 			reportData += currRow
 			for i in range(len(commIDs)):
 				currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesGradeVals[commNameList[i]]]]) + ';'
 				reportData += currRow
 			reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesMoistures]]) + ';'
 
-		reportData += 'Total Product (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalProducts]]) + ',' + 'N/A' + ';'
+		reportData += 'Total Product (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalProducts]]) + ',' + filler + ';'
 
 		if 4 in PPIDs:
 			reportData += "Rejects;"
-			currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsTonnageVals]]) + ',' + 'N/A' + ';'
+			currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsTonnageVals]]) + ',' + filler + ';'
 			reportData += currRow
 			for i in range(len(commIDs)):
 				currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsGradeVals[commNameList[i]]]]) + ';'
@@ -526,42 +527,42 @@ def index(request):
 			reportData += 'Lump Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGLumps]]) + ';'
 			for i in range(len(commIDs)):
 				reportData += 'Lump {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpPenaltyVals[commNameList[i]]]]) + ';'
-			reportData += 'Lump Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpSellingPrices]]) + ',' + 'Avg: ' + 'N/A' + ';'
+			reportData += 'Lump Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpSellingPrices]]) + ',' + 'Avg: ' + filler + ';'
 			reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
-			reportData += 'Net Lump Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netLumpPrices]]) + ',' + 'Avg: ' + 'N/A' + ';'
+			reportData += 'Net Lump Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netLumpPrices]]) + ',' + 'Avg: ' + filler + ';'
 			reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
-			reportData += 'Net Lump Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetLumpPrices]]) + ',' + 'Avg: ' + 'N/A' + ';'
+			reportData += 'Net Lump Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetLumpPrices]]) + ',' + 'Avg: ' + filler + ';'
 
 		if 2 in PPIDs:
 			reportData += 'Fines Selling Price (USD/dmt);'
 			reportData += 'Fines Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGFines]]) + ';'
 			for i in range(len(commIDs)):
 				reportData += 'Fines {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesPenaltyVals[commNameList[i]]]]) + ';'
-			reportData += 'Fines Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesSellingPrices]]) + ',' + 'Avg: ' + 'N/A' + ';'
+			reportData += 'Fines Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesSellingPrices]]) + ',' + 'Avg: ' + filler + ';'
 			reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
-			reportData += 'Net Fines Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netFinesPrices]]) + ',' + 'Avg: ' + 'N/A' + ';'
+			reportData += 'Net Fines Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netFinesPrices]]) + ',' + 'Avg: ' + filler + ';'
 			reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
-			reportData += 'Net Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetFinesPrices]]) + ',' + 'Avg: ' + 'N/A' + ';'
+			reportData += 'Net Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetFinesPrices]]) + ',' + 'Avg: ' + filler + ';'
 
 		if 3 in PPIDs:
 			reportData += 'Ultra Fines Selling Price (USD/dmt);'
 			reportData += 'Ultra Fines Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGUltraFines]]) + ';'
 			for i in range(len(commIDs)):
 				reportData += 'Ultra Fines {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesPenaltyVals[commNameList[i]]]]) + ';'
-			reportData += 'Ultra Fines Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesSellingPrices]]) + ',' + 'Avg: ' + 'N/A' + ';'
+			reportData += 'Ultra Fines Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesSellingPrices]]) + ',' + 'Avg: ' + filler + ';'
 			reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
-			reportData += 'Net Ultra Fines Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netUltraFinesPrices]]) + ',' + 'Avg: ' + 'N/A' + ';'
+			reportData += 'Net Ultra Fines Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netUltraFinesPrices]]) + ',' + 'Avg: ' + filler + ';'
 			reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
-			reportData += 'Net Ultra Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetUltraFinesPrices]]) + ',' + 'Avg: ' + 'N/A' + ';'
+			reportData += 'Net Ultra Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetUltraFinesPrices]]) + ',' + 'Avg: ' + filler + ';'
 
 		reportData += ';Revenues;'
 		if 1 in PPIDs:
-			reportData += 'Lump Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpRevenues]]) + ',' + 'N/A' + ';'
+			reportData += 'Lump Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpRevenues]]) + ',' + filler + ';'
 		if 2 in PPIDs:
-			reportData += 'Fines Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesRevenues]]) + ',' + 'N/A' + ';'
+			reportData += 'Fines Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesRevenues]]) + ',' + filler + ';'
 		if 3 in PPIDs:
-			reportData += 'Ultra Fines Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesRevenues]]) + ',' + 'N/A' + ';'
-		reportData += 'TOTAL REVENUE,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + 'N/A' + ';'
+			reportData += 'Ultra Fines Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesRevenues]]) + ',' + filler + ';'
+		reportData += 'TOTAL REVENUE,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + filler + ';'
 
 		reportData += ';COSTS;'
 		reportData += 'OPEX (millions CAD);'
@@ -598,7 +599,7 @@ def index(request):
 		reportData += 'TOTAL (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
 
 		reportData += ';SUMMARY;'
-		reportData += 'Revenues (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + 'N/A' + ';'
+		reportData += 'Revenues (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + filler + ';'
 		reportData += 'OPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]]) + ',' + str(round(sumTotalOPEX,2)) + ';'
 		reportData += 'Royalties (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]]) + ',' + str(round(sumRoyalties,2)) + ';'
 		reportData += 'CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
@@ -607,19 +608,19 @@ def index(request):
 		reportData += 'Taxes (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
 
 		reportData += ';PRE-TAX CASH FLOW;'
-		reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]]) + ',' + 'N/A' + ';'
-		reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]]) + ',' + 'N/A' + ';'
-		reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]]) + ',' + 'N/A' + ';'
+		reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]]) + ',' + filler + ';'
+		reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]]) + ',' + filler + ';'
+		reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]]) + ',' + filler + ';'
 		for rate in discountRates:
-			reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]]) + ',' + 'N/A' + ';'
+			reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]]) + ',' + filler + ';'
 		reportData += 'INTERNAL RATE OF RETURN (IRR),' + 'N/A' + ';'
 
 		reportData += ';POST-TAX CASH FLOW;'
-		reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]]) + ',' + 'N/A' + ';'
-		reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]]) + ',' + 'N/A' + ';'
-		reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]]) + ',' + 'N/A' + ';'
+		reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]]) + ',' + filler + ';'
+		reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]]) + ',' + filler + ';'
+		reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]]) + ',' + filler + ';'
 		for rate in discountRates:
-			reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]]) + ',' + 'N/A' + ';'
+			reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]]) + ',' + filler + ';'
 		reportData += 'INTERNAL RATE OF RETURN (IRR),' + 'N/A' + ';'
 
 		form_class = filterForm(mineID=mineID, reportData=reportData)
