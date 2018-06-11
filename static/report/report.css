@@ -11,7 +11,12 @@ td {
 	max-width: 700px !important;
 }
 
-th, td {
+/*th, td {
+	min-width: 200px;
+}*/
+
+.report-table th, 
+.report-table td {
 	min-width: 200px;
 }
 
