@@ -75,8 +75,8 @@
         <table class="report-table table table-hover borderless">
             <tr class="bg-info text-white fixed-width"> 
                 <th class="firstcol">Item</th>
-                {% for year in fullYearVals %}
-                    <th class="yearcol">Year {{ year }}</th>
+                {% for date in dateVals %}
+                    <th class="yearcol">{{ date }}</th>
                 {% endfor %}
                 <th class="totalcol">Total</th>
             </tr> 
@@ -85,7 +85,7 @@
         <table class="report-table table table-hover borderless">
             <tr class="bg-info text-white">
                 <th class="firstcol">Mining</th>
-                {% for year in fullYearVals %}
+                {% for date in dateVals %}
                     <th></th>
                 {% endfor %}
                 <th></th>
@@ -102,49 +102,13 @@
                     </tr>
                 {% endfor %}
 
-                <!-- {% if minePlanHGTonnageVals is not None %}
-                    <tr>
-                        <th class="subhead">High Grade Ore (kt)</th>
-                        {% for val in minePlanHGTonnageVals %}
-                            <td class="numval">{{ val|intcomma }}</td>
-                        {% endfor %}
-                        <td class="numval">{{ sumMinePlanHGTonnage|intcomma }}</td>
-                    </tr>
-                {% endif %}
-                {% if minePlanLGTonnageVals is not None %}
-                    <tr>
-                        <th class="subhead">Low Grade Ore (kt)</th>
-                        {% for val in minePlanLGTonnageVals %}
-                            <td class="numval">{{ val|intcomma }}</td>
-                        {% endfor %}
-                        <td class="numval">{{ sumMinePlanLGTonnage|intcomma }}</td>
-                    </tr>
-                {% endif %}
-                {% if minePlanWasteTonnageVals is not None %}
-                    <tr>
-                        <th class="subhead">Waste (kt)</th>
-                        {% for val in minePlanWasteTonnageVals %}
-                            <td class="numval">{{ val|intcomma }}</td>
-                        {% endfor %}
-                        <td class="numval">{{ sumMinePlanWasteTonnage|intcomma }}</td>
-                    </tr>
-                {% endif %}
-                {% if minePlanOverburdenTonnageVals is not None %}
-                    <tr>
-                        <th class="subhead">Overburden (kt)</th>
-                        {% for val in minePlanOverburdenTonnageVals %}
-                            <td class="numval">{{ val|intcomma }}</td>
-                        {% endfor %}
-                        <td class="numval">{{ sumMinePlanOverburdenTonnage|intcomma }}</td>
-                    </tr>
-                {% endif %} -->
             </tbody>
         </table>
 
         <table class="report-table table table-hover borderless">
             <tr class="bg-info text-white">
                 <th class="firstcol">Processing</th>
-                {% for year in fullYearVals %}
+                {% for date in dateVals %}
                     <th></th>
                 {% endfor %}
                 <th></th>
@@ -156,7 +120,7 @@
                         <label for="processing{{curr}}">Stockpile {{ curr }} Ore &#9662;</label>
                         <input type="checkbox" name="processing{{curr}}" id="processing{{curr}}" data-toggle="toggle">
                     </th>
-                    {% for year in fullYearVals %}
+                    {% for date in dateVals %}
                     <th></th>
                     {% endfor %}
                     <th></th>
@@ -188,88 +152,12 @@
                 </tbody>
                 <tr></tr>
             {% endfor %}
-
-<!--             {% if HGTonnageVals is not None %}
-                <tr>
-                    <th class="centrecol">
-                        <label for="processingHG">High Grade Ore &#9662;</label>
-                        <input type="checkbox" name="processingHG" id="processingHG" data-toggle="toggle">
-                    </th>
-                    {% for year in fullYearVals %}
-                    <th></th>
-                    {% endfor %}
-                    <th></th>
-                </tr>
-                <tbody class="collapsible">
-                    <tr>
-                        <th class="subhead">Tonnage(kt)</th>
-                        {% for val in HGTonnageVals %}
-                            <td class="numval">{{ val|intcomma }}</td>
-                        {% endfor %}
-                        <td class="numval">{{ HGTonnageTotal|intcomma }}</td>
-                    </tr>
-                    {% for comm in commNameList %}
-                            <tr>
-                                <th class="subhead">{{ comm }} Grade (%)</th>
-                                {% for val in HGGradeVals|get_item:comm %}
-                                    <td class="numval">{{ val }}</td>
-                                {% endfor %}
-                                <td></td>
-                            </tr>                       
-                    {% endfor %}
-                    <tr>
-                        <th class="subhead">Moisture (%)</th>
-                        {% for val in HGMoistures %}
-                        <td class="numval">{{ val }}</td>
-                        {% endfor %}
-                        <td></td>
-                    </tr>
-                </tbody>
-            {% endif %}
-            <tr></tr>
-            {% if LGTonnageVals is not None %}
-                <tr>
-                    <th class="centrecol">
-                        <label for="processingLG">Low Grade Ore &#9662;</label>
-                        <input type="checkbox" name="processingLG" id="processingLG" data-toggle="toggle">
-                    </th>
-                    {% for year in fullYearVals %}
-                    <th></th>
-                    {% endfor %}
-                    <th></th>
-                </tr>
-                <tbody class="collapsible">
-                    <tr>
-                        <th class="subhead">Tonnage(kt)</th>
-                        {% for val in LGTonnageVals %}
-                            <td class="numval">{{ val|intcomma }}</td>
-                        {% endfor %}
-                        <td class="numval">{{ LGTonnageTotal|intcomma }}</td>
-                    </tr>
-                    {% for comm in commNameList %}
-                            <tr>
-                                <th class="subhead">{{ comm }} Grade (%)</th>
-                                {% for val in LGGradeVals|get_item:comm %}
-                                    <td class="numval">{{ val }}</td>
-                                {% endfor %}
-                                <td></td>
-                            </tr>                       
-                    {% endfor %}
-                    <tr>
-                        <th class="subhead">Moisture (%)</th>
-                        {% for val in LGMoistures %}
-                        <td class="numval">{{ val }}</td>
-                        {% endfor %}
-                        <td></td>
-                    </tr>
-                </tbody>
-            {% endif %} -->
         </table>
 
         <table class="report-table table table-hover borderless">
             <tr class="bg-info text-white">
                 <th class="firstcol">Plant Product</th>
-                {% for year in fullYearVals %}
+                {% for date in dateVals %}
                     <th></th>
                 {% endfor %}
                 <th></th>
@@ -280,7 +168,7 @@
                         <label for="plantProductLump">Lump &#9662;</label>
                         <input type="checkbox" name="plantProductLump" id="plantProductLump" data-toggle="toggle">
                     </th>
-                    {% for year in fullYearVals %}
+                    {% for date in dateVals %}
                     <th></th>
                     {% endfor %}
                     <th></th>
@@ -317,7 +205,7 @@
                         <label for="plantProductFines">Fines &#9662;</label>
                         <input type="checkbox" name="plantProductFines" id="plantProductFines" data-toggle="toggle">
                     </th>
-                    {% for year in fullYearVals %}
+                    {% for date in dateVals %}
                     <th></th>
                     {% endfor %}
                     <th></th>
@@ -355,7 +243,7 @@
                         <label for="plantProductUltraFines">Ultra Fines &#9662;</label>
                         <input type="checkbox" name="plantProductUltraFines" id="plantProductUltraFines" data-toggle="toggle">
                     </th>
-                    {% for year in fullYearVals %}
+                    {% for date in dateVals %}
                     <th></th>
                     {% endfor %}
                     <th></th>
@@ -426,7 +314,7 @@
         <table class="report-table table table-hover borderless">
             <tr class="bg-info text-white">
                 <th class="firstcol">Products Selling Price</th>
-                {% for year in fullYearVals %}
+                {% for date in dateVals %}
                     <th></th>
                 {% endfor %}
                 <th></th>
@@ -437,7 +325,7 @@
                         <label for="lumpSellingPrice">Lump Selling Price (USD/dmt) &#9662;</label>
                         <input type="checkbox" name="lumpSellingPrice" id="lumpSellingPrice" data-toggle="toggle">
                     </th>
-                    {% for year in fullYearVals %}
+                    {% for date in dateVals %}
                     <th></th>
                     {% endfor %}
                     <th></th>
@@ -499,7 +387,7 @@
                         <label for="finesSellingPrice">Fines Selling Price (USD/dmt) &#9662;</label>
                         <input type="checkbox" name="finesSellingPrice" id="finesSellingPrice" data-toggle="toggle">
                     </th>
-                    {% for year in fullYearVals %}
+                    {% for date in dateVals %}
                     <th></th>
                     {% endfor %}
                     <th></th>
@@ -561,7 +449,7 @@
                         <label for="ultraFinesSellingPrice">Ultra Fines Selling Price (USD/dmt) &#9662;</label>
                         <input type="checkbox" name="ultraFinesSellingPrice" id="ultraFinesSellingPrice" data-toggle="toggle">
                     </th>
-                    {% for year in fullYearVals %}
+                    {% for date in dateVals %}
                     <th></th>
                     {% endfor %}
                     <th></th>
@@ -622,7 +510,7 @@
         <table class="report-table table table-hover borderless">
             <tr class="bg-info text-white">
                 <th class="firstcol">Revenues</th>
-                {% for year in fullYearVals %}
+                {% for date in dateVals %}
                     <th></th>
                 {% endfor %}
                 <th></th>
@@ -666,7 +554,7 @@
         <table class="report-table table table-hover borderless">
             <tr class="bg-info text-white">
                 <th class="firstcol">COSTS</th>
-                {% for year in fullYearVals %}
+                {% for date in dateVals %}
                     <th></th>
                 {% endfor %}
                 <th></th>
@@ -676,7 +564,7 @@
                     <label for="costsOPEX">OPEX (millions CAD) &#9662;</label>
                     <input type="checkbox" name="costsOPEX" id="costsOPEX" data-toggle="toggle">
                 </th>
-                {% for year in fullYearVals %}
+                {% for date in dateVals %}
                 <th></th>
                 {% endfor %}
                 <th></th>
@@ -773,7 +661,7 @@
                     <label for="costsCAPEX">CAPEX (millions CAD) &#9662;</label>
                     <input type="checkbox" name="costsCAPEX" id="costsCAPEX" data-toggle="toggle">
                 </th>
-                {% for year in fullYearVals %}
+                {% for date in dateVals %}
                 <th></th>
                 {% endfor %}
                 <th></th>
@@ -862,7 +750,7 @@
                     <label for="costsTaxes">TAXES (millions CAD) &#9662;</label>
                     <input type="checkbox" name="costsTaxes" id="costsTaxes" data-toggle="toggle">
                 </th>
-                {% for year in fullYearVals %}
+                {% for date in dateVals %}
                 <th></th>
                 {% endfor %}
                 <th></th>
@@ -902,7 +790,7 @@
         <table class="report-table table table-hover borderless">
             <tr class="bg-info text-white">
                 <th class="firstcol">SUMMARY</th>
-                {% for year in fullYearVals %}
+                {% for date in dateVals %}
                     <th></th>
                 {% endfor %}
                 <th></th>
@@ -959,161 +847,6 @@
         </table>
 
 
-
-        <table class="report-table table table-hover borderless">
-            <tr class="bg-info text-white">
-                <th class="firstcol">PRE-TAX CASH FLOW</th>
-                {% for year in fullYearVals %}
-                    <th></th>
-                {% endfor %}
-                <th></th>
-            </tr>
-            <tr>
-                <th class="subhead">Cash Flow (millions CAD)</th>
-                {% for val in cashFlowPreTax %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumCashFlowPreTax|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">Cumulative Undiscounted Cash Flow (millions CAD)</th>
-                {% for val in cumCashFlowPreTax %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumCashFlowPreTax|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">Payback Period (year)</th>
-                {% for val in paybackPreTax %}
-                    <td class="numval">{{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">{{ sumPaybackPreTax|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">PRE-TAX NPV @ 6%</th>
-                {% for val in preTaxPVs|get_item:6 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPreTaxNPV|get_item:6|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">PRE-TAX NPV @ 8%</th>
-                {% for val in preTaxPVs|get_item:8 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPreTaxNPV|get_item:8|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">PRE-TAX NPV @ 10%</th>
-                {% for val in preTaxPVs|get_item:10 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPreTaxNPV|get_item:10|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">PRE-TAX NPV @ 12%</th>
-                {% for val in preTaxPVs|get_item:12 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPreTaxNPV|get_item:12|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">PRE-TAX NPV @ 15%</th>
-                {% for val in preTaxPVs|get_item:15 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPreTaxNPV|get_item:15|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">PRE-TAX NPV @ 20%</th>
-                {% for val in preTaxPVs|get_item:20 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPreTaxNPV|get_item:20|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">INTERNAL RATE OF RETURN (IRR)</th>
-                <td class="numval">{{ preTaxIRR|intcomma }}%</td>
-            </tr>
-        </table>
-
-
-        <table class="report-table table table-hover borderless">
-            <tr class="bg-info text-white">
-                <th class="firstcol">POST-TAX CASH FLOW</th>
-                {% for year in fullYearVals %}
-                    <th></th>
-                {% endfor %}
-                <th></th>
-            </tr>
-            <tr>
-                <th class="subhead">Cash Flow (millions CAD)</th>
-                {% for val in cashFlowPostTax %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumCashFlowPostTax|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">Cumulative Undiscounted Cash Flow (millions CAD)</th>
-                {% for val in cumCashFlowPostTax %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumCashFlowPostTax|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">Payback Period (year)</th>
-                {% for val in paybackPostTax %}
-                    <td class="numval">{{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">{{ sumPaybackPostTax|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">POST-TAX NPV @ 6%</th>
-                {% for val in postTaxPVs|get_item:6 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPostTaxNPV|get_item:6|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">POST-TAX NPV @ 8%</th>
-                {% for val in postTaxPVs|get_item:8 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPostTaxNPV|get_item:8|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">POST-TAX NPV @ 10%</th>
-                {% for val in postTaxPVs|get_item:10 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPostTaxNPV|get_item:10|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">POST-TAX NPV @ 12%</th>
-                {% for val in postTaxPVs|get_item:12 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPostTaxNPV|get_item:12|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">POST-TAX NPV @ 15%</th>
-                {% for val in postTaxPVs|get_item:15 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPostTaxNPV|get_item:15|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">POST-TAX NPV @ 20%</th>
-                {% for val in postTaxPVs|get_item:20 %}
-                    <td class="numval">${{ val|intcomma }}</td>
-                {% endfor %}
-                <td class="numval">${{ sumPostTaxNPV|get_item:20|intcomma }}</td>
-            </tr>
-            <tr>
-                <th class="subhead">INTERNAL RATE OF RETURN (IRR)</th>
-                <td class="numval">{{ postTaxIRR|intcomma }}%</td>
-            </tr>
-        </table>
     </div>
 
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css"> 
