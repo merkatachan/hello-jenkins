@@ -3032,7 +3032,7 @@ def reportDL(request):
 						while currDate < entry.date:
 							lumpTonnageVals.append(filler)
 							currDate += datetime.timedelta(days=1)
-						lumpTonnageVals.append(Decimal(entry.tonnageDMT))
+						lumpTonnageVals.append(round(Decimal(entry.tonnageDMT),2))
 					lumpTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in lumpTonnageVals])
 					lumpTonnageVals += [filler]*(endDate-currDate).days
 
@@ -3072,7 +3072,7 @@ def reportDL(request):
 						while currDate < entry.date:
 							finesTonnageVals.append(filler)
 							currDate += datetime.timedelta(days=1)
-						finesTonnageVals.append(Decimal(entry.tonnageDMT))
+						finesTonnageVals.append(round(Decimal(entry.tonnageDMT),2))
 					finesTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in finesTonnageVals])
 					finesTonnageVals += [filler]*(endDate-currDate).days
 
@@ -3112,7 +3112,7 @@ def reportDL(request):
 						while currDate < entry.date:
 							ultraFinesTonnageVals.append(filler)
 							currDate += datetime.timedelta(days=1)
-						ultraFinesTonnageVals.append(Decimal(entry.tonnageDMT))
+						ultraFinesTonnageVals.append(round(Decimal(entry.tonnageDMT),2))
 					ultraFinesTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in ultraFinesTonnageVals])
 					ultraFinesTonnageVals += [filler]*(endDate-currDate).days
 
@@ -3154,7 +3154,7 @@ def reportDL(request):
 						while currDate < entry.date:
 							rejectsTonnageVals.append(filler)
 							currDate += datetime.timedelta(days=1)
-						rejectsTonnageVals.append(Decimal(entry.tonnageDMT))
+						rejectsTonnageVals.append(round(Decimal(entry.tonnageDMT),2))
 					rejectsTonnageVals += [filler]*(endDate-currDate).days
 
 					# Grades
