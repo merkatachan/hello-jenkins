@@ -1679,8 +1679,8 @@ def index(request):
 			currCAPEX = (CAPEXrow.preStrip+CAPEXrow.mineEquipInitial+CAPEXrow.mineEquipSustain+CAPEXrow.infraDirectCost+
 				CAPEXrow.infraIndirectCost+CAPEXrow.contingency+CAPEXrow.railcars+CAPEXrow.otherMobEquip+CAPEXrow.closureRehabAssure+
 				CAPEXrow.depoProvisionPay+CAPEXrow.workCapCurrentProd+CAPEXrow.workCapCostsLG+CAPEXrow.EPCM+CAPEXrow.ownerCost)
-			currOPEXPlusCAPEX = round((Decimal(currCAPEX) + Decimal(currOPEX))*1000,2)
-			currTaxes = round(Decimal(taxesRow.federal + taxesRow.provincial + taxesRow.mining)*1000,2)
+			currOPEXPlusCAPEX = round((Decimal(currCAPEX) + Decimal(currOPEX)),2)
+			currTaxes = round(Decimal(taxesRow.federal + taxesRow.provincial + taxesRow.mining),2)
 
 			annualOPEXPlusCAPEX[i+1] = currOPEXPlusCAPEX
 			annualTaxes[i+1] = currTaxes
