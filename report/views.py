@@ -2979,6 +2979,340 @@ def reportDL(request):
 				totalTaxes = [sum(x) for x in zip(federalTaxes, provincialTaxes, miningTaxes)]
 				sumTotalTaxes = sum(totalTaxes)
 
+
+				# Handle values if no calculations have been run during selected range of dates
+				cashFlowEntries = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__gte=startDate, date__lte=endDate)
+				if not cashFlowEntries:
+					tonnageVals = {}
+					tonnageTotals = {}
+					gradeVals = {}
+					moistures = {}
+					for curr in range(1, numStockpiles+1):
+						tonnageVals[curr] = [filler]*((endDate-startDate).days+1)
+						tonnageTotals[curr] = filler
+						gradeVals[curr] = {}
+						for i in range(len(commIDs)):
+							gradeVals[curr][commNameList[i]] = [filler]*((endDate-startDate).days+1)
+						moistures[curr] = [round(latestInput.feedMoisture,2)]*((endDate-startDate).days+1)
+
+					if 1 in PPIDs:
+						lumpTonnageVals = [filler]*((endDate-startDate).days+1)
+						lumpTonnageTotal = filler
+						lumpGradeVals = {}
+						for i in range(len(commIDs)):
+							lumpGradeVals[commNameList[i]] = [filler]*((endDate-startDate).days+1)
+						lumpMoistures = [round(latestInput.lumpMoisture,2)]*((endDate-startDate).days+1)
+
+					if 2 in PPIDs:
+						finesTonnageVals = [filler]*((endDate-startDate).days+1)
+						finesTonnageTotal = filler
+						finesGradeVals = {}
+						for i in range(len(commIDs)):
+							finesGradeVals[commNameList[i]] = [filler]*((endDate-startDate).days+1)
+						finesMoistures = [round(latestInput.finesMoisture,2)]*((endDate-startDate).days+1)
+
+					if 3 in PPIDs:
+						ultraFinesTonnageVals = [filler]*((endDate-startDate).days+1)
+						ultraFinesTonnageTotal = filler
+						ultraFinesGradeVals = {}
+						for i in range(len(commIDs)):
+							ultraFinesGradeVals[commNameList[i]] = [filler]*((endDate-startDate).days+1)
+						ultraFinesMoistures = [round(latestInput.ultraFinesMoisture,2)]*((endDate-startDate).days+1)
+
+					if 4 in PPIDs:
+						rejectsTonnageVals = [filler]*((endDate-startDate).days+1)
+						rejectsTonnageTotal = filler
+						rejectsGradeVals = {}
+						for i in range(len(commIDs)):
+							rejectsGradeVals[commNameList[i]] = [filler]*((endDate-startDate).days+1)
+						rejectsMoistures = [round(latestInput.rejectsMoisture,2)]*((endDate-startDate).days+1)
+
+					totalProducts = [filler]*((endDate-startDate).days+1)
+					sumTotalProducts = filler
+
+					if 1 in PPIDs:
+						HGLumps = [Decimal(priceEntry.lump)]*((endDate - startDate).days+1)
+						lumpPenaltyVals = {}
+						for i in range(len(commIDs)):
+							lumpPenaltyVals[commNameList[i]] = [filler]*((endDate - startDate).days+1)
+						lumpSellingPrices = [filler]*((endDate - startDate).days+1)
+						avgLumpSellingPrice = filler
+						netLumpPrices = [filler]*((endDate - startDate).days+1)
+						avgNetLumpPrice = filler
+						exchangeNetLumpPrices = [filler]*((endDate - startDate).days+1)
+						avgExchangeNetLumpPrice = filler
+
+					if 2 in PPIDs:
+						HGFines = [Decimal(priceEntry.fines)]*((endDate - startDate).days+1)
+						finesPenaltyVals = {}
+						for i in range(len(commIDs)):
+							finesPenaltyVals[commNameList[i]] = [filler]*((endDate - startDate).days+1)
+						finesSellingPrices = [filler]*((endDate - startDate).days+1)
+						avgFinesSellingPrice = filler
+						netFinesPrices = [filler]*((endDate - startDate).days+1)
+						avgNetFinesPrice = filler
+						exchangeNetFinesPrices = [filler]*((endDate - startDate).days+1)
+						avgExchangeNetFinesPrice = filler
+
+					if 3 in PPIDs:
+						HGUltraFines = [Decimal(priceEntry.ultraFines)]*((endDate - startDate).days+1)
+						ultraFinesPenaltyVals = {}
+						for i in range(len(commIDs)):
+							ultraFinesPenaltyVals[commNameList[i]] = [filler]*((endDate - startDate).days+1)
+						ultraFinesSellingPrices = [filler]*((endDate - startDate).days+1)
+						avgUltraFinesSellingPrice = filler
+						netUltraFinesPrices = [filler]*((endDate - startDate).days+1)
+						avgNetUltraFinesPrice = filler
+						exchangeNetUltraFinesPrices = [filler]*((endDate - startDate).days+1)
+						avgExchangeNetUltraFinesPrice = filler
+
+					if 1 in PPIDs:
+						lumpRevenues = [filler]*((endDate - startDate).days+1)
+						sumLumpRevenues = filler
+
+					if 2 in PPIDs:
+						finesRevenues = [filler]*((endDate - startDate).days+1)
+						sumFinesRevenues = filler
+
+					if 3 in PPIDs:
+						ultraFinesRevenues = [filler]*((endDate - startDate).days+1)
+						sumUltraFinesRevenues = filler
+
+					totalRevenues = [filler]*((endDate - startDate).days+1)
+					sumTotalRevenues = filler
+
+					# Create DL Form Data
+					reportRowCount = 1
+
+					reportData = ""
+
+					currRow = 'Item,'
+					for date in dateVals:
+						# currRow += 'Year{0},'.format(year)
+						currRow += date + ','
+					currRow += 'Total;'
+					reportData += currRow
+
+					reportData += ";Mining;"
+					for curr in range(1, numStockpiles+1):
+						currRow = "Stockpile {0} Ore (kt),".format(curr) + ''.join([*[str(round(x,2))+',' for x in minePlanTonnageVals[curr]]]) + str(round(sumMinePlanTonnages[curr],2)) + ";"
+						reportData += currRow
+
+					reportData += ";Processing;"
+					for curr in range(1, numStockpiles+1):
+						reportData += "Stockpile {0} Ore;".format(curr)
+						currRow = 'Tonnage (kt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in tonnageVals[curr]]]) + ',' + tonnageTotals[curr] + ";"
+						reportData += currRow
+						for i in range(len(commIDs)):
+							currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in gradeVals[curr][commNameList[i]]]]) + ';'
+							reportData += currRow
+						reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in moistures[curr]]]) + ';'
+
+					reportData += ";Plant Product;"
+
+					if 1 in PPIDs:
+						reportData += "Lump;"
+						currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpTonnageVals]]) + ',' + lumpTonnageTotal + ';'
+						reportData += currRow
+						for i in range(len(commIDs)):
+							currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpGradeVals[commNameList[i]]]]) + ';'
+							reportData += currRow
+						reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpMoistures]]) + ';'
+
+					if 2 in PPIDs:
+						reportData += "Fines;"
+						currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesTonnageVals]]) + ',' + finesTonnageTotal + ';'
+						reportData += currRow
+						for i in range(len(commIDs)):
+							currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesGradeVals[commNameList[i]]]]) + ';'
+							reportData += currRow
+						reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesMoistures]]) + ';'
+
+					if 3 in PPIDs:
+						reportData += "Ultra Fines;"
+						currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesTonnageVals]]) + ',' + ultraFinesTonnageTotal + ';'
+						reportData += currRow
+						for i in range(len(commIDs)):
+							currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesGradeVals[commNameList[i]]]]) + ';'
+							reportData += currRow
+						reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesMoistures]]) + ';'
+
+					reportData += 'Total Product (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalProducts]]) + ',' + sumTotalProducts + ';'
+
+					if 4 in PPIDs:
+						reportData += "Rejects;"
+						currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsTonnageVals]]) + ',' + rejectsTonnageTotal + ';'
+						reportData += currRow
+						for i in range(len(commIDs)):
+							currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsGradeVals[commNameList[i]]]]) + ';'
+							reportData += currRow
+						reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsMoistures]]) + ';'
+
+					reportData += ";Products Selling Price;"
+
+					if 1 in PPIDs:
+						reportData += 'Lump Selling Price (USD/dmt);'
+						reportData += 'Lump Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGLumps]]) + ';'
+						for i in range(len(commIDs)):
+							reportData += 'Lump {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpPenaltyVals[commNameList[i]]]]) + ';'
+						reportData += 'Lump Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpSellingPrices]]) + ',' + 'Avg: ' + avgLumpSellingPrice + ';'
+						reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
+						reportData += 'Net Lump Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netLumpPrices]]) + ',' + 'Avg: ' + avgNetLumpPrice + ';'
+						reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
+						reportData += 'Net Lump Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetLumpPrices]]) + ',' + 'Avg: ' + avgExchangeNetLumpPrice + ';'
+
+					if 2 in PPIDs:
+						reportData += 'Fines Selling Price (USD/dmt);'
+						reportData += 'Fines Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGFines]]) + ';'
+						for i in range(len(commIDs)):
+							reportData += 'Fines {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesPenaltyVals[commNameList[i]]]]) + ';'
+						reportData += 'Fines Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesSellingPrices]]) + ',' + 'Avg: ' + avgFinesSellingPrice + ';'
+						reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
+						reportData += 'Net Fines Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netFinesPrices]]) + ',' + 'Avg: ' + avgNetFinesPrice + ';'
+						reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
+						reportData += 'Net Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetFinesPrices]]) + ',' + 'Avg: ' + avgExchangeNetFinesPrice + ';'
+
+					if 3 in PPIDs:
+						reportData += 'Ultra Fines Selling Price (USD/dmt);'
+						reportData += 'Ultra Fines Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGUltraFines]]) + ';'
+						for i in range(len(commIDs)):
+							reportData += 'Ultra Fines {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesPenaltyVals[commNameList[i]]]]) + ';'
+						reportData += 'Ultra Fines Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesSellingPrices]]) + ',' + 'Avg: ' + avgUltraFinesSellingPrice + ';'
+						reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
+						reportData += 'Net Ultra Fines Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netUltraFinesPrices]]) + ',' + 'Avg: ' + avgNetUltraFinesPrice + ';'
+						reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
+						reportData += 'Net Ultra Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetUltraFinesPrices]]) + ',' + 'Avg: ' + avgExchangeNetUltraFinesPrice+ ';'
+
+					reportData += ';Revenues;'
+					if 1 in PPIDs:
+						reportData += 'Lump Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpRevenues]]) + ',' + sumLumpRevenues + ';'
+					if 2 in PPIDs:
+						reportData += 'Fines Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesRevenues]]) + ',' + sumFinesRevenues + ';'
+					if 3 in PPIDs:
+						reportData += 'Ultra Fines Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesRevenues]]) + ',' + sumUltraFinesRevenues + ';'
+					reportData += 'TOTAL REVENUE,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + sumTotalRevenues + ';'
+
+					reportData += ';COSTS;'
+					reportData += 'OPEX (millions CAD);'
+					reportData += 'Mining,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in mining]]) + ',' + str(round(sumMining,2)) + ';'
+					reportData += 'Stockpile LG Reclaiming,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in stockpileLG]]) + ',' + str(round(sumStockpileLG,2)) + ';'
+					reportData += 'Pit Dewatering,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in dewatering]]) + ',' + str(round(sumDewatering,2)) + ';'
+					reportData += 'Processing,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in processing]]) + ',' + str(round(sumProcessing,2)) + ';'
+					reportData += 'Product Hauling,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in hauling]]) + ',' + str(round(sumHauling,2)) + ';'
+					reportData += 'Load-out and Rail Loop,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in loadOutRailLoop]]) + ',' + str(round(sumLoadOutRailLoop,2)) + ';'
+					reportData += 'G&A (Site),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in GASite]]) + ',' + str(round(sumGASite,2)) + ';'
+					reportData += 'G&A (Room & Board / FIFO),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in GARoom]]) + ',' + str(round(sumGARoom,2)) + ';'
+					reportData += 'Rail Transportation Port and Shiploading,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in railTransport]]) + ',' + str(round(sumRailTransport,2)) + ';'
+					reportData += 'Corporate G&A,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in GACorp]]) + ',' + str(round(sumGACorp,2)) + ';'
+					reportData += 'TOTAL OPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]]) + ',' + str(round(sumTotalOPEX,2)) + ';'
+					reportData += 'ROYALTIES (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]]) + ',' + str(round(sumRoyalties,2)) + ';'
+
+					reportData += 'CAPEX (millions CAD);'
+					reportData += 'Pre-Stripping,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preStrip]]) + ',' + str(round(sumPreStrip,2)) + ';'
+					reportData += 'Mining Equipment Initial,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipInitial]]) + ',' + str(round(sumMineEquipInitial,2)) + ';'
+					reportData += 'Mining Equipment Sustaining,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipSustain]]) + ',' + str(round(sumMineEquipSustain,2)) + ';'
+					reportData += 'Project Infrastructure Direct Costs,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in infraDirectCost]]) + ',' + str(round(sumInfraDirectCost,2)) + ';'
+					reportData += 'Project Infrastructure Indirect Costs,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in infraIndirectCost]]) + ',' + str(round(sumInfraIndirectCost,2)) + ';'
+					reportData += 'Project Infrastructure Contingency,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in contingency]]) + ',' + str(round(sumContingency,2)) + ';'
+					reportData += 'Railcars,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in railcars]]) + ',' + str(round(sumRailcars,2)) + ';'
+					reportData += 'Other Mobile Equipment,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]]) + ',' + str(round(sumOtherMobEquip,2)) + ';'
+					reportData += 'Closure and Rehab Assurance Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]]) + ',' + str(round(sumClosureRehabAssure,2)) + ';'
+					reportData += 'Deposits Provision Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]]) + ',' + str(round(sumDepoProvisionPay,2)) + ';'
+					reportData += 'TOTAL CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
+
+					reportData += 'TAXES (millions CAD);'
+					reportData += 'Federal Corporate Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in federalTaxes]]) + ',' + str(round(sumFederalTaxes,2)) + ';'
+					reportData += 'Provincial Corporate Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in provincialTaxes]]) + ',' + str(round(sumProvincialTaxes,2)) + ';'
+					reportData += 'Mining Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in miningTaxes]]) + ',' + str(round(sumMiningTaxes,2)) + ';'
+					reportData += 'TOTAL (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
+
+					# reportData += ';SUMMARY;'
+					# reportData += 'Revenues (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + str(round(sumTotalRevenues,2)) + ';'
+					# reportData += 'OPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]]) + ',' + str(round(sumTotalOPEX,2)) + ';'
+					# reportData += 'Royalties (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]]) + ',' + str(round(sumRoyalties,2)) + ';'
+					# reportData += 'CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
+					# reportData += 'Working Capital (Current Production) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCurrentProd]]) + ',' + str(round(sumWorkCapCurrentProd,2)) + ';'
+					# reportData += 'Working Capital (Costs of LG Stockpile) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCostsLG]]) + ',' + str(round(sumWorkCapCostsLG,2)) + ';'
+					# reportData += 'Taxes (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
+
+					# reportData += ';PRE-TAX CASH FLOW;'
+					# reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]]) + ',' + str(round(sumCashFlowPreTax,2)) + ';'
+					# reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]]) + ',' + str(round(sumCashFlowPreTax,2)) + ';'
+					# reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]]) + ',' + str(round(sumPaybackPreTax,2)) + ';'
+					# for rate in discountRates:
+					# 	reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPreTaxNPV[int(round(rate*100))],2)) + ';'
+					# reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(preTaxIRR,2)) + ';'
+
+					# reportData += ';POST-TAX CASH FLOW;'
+					# reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]]) + ',' + str(round(sumCashFlowPostTax,2)) + ';'
+					# reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]]) + ',' + str(round(sumCashFlowPostTax,2)) + ';'
+					# reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]]) + ',' + str(round(sumPaybackPostTax,2)) + ';'
+					# for rate in discountRates:
+					# 	reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPostTaxNPV[int(round(rate*100))],2)) + ';'
+					# reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(postTaxIRR,2)) + ';'
+
+
+					filter_form = filterForm(mineID=mineID)
+					report_form = reportForm(mineID=mineID, reportData=reportData)
+
+					return render(request, 'report/report2.html', {'filterForm': filter_form, 'reportForm': report_form,
+						'dateVals': dateVals, 'commIDs': commIDs, 'commNameList': commNameList,
+						'numStockpiles': list(range(1, numStockpiles+1)),
+						'minePlanTonnageVals': minePlanTonnageVals, 'sumMinePlanTonnages': sumMinePlanTonnages,
+						# 'minePlanHGTonnageVals': minePlanHGTonnageVals, 'minePlanLGTonnageVals': minePlanLGTonnageVals,
+						# 'minePlanWasteTonnageVals': minePlanWasteTonnageVals, 'minePlanOverburdenTonnageVals': minePlanOverburdenTonnageVals,
+						# 'sumMinePlanHGTonnage': sumMinePlanHGTonnage, 'sumMinePlanLGTonnage': sumMinePlanLGTonnage,
+						# 'sumMinePlanWasteTonnage': sumMinePlanWasteTonnage, 'sumMinePlanOverburdenTonnage': sumMinePlanOverburdenTonnage,
+						'tonnageVals': tonnageVals, 'tonnageTotals': tonnageTotals, 'gradeVals': gradeVals, 'moistures': moistures,
+						# 'HGTonnageVals': HGTonnageVals, 'HGTonnageTotal': HGTonnageTotal, 'HGGradeVals': HGGradeVals, 'HGMoistures': HGMoistures,
+						# 'LGTonnageVals': LGTonnageVals, 'LGTonnageTotal': LGTonnageTotal, 'LGGradeVals': LGGradeVals, 'LGMoistures': LGMoistures,
+						'lumpTonnageVals': lumpTonnageVals, 'lumpTonnageTotal': lumpTonnageTotal, 'lumpGradeVals': lumpGradeVals, 'lumpMoistures': lumpMoistures,
+						'finesTonnageVals': finesTonnageVals, 'finesTonnageTotal': finesTonnageTotal, 'finesGradeVals': finesGradeVals, 'finesMoistures': finesMoistures,
+						'ultraFinesTonnageVals': ultraFinesTonnageVals, 'ultraFinesTonnageTotal': ultraFinesTonnageTotal, 'ultraFinesGradeVals': ultraFinesGradeVals, 'ultraFinesMoistures': ultraFinesMoistures,
+						'totalProducts': totalProducts, 'sumTotalProducts': sumTotalProducts,
+						'rejectsTonnageVals': rejectsTonnageVals, 'rejectsTonnageTotal': rejectsTonnageTotal, 'rejectsGradeVals': rejectsGradeVals, 'rejectsMoistures': rejectsMoistures,
+						'fullShippingCosts': fullShippingCosts, 'fullExchangeRates': fullExchangeRates,
+						'HGLumps': HGLumps, 'lumpPenaltyVals': lumpPenaltyVals, 'lumpSellingPrices': lumpSellingPrices, 'avgLumpSellingPrice': avgLumpSellingPrice,
+						'netLumpPrices': netLumpPrices, 'avgNetLumpPrice': avgNetLumpPrice, 'exchangeNetLumpPrices': exchangeNetLumpPrices,
+						'avgExchangeNetLumpPrice': avgExchangeNetLumpPrice,
+						'HGFines': HGFines, 'finesPenaltyVals': finesPenaltyVals, 'finesSellingPrices': finesSellingPrices, 'avgFinesSellingPrice': avgFinesSellingPrice,
+						'netFinesPrices': netFinesPrices, 'avgNetFinesPrice': avgNetFinesPrice, 'exchangeNetFinesPrices': exchangeNetFinesPrices,
+						'avgExchangeNetFinesPrice': avgExchangeNetFinesPrice,
+						'HGUltraFines': HGUltraFines, 'ultraFinesPenaltyVals': ultraFinesPenaltyVals, 'ultraFinesSellingPrices': ultraFinesSellingPrices,
+						'avgUltraFinesSellingPrice': avgUltraFinesSellingPrice,
+						'netUltraFinesPrices': netUltraFinesPrices, 'exchangeNetUltraFinesPrices': exchangeNetUltraFinesPrices,
+						'avgExchangeNetUltraFinesPrice': avgExchangeNetUltraFinesPrice,
+						'lumpRevenues': lumpRevenues, 'finesRevenues': finesRevenues, 'ultraFinesRevenues': ultraFinesRevenues,
+						'sumLumpRevenues': sumLumpRevenues, 'sumFinesRevenues': sumFinesRevenues, 'sumUltraFinesRevenues': sumUltraFinesRevenues,
+						'totalRevenues': totalRevenues, 'sumTotalRevenues': sumTotalRevenues,
+						'mining': mining, 'stockpileLG': stockpileLG, 'dewatering': dewatering, 'processing': processing, 'hauling': hauling,
+						'loadOutRailLoop': loadOutRailLoop, 'GASite': GASite, 'GARoom': GARoom, 'railTransport': railTransport, 'GACorp': GACorp,
+						'sumMining': sumMining, 'sumStockpileLG': sumStockpileLG, 'sumDewatering': sumDewatering, 'sumProcessing': sumProcessing,
+						'sumHauling': sumHauling, 'sumLoadOutRailLoop': sumLoadOutRailLoop, 'sumGASite': sumGASite, 'sumGARoom': sumGARoom,
+						'sumRailTransport': sumRailTransport, 'sumGACorp': sumGACorp,
+						'totalOPEX': totalOPEX, 'sumTotalOPEX':sumTotalOPEX, 'royalties': royalties, 'sumRoyalties': sumRoyalties,
+						'preStrip': preStrip, 'mineEquipInitial': mineEquipInitial, 'mineEquipSustain': mineEquipSustain, 'infraDirectCost': infraDirectCost,
+						'infraIndirectCost': infraIndirectCost, 'contingency': contingency, 'railcars': railcars, 'otherMobEquip': otherMobEquip,
+						'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'sumPreStrip': sumPreStrip,
+						'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 'sumInfraDirectCost': sumInfraDirectCost,
+						'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency, 'sumRailcars': sumRailcars,
+						'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 'sumDepoProvisionPay': sumDepoProvisionPay,
+						'totalCAPEX': totalCAPEX, 'sumTotalCAPEX': sumTotalCAPEX,
+						'federalTaxes': federalTaxes, 'provincialTaxes': provincialTaxes, 'miningTaxes': miningTaxes,
+						'sumFederalTaxes': sumFederalTaxes, 'sumProvincialTaxes': sumProvincialTaxes, 'sumMiningTaxes': sumMiningTaxes,
+						'totalTaxes': totalTaxes, 'sumTotalTaxes': sumTotalTaxes,
+						'workCapCurrentProd': workCapCurrentProd, 'workCapCostsLG': workCapCostsLG,
+						'sumWorkCapCurrentProd': sumWorkCapCurrentProd, 'sumWorkCapCostsLG': sumWorkCapCostsLG})
+						# 'cashFlowPreTax': cashFlowPreTax, 'cashFlowPostTax': cashFlowPostTax,
+						# 'cumCashFlowPreTax': cumCashFlowPreTax, 'cumCashFlowPostTax': cumCashFlowPostTax,
+						# 'sumCashFlowPreTax': sumCashFlowPreTax, 'sumCashFlowPostTax': sumCashFlowPostTax,
+						# 'paybackPreTax': paybackPreTax, 'paybackPostTax': paybackPostTax,
+						# 'sumPaybackPreTax': sumPaybackPreTax, 'sumPaybackPostTax': sumPaybackPostTax,
+						# 'preTaxNPVs': preTaxNPVs, 'postTaxNPVs': postTaxNPVs, 'preTaxIRR': preTaxIRR, 'postTaxIRR': postTaxIRR,
+						# 'preTaxPVs': preTaxPVs, 'postTaxPVs': postTaxPVs, 'sumPreTaxNPV': sumPreTaxNPV, 'sumPostTaxNPV': sumPostTaxNPV})
+
+
+
 				tonnageVals = {}
 				tonnageTotals = {}
 				gradeVals = {}
