@@ -267,13 +267,60 @@ def editCAPEX(request):
 	form_class = CAPEXForm(mineID=mineID)
 
 	if request.method == 'POST':
-		projectMatch = tblProject.objects.filter(mineID=int(mineID)).order_by('-projectID')[0]
-		LOM = projectMatch.LOM
+		latestProject = tblProject.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+		LOM = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).count()
+		# LOM = projectMatch.LOM
 		form = CAPEXForm(request.POST, mineID=mineID)
 		if form.is_valid():
 			cleanData = form.cleaned_data
 			mineMatch = tblMine.objects.get(mineID=int(mineID))
 			dateAdded = timezone.localtime(timezone.now())
+
+			for year in [-3,-2,-1]:
+				preStrip = float(cleanData["year{0}PreStripping".format(year)])
+				mineEquipInitial = float(cleanData["year{0}MiningEquipmentInitial".format(year)])
+				mineEquipSustain = float(cleanData["year{0}MiningEquipmentSustaining".format(year)])
+				infraDirectCost = float(cleanData["year{0}InfrastructureDirectCosts".format(year)])
+				infraIndirectCost = float(cleanData["year{0}InfrastructureIndirectCosts".format(year)])
+				contingency = float(cleanData["year{0}Contingency".format(year)])
+				railcars = float(cleanData["year{0}Railcars".format(year)])
+				otherMobEquip = float(cleanData["year{0}OtherMobileEquipment".format(year)])
+				closureRehabAssure = float(cleanData["year{0}ClosureAndRehabAssurancePayment".format(year)])
+				depoProvisionPay = float(cleanData["year{0}DepositsProvisionPayment".format(year)])
+				workCapCurrentProd = float(cleanData["year{0}WorkingCapCurrentProd".format(year)])
+				workCapCostsLG = float(cleanData["year{0}WorkingCapCostsOfLG".format(year)])
+				EPCM = float(cleanData["year{0}EPCM".format(year)])
+				ownerCost = float(cleanData["year{0}OwnersCosts".format(year)])
+
+				latestCAPEX = tblCAPEX.objects.filter(mineID=int(mineID), year=year).order_by('-dateAdded')				
+				if latestCAPEX:
+					latestCAPEX = latestCAPEX[0]
+					latestCAPEX.preStrip = preStrip*1000000.0
+					latestCAPEX.mineEquipInitial = mineEquipInitial*1000000.0
+					latestCAPEX.mineEquipSustain = mineEquipSustain*1000000.0
+					latestCAPEX.infraDirectCost = infraDirectCost*1000000.0
+					latestCAPEX.infraIndirectCost = infraIndirectCost*1000000.0
+					latestCAPEX.contingency = contingency*1000000.0
+					latestCAPEX.railcars = railcars*1000000.0
+					latestCAPEX.otherMobEquip = otherMobEquip*1000000.0
+					latestCAPEX.closureRehabAssure = closureRehabAssure*1000000.0
+					latestCAPEX.depoProvisionPay = depoProvisionPay*1000000.0
+					latestCAPEX.workCapCurrentProd = workCapCurrentProd*1000000.0
+					latestCAPEX.workCapCostsLG = workCapCostsLG*1000000.0
+					latestCAPEX.EPCM = EPCM*1000000.0
+					latestCAPEX.ownerCost = ownerCost*1000000.0
+					latestCAPEX.dateAdded = dateAdded
+					latestCAPEX.save()
+				else:
+					mineMatch = tblMine.objects.get(mineID=int(mineID))
+					tblCAPEXObj = tblCAPEX(mineID=mineMatch, year=year, preStrip=preStrip*1000000.0,
+						mineEquipInitial=mineEquipInitial*1000000.0, mineEquipSustain=mineEquipSustain*1000000.0,
+						infraDirectCost=infraDirectCost*1000000.0, infraIndirectCost=infraIndirectCost*1000000.0,
+						contingency=contingency*1000000.0, railcars=railcars*1000000.0, otherMobEquip=otherMobEquip*1000000.0,
+						closureRehabAssure=closureRehabAssure*1000000.0, depoProvisionPay=depoProvisionPay*1000000.0,
+						workCapCurrentProd=workCapCurrentProd*1000000.0, workCapCostsLG=workCapCostsLG*1000000.0,
+						EPCM=EPCM*1000000.0, ownerCost=ownerCost*1000000.0, dateAdded=dateAdded)
+					tblCAPEXObj.save()
 
 			for year in range(1, LOM+1):
 				preStrip = float(cleanData["year{0}PreStripping".format(year)])
@@ -324,7 +371,8 @@ def editCAPEX(request):
 	else:
 		# Get the latest project by this user/mine
 		latestProject = tblProject.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
-		LOM = latestProject.LOM
+		LOM = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).count()
+		# LOM = latestProject.LOM
 
 		latestCAPEX = tblCAPEX.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
 		timestamp = latestCAPEX.dateAdded
@@ -344,27 +392,111 @@ def editCAPEX(request):
 		EPCM = []
 		ownerCost = []
 
+		preStripNeg = {}
+		mineEquipInitialNeg = {}
+		mineEquipSustainNeg = {}
+		infraDirectCostNeg = {}
+		infraIndirectCostNeg = {}
+		contingencyNeg = {}
+		railcarsNeg = {}
+		otherMobEquipNeg = {}
+		closureRehabAssureNeg = {}
+		depoProvisionPayNeg = {}
+		workCapCurrentProdNeg = {}
+		workCapCostsLGNeg = {}
+		EPCMNeg = {}
+		ownerCostNeg = {}
+
+		CAPEXEntries = tblCAPEX.objects.filter(mineID=int(mineID), dateAdded=timestamp).order_by('year')
+		for i in [-3,-2,-1]:
+			row = CAPEXEntries.filter(year=i)
+			if row:
+				row = row[0]
+				preStripNeg[i] = row.preStrip/Decimal(1000000.0)
+				mineEquipInitialNeg[i] = row.mineEquipInitial/Decimal(1000000.0)
+				mineEquipSustainNeg[i] = row.mineEquipSustain/Decimal(1000000.0)
+				infraDirectCostNeg[i] = row.infraDirectCost/Decimal(1000000.0)
+				infraIndirectCostNeg[i] = row.infraIndirectCost/Decimal(1000000.0)
+				contingencyNeg[i] = row.contingency/Decimal(1000000.0)
+				railcarsNeg[i] = row.railcars/Decimal(1000000.0)
+				otherMobEquipNeg[i] = row.otherMobEquip/Decimal(1000000.0)
+				closureRehabAssureNeg[i] = row.closureRehabAssure/Decimal(1000000.0)
+				depoProvisionPayNeg[i] = row.depoProvisionPay/Decimal(1000000.0)
+				workCapCurrentProdNeg[i] = row.workCapCurrentProd/Decimal(1000000.0)
+				workCapCostsLGNeg[i] = row.workCapCostsLG/Decimal(1000000.0)
+				EPCMNeg[i] = row.EPCM/Decimal(1000000.0)
+				ownerCostNeg[i] = row.ownerCost/Decimal(1000000.0)
+			else:
+				preStripNeg[i] = Decimal(0.0)
+				mineEquipInitialNeg[i] = Decimal(0.0)
+				mineEquipSustainNeg[i] = Decimal(0.0)
+				infraDirectCostNeg[i] = Decimal(0.0)
+				infraIndirectCostNeg[i] = Decimal(0.0)
+				contingencyNeg[i] = Decimal(0.0)
+				railcarsNeg[i] = Decimal(0.0)
+				otherMobEquipNeg[i] = Decimal(0.0)
+				closureRehabAssureNeg[i] = Decimal(0.0)
+				depoProvisionPayNeg[i] = Decimal(0.0)
+				workCapCurrentProdNeg[i] = Decimal(0.0)
+				workCapCostsLGNeg[i] = Decimal(0.0)
+				EPCMNeg[i] = Decimal(0.0)
+				ownerCostNeg[i] = Decimal(0.0)
+
+		# for i in range(3):
+		# 	row = results[i]
+		# 	preStripNeg[i-3] = row.preStrip/Decimal(1000000.0)
+		# 	mineEquipInitialNeg[i-3] = row.mineEquipInitial/Decimal(1000000.0)
+		# 	mineEquipSustainNeg[i-3] = row.mineEquipSustain/Decimal(1000000.0)
+		# 	infraDirectCostNeg[i-3] = row.infraDirectCost/Decimal(1000000.0)
+		# 	infraIndirectCostNeg[i-3] = row.infraIndirectCost/Decimal(1000000.0)
+		# 	contingencyNeg[i-3] = row.contingency/Decimal(1000000.0)
+		# 	railcarsNeg[i-3] = row.railcars/Decimal(1000000.0)
+		# 	otherMobEquipNeg[i-3] = row.otherMobEquip/Decimal(1000000.0)
+		# 	closureRehabAssureNeg[i-3] = row.closureRehabAssure/Decimal(1000000.0)
+		# 	depoProvisionPayNeg[i-3] = row.depoProvisionPay/Decimal(1000000.0)
+		# 	workCapCurrentProdNeg[i-3] = row.workCapCurrentProd/Decimal(1000000.0)
+		# 	workCapCostsLGNeg[i-3] = row.workCapCostsLG/Decimal(1000000.0)
+		# 	EPCMNeg[i-3] = row.EPCM/Decimal(1000000.0)
+		# 	ownerCostNeg[i-3] = row.ownerCost/Decimal(1000000.0)
+
 		for i in range(LOM):
-			i += 1
-			result = tblCAPEX.objects.filter(mineID=int(mineID), year=i, dateAdded=timestamp)
-			if result:
-				row = result[0]
-				# initialValues["year{0}PreStripping".format(i)] = row.preStrip
-				# initialValues["year{0}PreStripping".format(i)] = Float(0.33)
-				preStrip.append(row.preStrip/Decimal(1000000.0))
-				mineEquipInitial.append(row.mineEquipInitial/Decimal(1000000.0))
-				mineEquipSustain.append(row.mineEquipSustain/Decimal(1000000.0))
-				infraDirectCost.append(row.infraDirectCost/Decimal(1000000.0))
-				infraIndirectCost.append(row.infraIndirectCost/Decimal(1000000.0))
-				contingency.append(row.contingency/Decimal(1000000.0))
-				railcars.append(row.railcars/Decimal(1000000.0))
-				otherMobEquip.append(row.otherMobEquip/Decimal(1000000.0))
-				closureRehabAssure.append(row.closureRehabAssure/Decimal(1000000.0))
-				depoProvisionPay.append(row.depoProvisionPay/Decimal(1000000.0))
-				workCapCurrentProd.append(row.workCapCurrentProd/Decimal(1000000.0))
-				workCapCostsLG.append(row.workCapCostsLG/Decimal(1000000.0))
-				EPCM.append(row.EPCM/Decimal(1000000.0))
-				ownerCost.append(row.ownerCost/Decimal(1000000.0))
+			# i += 1
+			# result = tblCAPEX.objects.filter(mineID=int(mineID), year=i, dateAdded=timestamp)
+			subEntry = CAPEXEntries.filter(year=i+1)		
+			row = subEntry[0]
+			preStrip.append(row.preStrip/Decimal(1000000.0))
+			mineEquipInitial.append(row.mineEquipInitial/Decimal(1000000.0))
+			mineEquipSustain.append(row.mineEquipSustain/Decimal(1000000.0))
+			infraDirectCost.append(row.infraDirectCost/Decimal(1000000.0))
+			infraIndirectCost.append(row.infraIndirectCost/Decimal(1000000.0))
+			contingency.append(row.contingency/Decimal(1000000.0))
+			railcars.append(row.railcars/Decimal(1000000.0))
+			otherMobEquip.append(row.otherMobEquip/Decimal(1000000.0))
+			closureRehabAssure.append(row.closureRehabAssure/Decimal(1000000.0))
+			depoProvisionPay.append(row.depoProvisionPay/Decimal(1000000.0))
+			workCapCurrentProd.append(row.workCapCurrentProd/Decimal(1000000.0))
+			workCapCostsLG.append(row.workCapCostsLG/Decimal(1000000.0))
+			EPCM.append(row.EPCM/Decimal(1000000.0))
+			ownerCost.append(row.ownerCost/Decimal(1000000.0))
+
+			# if result:
+			# 	row = result[0]
+			# 	# initialValues["year{0}PreStripping".format(i)] = row.preStrip
+			# 	# initialValues["year{0}PreStripping".format(i)] = Float(0.33)
+			# 	preStrip.append(row.preStrip/Decimal(1000000.0))
+			# 	mineEquipInitial.append(row.mineEquipInitial/Decimal(1000000.0))
+			# 	mineEquipSustain.append(row.mineEquipSustain/Decimal(1000000.0))
+			# 	infraDirectCost.append(row.infraDirectCost/Decimal(1000000.0))
+			# 	infraIndirectCost.append(row.infraIndirectCost/Decimal(1000000.0))
+			# 	contingency.append(row.contingency/Decimal(1000000.0))
+			# 	railcars.append(row.railcars/Decimal(1000000.0))
+			# 	otherMobEquip.append(row.otherMobEquip/Decimal(1000000.0))
+			# 	closureRehabAssure.append(row.closureRehabAssure/Decimal(1000000.0))
+			# 	depoProvisionPay.append(row.depoProvisionPay/Decimal(1000000.0))
+			# 	workCapCurrentProd.append(row.workCapCurrentProd/Decimal(1000000.0))
+			# 	workCapCostsLG.append(row.workCapCostsLG/Decimal(1000000.0))
+			# 	EPCM.append(row.EPCM/Decimal(1000000.0))
+			# 	ownerCost.append(row.ownerCost/Decimal(1000000.0))
 
 		return render(request, "settings/capex.html", {'form': form_class, 'LOM': LOM,
 			'preStrip': preStrip, 'mineEquipInitial': mineEquipInitial,
@@ -373,7 +505,14 @@ def editCAPEX(request):
 			'railcars': railcars, 'otherMobEquip': otherMobEquip,
 			'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay,
 			'workCapCurrentProd': workCapCurrentProd, 'workCapCostsLG': workCapCostsLG,
-			'EPCM': EPCM, 'ownerCost': ownerCost})
+			'EPCM': EPCM, 'ownerCost': ownerCost,
+			'preStripNeg': preStripNeg, 'mineEquipInitialNeg': mineEquipInitialNeg,
+			'mineEquipSustainNeg': mineEquipSustainNeg, 'infraDirectCostNeg': infraDirectCostNeg,
+			'infraIndirectCostNeg': infraIndirectCostNeg, 'contingencyNeg': contingencyNeg,
+			'railcarsNeg': railcarsNeg, 'otherMobEquipNeg': otherMobEquipNeg,
+			'closureRehabAssureNeg': closureRehabAssureNeg, 'depoProvisionPayNeg': depoProvisionPayNeg,
+			'workCapCurrentProdNeg': workCapCurrentProdNeg, 'workCapCostsLGNeg': workCapCostsLGNeg,
+			'EPCMNeg': EPCMNeg, 'ownerCostNeg': ownerCostNeg })
 
 
 
@@ -384,7 +523,8 @@ def editOPEX(request):
 
 	if request.method == 'POST':
 		projectMatch = tblProject.objects.filter(mineID=int(mineID)).order_by('-projectID')[0]
-		LOM = projectMatch.LOM
+		LOM = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).count()
+		# LOM = projectMatch.LOM
 		form = OPEXForm(request.POST, mineID=mineID)
 		if form.is_valid():
 			cleanData = form.cleaned_data
@@ -436,7 +576,8 @@ def editOPEX(request):
 	else:
 		# Get the latest project by this user/mine
 		latestProject = tblProject.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
-		LOM = latestProject.LOM
+		LOM = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).count()
+		# LOM = latestProject.LOM
 
 		latestOPEX = tblOPEX.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
 		timestamp = latestOPEX.dateAdded

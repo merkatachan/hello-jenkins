@@ -44,19 +44,19 @@
     			<tr>
     				<th>Federal</th>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Federal" name="year{{ forloop.counter0|add:'1' }}Federal" max="1" min="0" placeholder="Max 4 Decimals" step="0.0001" type="number"></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Federal" name="year{{ forloop.counter0|add:'1' }}Federal" placeholder="Max 8 Decimals" step="0.00000001" type="number"></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Provincial</th>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Provincial" name="year{{ forloop.counter0|add:'1' }}Provincial" max="1" min="0" placeholder="Max 4 Decimals" step="0.0001" type="number"></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Provincial" name="year{{ forloop.counter0|add:'1' }}Provincial" placeholder="Max 8 Decimals" step="0.00000001" type="number"></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Mining</th>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Mining" name="year{{ forloop.counter0|add:'1' }}Mining" max="1" min="0" placeholder="Max 4 Decimals" step="0.0001" type="number"></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Mining" name="year{{ forloop.counter0|add:'1' }}Mining" placeholder="Max 8 Decimals" step="0.00000001" type="number"></td>
     				{% endfor %}
     			</tr>
     		</tbody>
