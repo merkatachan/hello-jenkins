@@ -332,7 +332,11 @@ def index5(request):
 			workCapCostsLG = []
 			EPCM = []
 			ownerCost = []
-			for year in range(1, yearCount+1):
+
+			negatives = [-3, -2, -1]
+			allYears = negatives + list(range(1, yearCount+1))
+
+			for year in allYears:
 				preStrip.append(float(cleanData["year{0}PreStripping".format(year)]))
 				mineEquipInitial.append(float(cleanData["year{0}MiningEquipmentInitial".format(year)]))
 				mineEquipSustain.append(float(cleanData["year{0}MiningEquipmentSustaining".format(year)]))
@@ -347,6 +351,22 @@ def index5(request):
 				workCapCostsLG.append(float(cleanData["year{0}WorkingCapCostsOfLG".format(year)]))
 				EPCM.append(float(cleanData["year{0}EPCM".format(year)]))
 				ownerCost.append(float(cleanData["year{0}OwnersCosts".format(year)]))
+
+			# for year in range(1, yearCount+1):
+			# 	preStrip.append(float(cleanData["year{0}PreStripping".format(year)]))
+			# 	mineEquipInitial.append(float(cleanData["year{0}MiningEquipmentInitial".format(year)]))
+			# 	mineEquipSustain.append(float(cleanData["year{0}MiningEquipmentSustaining".format(year)]))
+			# 	infraDirectCost.append(float(cleanData["year{0}InfrastructureDirectCosts".format(year)]))
+			# 	infraIndirectCost.append(float(cleanData["year{0}InfrastructureIndirectCosts".format(year)]))
+			# 	contingency.append(float(cleanData["year{0}Contingency".format(year)]))
+			# 	railcars.append(float(cleanData["year{0}Railcars".format(year)]))
+			# 	otherMobEquip.append(float(cleanData["year{0}OtherMobileEquipment".format(year)]))
+			# 	closureRehabAssure.append(float(cleanData["year{0}ClosureAndRehabAssurancePayment".format(year)]))
+			# 	depoProvisionPay.append(float(cleanData["year{0}DepositsProvisionPayment".format(year)]))
+			# 	workCapCurrentProd.append(float(cleanData["year{0}WorkingCapCurrentProd".format(year)]))
+			# 	workCapCostsLG.append(float(cleanData["year{0}WorkingCapCostsOfLG".format(year)]))
+			# 	EPCM.append(float(cleanData["year{0}EPCM".format(year)]))
+			# 	ownerCost.append(float(cleanData["year{0}OwnersCosts".format(year)]))
 
 			request.session["preStrip"] = [x*1000000.0 for x in preStrip]
 			request.session["mineEquipInitial"] = [x*1000000.0 for x in mineEquipInitial]
@@ -805,15 +825,29 @@ def index10(request):
 			workCapCostsLG = request.session["workCapCostsLG"]
 			EPCM = request.session["EPCM"]
 			ownerCost = request.session["ownerCost"]
-			for year in range(endYear):
-				tblCAPEXObj = tblCAPEX(mineID=mineMatch, year=year+1, preStrip=preStrip[year],
-					mineEquipInitial=mineEquipInitial[year], mineEquipSustain=mineEquipSustain[year],
-					infraDirectCost=infraDirectCost[year], infraIndirectCost=infraIndirectCost[year],
-					contingency=contingency[year], railcars=railcars[year], otherMobEquip=otherMobEquip[year],
-					closureRehabAssure=closureRehabAssure[year], depoProvisionPay=depoProvisionPay[year],
-					workCapCurrentProd=workCapCurrentProd[year], workCapCostsLG=workCapCostsLG[year],
-					EPCM=EPCM[year], ownerCost=ownerCost[year], dateAdded=dateAdded)
+
+			negatives = [-3, -2, -1]
+			allYears = negatives + list(range(1, len(preStrip) - 3 + 1))
+
+			for i in range(len(allYears)):
+				tblCAPEXObj = tblCAPEX(mineID=mineMatch, year=allYears[i], preStrip=preStrip[i],
+					mineEquipInitial=mineEquipInitial[i], mineEquipSustain=mineEquipSustain[i],
+					infraDirectCost=infraDirectCost[i], infraIndirectCost=infraIndirectCost[i],
+					contingency=contingency[i], railcars=railcars[i], otherMobEquip=otherMobEquip[i],
+					closureRehabAssure=closureRehabAssure[i], depoProvisionPay=depoProvisionPay[i],
+					workCapCurrentProd=workCapCurrentProd[i], workCapCostsLG=workCapCostsLG[i],
+					EPCM=EPCM[i], ownerCost=ownerCost[i], dateAdded=dateAdded)
 				tblCAPEXObj.save()
+
+			# for year in range(endYear):
+			# 	tblCAPEXObj = tblCAPEX(mineID=mineMatch, year=year+1, preStrip=preStrip[year],
+			# 		mineEquipInitial=mineEquipInitial[year], mineEquipSustain=mineEquipSustain[year],
+			# 		infraDirectCost=infraDirectCost[year], infraIndirectCost=infraIndirectCost[year],
+			# 		contingency=contingency[year], railcars=railcars[year], otherMobEquip=otherMobEquip[year],
+			# 		closureRehabAssure=closureRehabAssure[year], depoProvisionPay=depoProvisionPay[year],
+			# 		workCapCurrentProd=workCapCurrentProd[year], workCapCostsLG=workCapCostsLG[year],
+			# 		EPCM=EPCM[year], ownerCost=ownerCost[year], dateAdded=dateAdded)
+			# 	tblCAPEXObj.save()
 
 			# Insert into tblOPEX
 			mining = request.session["mining"]

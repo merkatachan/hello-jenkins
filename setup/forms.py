@@ -267,6 +267,64 @@ class CAPEXForm(forms.Form):
 			LOM = kwargs.pop('LOM')
 			super(CAPEXForm, self).__init__(*args, **kwargs)
 
+			for i in [-3, -2, -1]:
+				self.fields["year{0}PreStripping".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} Pre-Stripping".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}MiningEquipmentInitial".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} Mining Equipment Initial".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}MiningEquipmentSustaining".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} Mining Equipment Sustaining".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}InfrastructureDirectCosts".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} Infrastructure Direct Costs".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}InfrastructureIndirectCosts".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} Infrastructure Indirect Costs".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}Contingency".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} Contingency".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}Railcars".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} Railcars".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}OtherMobileEquipment".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} Other Mobile Equipment".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}ClosureAndRehabAssurancePayment".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} Closure and Rehab Assurance Payment".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}DepositsProvisionPayment".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} Deposits Provision Payment".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}WorkingCapCurrentProd".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} WorkingCapCurrentProd".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}WorkingCapCostsOfLG".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} WorkingCapCostsofLG".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}EPCM".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} EPCM".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+				self.fields["year{0}OwnersCosts".format(i)] = forms.DecimalField(required=True,
+		        		label="Year{0} Owner's Costs".format(i),
+		        		decimal_places=8, max_digits=20,
+		        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
+
 			for i in range(int(LOM)):
 				i += 1
 				self.fields["year{0}PreStripping".format(i)] = forms.DecimalField(required=True,
@@ -566,16 +624,16 @@ class taxesForm(forms.Form):
 	        	i += 1
 	        	self.fields["year{0}Federal".format(i)] = forms.DecimalField(required=True,
 	        		label="Year{0} Federal".format(i),
-	        		decimal_places=2, min_value=0, max_value=100,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+	        		decimal_places=8, max_digits=20,
+	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
 	        	self.fields["year{0}Provincial".format(i)] = forms.DecimalField(required=True,
 	        		label="Year{0} Provincial".format(i),
-	        		decimal_places=2, min_value=0, max_value=100,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+	        		decimal_places=8, max_digits=20,
+	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
 	        	self.fields["year{0}Mining".format(i)] = forms.DecimalField(required=True,
 	        		label="Year{0} Mining".format(i),
-	        		decimal_places=2, min_value=0, max_value=100,
-	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 2 Decimal Places'}))
+	        		decimal_places=8, max_digits=20,
+	        		widget=forms.NumberInput(attrs={'placeholder': 'Max 8 Decimal Places'}))
 
 
 # class inputsForm(forms.Form):
