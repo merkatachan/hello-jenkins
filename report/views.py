@@ -8,7 +8,9 @@ import numpy as np
 import operator
 import calendar
 import datetime
+from dateutil.relativedelta import relativedelta
 from math import pow
+from math import ceil
 import csv
 import calendar
 from django.http import HttpResponse
@@ -160,7 +162,72 @@ def index(request):
 
 	discountRates = [Decimal(0.06), Decimal(0.08), Decimal(0.10), Decimal(0.12), Decimal(0.15), Decimal(0.20)]
 
-	yearCount = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).count()
+	projectPeriods = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).order_by('year')
+	# yearCount = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).count()
+	yearCount = projectPeriods.count()
+
+	projectStartDate = projectPeriods[0].startDate
+	projectEndDate = projectPeriods[yearCount-1].endDate
+
+	# Check if default filter options are available
+	# Check "This year", "Last year", "This quarter", and "Last quarter"
+	# 1. This year
+	today = datetime.date.today()
+	if (today.year >= projectStartDate.year) and (today.year <= projectEndDate.year):
+		# thisYear = True
+		thisYearStartDate = datetime.date(today.year, 1, 1)
+		thisYearEndDate = datetime.date(today.year, 12, 31)
+	else:
+		# thisYear = False
+		thisYearStartDate = None
+		thisYearEndDate = None
+
+	# 2. Last year
+	if (today.year-1 >= projectStartDate.year) and (today.year-1 <= projectEndDate.year):
+		# lastYear = True
+		lastYearStartDate = datetime.date(today.year-1, 1, 1)
+		lastYearEndDate = datetime.date(today.year-1, 12, 31)
+	else:
+		# lastYear = False
+		lastYearStartDate = None
+		lastYearEndDate = None
+
+	# 3. This quarter
+	if thisYearStartDate:
+		todayQ = ceil(today.month/3.0)
+		if today.year == projectStartDate.year:
+			startDateQ = ceil(projectStartDate.month/3.0)
+			quarters = list(range(startDateQ, 5))			
+			if todayQ in quarters:
+				# thisQuarter = True
+				thisQuarterStartDate = datetime.date(today.year, 3*(todayQ - 1) + 1, 1)
+				thisQuarterEndDate = thisQuarterStartDate + relativedelta(months=+3) - relativedelta(days=+1)
+			else:
+				# thisQuarter = False
+				thisQuarterStartDate = None
+				thisQuarterEndDate = None
+		else:
+			# thisQuarter = True
+			thisQuarterStartDate = datetime.date(today.year, 3*(todayQ - 1) + 1, 1)
+			thisQuarterEndDate = thisQuarterStartDate + relativedelta(months=+3) - relativedelta(days=+1)
+	else:
+		# thisQuarter = False
+		thisQuarterStartDate = None
+		thisQuarterEndDate = None
+
+	# 4. Last quarter
+	threeMonthsAgo = today - relativedelta(months=+3)
+	if (threeMonthsAgo >= projectStartDate) and (threeMonthsAgo <= projectEndDate):
+		threeMonthsAgoQ = ceil(threeMonthsAgo.month/3.0)
+		# lastQuarter = True
+		lastQuarterStartDate = datetime.date(threeMonthsAgo.year, 3*(threeMonthsAgoQ - 1) + 1, 1)
+		lastQuarterEndDate = lastQuarterStartDate + relativedelta(months=+3) - relativedelta(days=+1)
+	else:
+		# lastQuarter = False
+		lastQuarterStartDate = None
+		lastQuarterEndDate = None
+
+
 	fullYearVals = list(range(1, yearCount+1))
 	fullYearVals = [x+latestProject.startDate.year-1 for x in fullYearVals]
 
@@ -260,8 +327,25 @@ def index(request):
 	EPCM = []
 	ownerCost = []
 
+	latestCAPEX = tblCAPEX.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+	timestamp = latestCAPEX.dateAdded
+	CAPEXEntries = tblCAPEX.objects.filter(mineID=int(mineID), dateAdded=timestamp)
+
+	negCAPEX = []
+	for year in [-3,-2,-1]:
+		currCAPEX = CAPEXEntries.filter(year=year)
+		if currCAPEX:
+			row = currCAPEX[0]
+			negCAPEX.append(round(Decimal(row.preStrip + row.mineEquipInitial + row.mineEquipSustain + 
+				row.infraDirectCost + row.infraIndirectCost + row.contingency + row.railcars + 
+				row.otherMobEquip + row.closureRehabAssure + row.depoProvisionPay + 
+				row.workCapCurrentProd + row.workCapCostsLG + row.EPCM + row.ownerCost),2))
+		else:
+			negCAPEX.append(Decimal(0.0))
+	sumNegCAPEX = sum(negCAPEX)
+
 	for year in range(1, yearCount+1):
-		currCAPEX = tblCAPEX.objects.filter(mineID=mineID, year=year).order_by('-dateAdded')[0]
+		currCAPEX = CAPEXEntries.filter(year=year)[0]
 		preStrip.append(round(Decimal(currCAPEX.preStrip),2))
 		mineEquipInitial.append(round(Decimal(currCAPEX.mineEquipInitial),2))
 		mineEquipSustain.append(round(Decimal(currCAPEX.mineEquipSustain),2))
@@ -629,338 +713,16 @@ def index(request):
 		reportData += 'INTERNAL RATE OF RETURN (IRR),' + 'N/A' + ';'
 
 		# form_class = filterForm(mineID=mineID, reportData=reportData)
-		filter_form = filterForm(mineID=mineID)
+		# filter_form = filterForm(mineID=mineID, reportData=reportData)
+		filter_form = filterForm(mineID=mineID, startDate=projectStartDate, endDate=projectEndDate)
+		default_filter_form = defaultFilterForm(mineID=mineID, thisYearStartDate=thisYearStartDate, thisYearEndDate=thisYearEndDate,
+			lastYearStartDate=lastYearStartDate, lastYearEndDate=lastYearEndDate,
+			thisQuarterStartDate=thisQuarterStartDate, thisQuarterEndDate=thisQuarterEndDate,
+			lastQuarterStartDate=lastQuarterStartDate, lastQuarterEndDate=lastQuarterEndDate)
 		report_form = reportForm(mineID=mineID, reportData=reportData)
 
-		# Create DL Form Data
-		# reportRowCount = 1
-
-		# currDataRow = []
-		# currDataRow.append('Item')
-		# for year in range(1, yearCount+1):
-		# 	currDataRow.append('Year{0}'.format(year))
-		# currDataRow.append('Total')
-		# request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Mining']
-
-		# for curr in range(1, numStockpiles+1):
-		# 	reportRowCount += 1
-		# 	currDataRow = ["Stockpile {0} Ore (kt)".format(curr)] + [*[str(round(x,2)) for x in minePlanTonnageVals[curr]]]
-		# 	# currDataRow += [*[str(round(x,2)) for x in minePlanTonnageVals[curr]]]
-		# 	currDataRow.append(str(round(sumMinePlanTonnages[curr],2)))
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Processing']
-
-		# for curr in range(1, numStockpiles+1):
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ["Stockpile {0} Ore".format(curr)]
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Tonnage (kt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in tonnageVals[curr]]]
-		# 	currDataRow.append(tonnageTotals[curr])
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	for i in range(len(commIDs)):
-		# 		reportRowCount += 1
-		# 		currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in gradeVals[curr][commNameList[i]]]]
-		# 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in moistures[curr]]]
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Plant Product']
-
-		# if 1 in PPIDs:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Lump']
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpTonnageVals]]
-		# 	currDataRow.append(lumpTonnageTotal)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	for i in range(len(commIDs)):
-		# 		reportRowCount += 1
-		# 		currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpGradeVals[commNameList[i]]]]
-		# 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpMoistures]]
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
-		# if 2 in PPIDs:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Fines']
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesTonnageVals]]
-		# 	currDataRow.append(finesTonnageTotal)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	for i in range(len(commIDs)):
-		# 		reportRowCount += 1
-		# 		currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesGradeVals[commNameList[i]]]]
-		# 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesMoistures]]
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
-		# if 3 in PPIDs:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines']
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesTonnageVals]]
-		# 	currDataRow.append(ultraFinesTonnageTotal)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	for i in range(len(commIDs)):
-		# 		reportRowCount += 1
-		# 		currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesGradeVals[commNameList[i]]]]
-		# 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesMoistures]]
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
-		# reportRowCount += 1
-		# currDataRow = ['Total Product (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalProducts]]
-		# currDataRow.append(sumTotalProducts)
-		# request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
-		# if 4 in PPIDs:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Rejects']
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsTonnageVals]]
-		# 	currDataRow.append(str(round(rejectsTonnageTotal,2)))
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	for i in range(len(commIDs)):
-		# 		reportRowCount += 1
-		# 		currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsGradeVals[commNameList[i]]]]
-		# 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsMoistures]]
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Products Selling Price']
-
-		# if 1 in PPIDs:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Lump Selling Price (USD/dmt)']
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Lump Base (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in HGLumps]]
-		# 	for i in range(len(commIDs)):
-		# 		reportRowCount += 1
-		# 		request.session['reportRow{0}'.format(reportRowCount)] = ['Lump {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpPenaltyVals[commNameList[i]]]]
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Lump Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpSellingPrices]]
-		# 	currDataRow.append('Avg: ' + avgLumpSellingPrice)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Net Lump Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netLumpPrices]]
-		# 	currDataRow.append('Avg: ' + avgNetLumpPrice)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Net Lump Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetLumpPrices]]
-		# 	currDataRow.append('Avg: ' + avgExchangeNetLumpPrice)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
-		# if 2 in PPIDs:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Fines Selling Price (USD/dmt)']
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Fines Base (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in HGFines]]
-		# 	for i in range(len(commIDs)):
-		# 		reportRowCount += 1
-		# 		request.session['reportRow{0}'.format(reportRowCount)] = ['Fines {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesPenaltyVals[commNameList[i]]]]
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Fines Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesSellingPrices]]
-		# 	currDataRow.append('Avg: ' + avgFinesSellingPrice)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Net Fines Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netFinesPrices]]
-		# 	currDataRow.append('Avg: ' + avgNetFinesPrice)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Net Fines Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetFinesPrices]]
-		# 	currDataRow.append('Avg: ' + avgExchangeNetFinesPrice)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
-		# if 3 in PPIDs:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines Selling Price (USD/dmt)']
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines Base (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in HGUltraFines]]
-		# 	for i in range(len(commIDs)):
-		# 		reportRowCount += 1
-		# 		request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesPenaltyVals[commNameList[i]]]]
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Ultra Fines Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesSellingPrices]]
-		# 	currDataRow.append('Avg: ' + avgUltraFinesSellingPrice)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Net Ultra Fines Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netUltraFinesPrices]]
-		# 	currDataRow.append('Avg: ' + avgNetUltraFinesPrice)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
-		# 	reportRowCount += 1
-		# 	currDataRow = ['Net Ultra Fines Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetUltraFinesPrices]]
-		# 	currDataRow.append('Avg: ' + avgExchangeNetUltraFinesPrice)
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Revenues']
-
-		# if 1 in PPIDs:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Lump Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpRevenues]] + [sumLumpRevenues]
-		# if 2 in PPIDs:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Fines Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesRevenues]] + [sumFinesRevenues]
-		# if 3 in PPIDs:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesRevenues]] + [sumUltraFinesRevenues]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL REVENUE'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]] + [sumTotalRevenues]
-
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['COSTS']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['OPEX (millions CAD)']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Mining'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in mining]] + [str(round(sumMining,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Stockpile LG Reclaiming'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in stockpileLG]] + [str(round(sumStockpileLG,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Pit Dewatering'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in dewatering]] + [str(round(sumDewatering,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Processing'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in processing]] + [str(round(sumProcessing,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Product Hauling'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in hauling]] + [str(round(sumHauling,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Load-out and Rail Loop'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in loadOutRailLoop]] + [str(round(sumLoadOutRailLoop,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['G&A (Site)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in GASite]] + [str(round(sumGASite,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['G&A (Room & Board / FIFO)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in GARoom]] + [str(round(sumGARoom,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Rail Transportation, Port and Shiploading'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in railTransport]] + [str(round(sumRailTransport,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Corporate G&A'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in GACorp]] + [str(round(sumGACorp,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL OPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]] + [str(round(sumTotalOPEX,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['ROYALTIES (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]] + [str(round(sumRoyalties,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['CAPEX (millions CAD)']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Pre-Stripping'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in preStrip]] + [str(round(sumPreStrip,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Mining Equipment Initial'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipInitial]] + [str(round(sumMineEquipInitial,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Mining Equipment Sustaining'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipSustain]] + [str(round(sumMineEquipSustain,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Project Infrastructure Direct Costs'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in infraDirectCost]] + [str(round(sumInfraDirectCost,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Project Infrastructure Indirect Costs'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in infraIndirectCost]] + [str(round(sumInfraIndirectCost,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Project Infrastructure Contingency'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in contingency]] + [str(round(sumContingency,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Railcars'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in railcars]] + [str(round(sumRailcars,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Other Mobile Equipment'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]] + [str(round(sumOtherMobEquip,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Closure and Rehab Assurance Payments'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]] + [str(round(sumClosureRehabAssure,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Deposits Provision Payments'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]] + [str(round(sumDepoProvisionPay,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL CAPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]] + [str(round(sumTotalCAPEX,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['TAXES (millions CAD)']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Federal Corporate Taxes'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in federalTaxes]] + [str(round(sumFederalTaxes,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Provincial Corporate Taxes'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in provincialTaxes]] + [str(round(sumProvincialTaxes,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Mining Taxes'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in miningTaxes]] + [str(round(sumMiningTaxes,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]] + [str(round(sumTotalTaxes,2))]
-
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['SUMMARY']
-
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Revenues (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]] + [sumTotalRevenues]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['OPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]] + [str(round(sumTotalOPEX,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Royalties (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]] + [str(round(sumRoyalties,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['CAPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]] + [str(round(sumTotalCAPEX,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Working Capital (Current Production) (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCurrentProd]] + [str(round(sumWorkCapCurrentProd,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Working Capital (Costs of LG Stockpile) (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCostsLG]] + [str(round(sumWorkCapCostsLG,2))]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Taxes (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]] + [str(round(sumTotalTaxes,2))]
-
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['PRE-TAX CASH FLOW']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]] + [sumCashFlowPreTax]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Cumulative Undiscounted Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]] + [sumCashFlowPreTax]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Payback Period (year)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]] + [sumPaybackPreTax]
-		# for rate in discountRates:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['PRE-TAX NPV @ {0}%'.format(int(round(rate*100)))] + [*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]] + [sumPreTaxNPV[int(round(rate*100))]]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['INTERNAL RATE OF RETURN (IRR)'] + [preTaxIRR]
-
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['POST-TAX CASH FLOW']
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]] + [sumCashFlowPostTax]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Cumulative Undiscounted Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]] + [sumCashFlowPostTax]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['Payback Period (year)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]] + [sumPaybackPostTax]
-		# for rate in discountRates:
-		# 	reportRowCount += 1
-		# 	request.session['reportRow{0}'.format(reportRowCount)] = ['POST-TAX NPV @ {0}%'.format(int(round(rate*100)))] + [*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]] + [sumPostTaxNPV[int(round(rate*100))]]
-		# reportRowCount += 1
-		# request.session['reportRow{0}'.format(reportRowCount)] = ['INTERNAL RATE OF RETURN (IRR)'] + [postTaxIRR]
-
-		# request.session['reportRowCount'] = reportRowCount
-
 		return render(request, 'report/report.html', {'filterForm': filter_form, 'reportForm': report_form,
+			'defaultFilterForm': default_filter_form,
 			'yearVals': yearVals, 'fullYearVals': fullYearVals, 'commIDs': commIDs, 'commNameList': commNameList,
 			'numStockpiles': list(range(1, numStockpiles+1)),
 			'minePlanTonnageVals': minePlanTonnageVals, 'sumMinePlanTonnages': sumMinePlanTonnages,
@@ -1459,200 +1221,6 @@ def index(request):
 
 	sumTotalRevenues = sum(totalRevenues)
 
-	# # Handle Costs Section (OPEX)
-	# mining = []
-	# infrastructure = []
-	# stockpileLG = []
-	# dewatering = []
-	# processing = []
-	# hauling = []
-	# loadOutRailLoop = []
-	# GASite = []
-	# GARoom = []
-	# railTransport = []
-	# GACorp = []
-	# royalties = []
-	# transportation = []
-	# GA = []
-
-	# for year in yearVals:
-	# 	currOPEX = tblOPEX.objects.filter(mineID=mineID, year=year).order_by('-dateAdded')[0]
-	# 	mining.append(round(Decimal(currOPEX.mining)*1000,2))
-	# 	infrastructure.append(round(Decimal(currOPEX.infrastructure)*1000,2))
-	# 	stockpileLG.append(round(Decimal(currOPEX.stockpileLG)*1000,2))
-	# 	dewatering.append(round(Decimal(currOPEX.dewatering)*1000,2))
-	# 	processing.append(round(Decimal(currOPEX.processing)*1000,2))
-	# 	hauling.append(round(Decimal(currOPEX.hauling)*1000,2))
-	# 	loadOutRailLoop.append(round(Decimal(currOPEX.loadOutRailLoop)*1000,2))
-	# 	GASite.append(round(Decimal(currOPEX.GASite)*1000,2))
-	# 	GARoom.append(round(Decimal(currOPEX.GARoomBoardFIFO)*1000,2))
-	# 	railTransport.append(round(Decimal(currOPEX.railTransport)*1000,2))
-	# 	GACorp.append(round(Decimal(currOPEX.GACorp)*1000,2))
-	# 	royalties.append(round(Decimal(currOPEX.royalties)*1000,2))
-	# 	transportation.append(round(Decimal(currOPEX.transportation)*1000,2))
-	# 	GA.append(round(Decimal(currOPEX.GA)*1000,2))
-	# sumMining = sum(mining)
-	# sumStockpileLG = sum(stockpileLG)
-	# sumDewatering = sum(dewatering)
-	# sumProcessing = sum(processing)
-	# sumHauling = sum(hauling)
-	# sumLoadOutRailLoop = sum(loadOutRailLoop)
-	# sumGASite = sum(GASite)
-	# sumGARoom = sum(GARoom)
-	# sumRailTransport = sum(railTransport)
-	# sumGACorp = sum(GACorp)
-	# sumRoyalties = sum(royalties)
-	# totalOPEX = [sum(x) for x in zip(mining, stockpileLG, dewatering, processing, hauling,
-	# 	loadOutRailLoop, GASite, GARoom, railTransport, GACorp)]
-	# cashFlowOPEX = [sum(x) for x in zip(mining, infrastructure, stockpileLG, dewatering, processing, hauling,
-	# 	loadOutRailLoop, GASite, GARoom, railTransport, GACorp, royalties, transportation, GA)]
-	# sumTotalOPEX = sum(totalOPEX)
-
-
-	# # Handle Costs Section (CAPEX)
-	# preStrip = []
-	# mineEquipInitial = []
-	# mineEquipSustain = []
-	# infraDirectCost = []
-	# infraIndirectCost = []
-	# contingency = []
-	# railcars = []
-	# otherMobEquip = []
-	# closureRehabAssure = []
-	# depoProvisionPay = []
-	# workCapCurrentProd = []
-	# workCapCostsLG = []
-	# EPCM = []
-	# ownerCost = []
-
-	# for year in yearVals:
-	# 	currCAPEX = tblCAPEX.objects.filter(mineID=mineID, year=year).order_by('-dateAdded')[0]
-	# 	preStrip.append(round(Decimal(currCAPEX.preStrip)*1000,2))
-	# 	mineEquipInitial.append(round(Decimal(currCAPEX.mineEquipInitial)*1000,2))
-	# 	mineEquipSustain.append(round(Decimal(currCAPEX.mineEquipSustain)*1000,2))
-	# 	infraDirectCost.append(round(Decimal(currCAPEX.infraDirectCost)*1000,2))
-	# 	infraIndirectCost.append(round(Decimal(currCAPEX.infraIndirectCost)*1000,2))
-	# 	contingency.append(round(Decimal(currCAPEX.contingency)*1000,2))
-	# 	railcars.append(round(Decimal(currCAPEX.railcars)*1000,2))
-	# 	otherMobEquip.append(round(Decimal(currCAPEX.otherMobEquip)*1000,2))
-	# 	closureRehabAssure.append(round(Decimal(currCAPEX.closureRehabAssure)*1000,2))
-	# 	depoProvisionPay.append(round(Decimal(currCAPEX.depoProvisionPay)*1000,2))
-	# 	workCapCurrentProd.append(round(Decimal(currCAPEX.workCapCurrentProd)*1000,2))
-	# 	workCapCostsLG.append(round(Decimal(currCAPEX.workCapCostsLG)*1000,2))
-	# 	EPCM.append(round(Decimal(currCAPEX.EPCM)*1000,2))
-	# 	ownerCost.append(round(Decimal(currCAPEX.ownerCost)*1000,2))
-	# sumPreStrip = sum(preStrip)
-	# sumMineEquipInitial = sum(mineEquipInitial)
-	# sumMineEquipSustain = sum(mineEquipSustain)
-	# sumInfraDirectCost = sum(infraDirectCost)
-	# sumInfraIndirectCost = sum(infraIndirectCost)
-	# sumContingency = sum(contingency)
-	# sumRailcars = sum(railcars)
-	# sumOtherMobEquip = sum(otherMobEquip)
-	# sumClosureRehabAssure = sum(closureRehabAssure)
-	# sumDepoProvisionPay = sum(depoProvisionPay)
-	# sumWorkCapCurrentProd = sum(workCapCurrentProd)
-	# sumWorkCapCostsLG = sum(workCapCostsLG)
-	# totalCAPEX = [sum(x) for x in zip(preStrip, mineEquipInitial, mineEquipSustain, infraDirectCost, infraIndirectCost,
-	# 	contingency, railcars, otherMobEquip, closureRehabAssure, depoProvisionPay)]
-	# cashFlowCAPEX = [sum(x) for x in zip(totalCAPEX, workCapCurrentProd, workCapCostsLG, EPCM, ownerCost)]
-	# sumTotalCAPEX = sum(totalCAPEX)
-
-
-	# # Handle Taxes Section
-	# federalTaxes = []
-	# provincialTaxes = []
-	# miningTaxes = []
-
-	# for year in yearVals:
-	# 	currTaxes = tblTaxes.objects.filter(mineID=mineID, year=year).order_by('-dateAdded')[0]
-	# 	federalTaxes.append(round(Decimal(currTaxes.federal),2))
-	# 	provincialTaxes.append(round(Decimal(currTaxes.provincial),2))
-	# 	miningTaxes.append(round(Decimal(currTaxes.mining),2))
-	# sumFederalTaxes = sum(federalTaxes)
-	# sumProvincialTaxes = sum(provincialTaxes)
-	# sumMiningTaxes = sum(miningTaxes)
-	# totalTaxes = [sum(x) for x in zip(federalTaxes, provincialTaxes, miningTaxes)]
-	# sumTotalTaxes = sum(totalTaxes)
-
-	# # tblCashFlow and tblFinancials Data Processing
-	# # 1. Find the earliest (processed=FALSE) entry
-	# notProcessed = tblCashFlow.objects.filter(projectID=latestProject.projectID, processed=False).order_by('date')
-	# if notProcessed:
-	# 	toProcess = notProcessed[0]
-
-	# 	dailyOPEXPlusCAPEX = {}
-	# 	dailyTaxes = {}
-	# 	latestOPEX = tblOPEX.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
-	# 	latestCAPEX = tblCAPEX.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
-	# 	latestTaxes = tblTaxes.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
-
-	# 	OPEXEntries = tblOPEX.objects.filter(mineID=mineID, dateAdded=latestOPEX.dateAdded).order_by('year')
-	# 	CAPEXEntries = tblCAPEX.objects.filter(mineID=mineID, dateAdded=latestCAPEX.dateAdded).order_by('year')
-	# 	taxesEntries = tblTaxes.objects.filter(mineID=mineID, dateAdded=latestTaxes.dateAdded).order_by('year')
-	# 	for i in range(len(OPEXEntries)):
-	# 		OPEXrow = OPEXEntries[i]
-	# 		CAPEXrow = CAPEXEntries[i]
-	# 		taxesRow = taxesEntries[i]
-	# 		currOPEX = (OPEXrow.mining+OPEXrow.infrastructure+OPEXrow.stockpileLG+OPEXrow.dewatering+OPEXrow.processing+
-	# 			OPEXrow.hauling+OPEXrow.loadOutRailLoop+OPEXrow.GASite+OPEXrow.GARoomBoardFIFO+OPEXrow.railTransport+OPEXrow.GACorp+
-	# 			OPEXrow.royalties+OPEXrow.transportation+OPEXrow.GA)
-	# 		currCAPEX = (CAPEXrow.preStrip+CAPEXrow.mineEquipInitial+CAPEXrow.mineEquipSustain+CAPEXrow.infraDirectCost+
-	# 			CAPEXrow.infraIndirectCost+CAPEXrow.contingency+CAPEXrow.railcars+CAPEXrow.otherMobEquip+CAPEXrow.closureRehabAssure+
-	# 			CAPEXrow.depoProvisionPay+CAPEXrow.workCapCurrentProd+CAPEXrow.workCapCostsLG+CAPEXrow.EPCM+CAPEXrow.ownerCost)
-	# 		currOPEXPlusCAPEX = round((Decimal(currCAPEX) + Decimal(currOPEX))*1000,2)
-
-	# 		currTaxes = round(Decimal(taxesRow.federal + taxesRow.provincial + taxesRow.mining),2)
-
-	# 		if calendar.isleap(latestProject.startDate.year + i):
-	# 			dailyOPEXPlusCAPEX[i+1] = currOPEXPlusCAPEX / Decimal(366.0)
-	# 			dailyTaxes[i+1] = currTaxes / Decimal(366.0)
-	# 		else:
-	# 			dailyOPEXPlusCAPEX[i+1] = currOPEXPlusCAPEX / Decimal(365.0)
-	# 			dailyTaxes[i+1] = currTaxes / Decimal(365.0)
-
-	# 	earlyEntries = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__lt=toProcess.date).order_by('-date')
-	# 	if earlyEntries:
-	# 		lastCashFlowEntry = earlyEntries[0]
-	# 		currCumCashFlowPreTax = Decimal(lastCashFlowEntry.cumulativeCashFlowPreTax)
-	# 		currCumCashFlowPostTax = Decimal(lastCashFlowEntry.cumulativeCashFlowPostTax)
-
-	# 	else:
-	# 		currCumCashFlowPreTax = Decimal(0.0)
-	# 		currCumCashFlowPostTax = Decimal(0.0)
-
-	# 	toUpdate = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__gte=toProcess.date).order_by('date')
-	# 	for entry in toUpdate:
-	# 		currLumpPlusFines = Decimal(0.0)
-	# 		if 1 in PPIDs:
-	# 			currRev = tblRevenue.objects.get(projectID=latestProject.projectID, plantProductID=1, date=entry.date)
-	# 			currLumpPlusFines += Decimal(currRev.plantProductRevenue)
-	# 		if 2 in PPIDs:
-	# 			currRev = tblRevenue.objects.get(projectID=latestProject.projectID, plantProductID=2, date=entry.date)
-	# 			currLumpPlusFines += Decimal(currRev.plantProductRevenue)
-	# 		entry.cashFlowPreTax = currDailyCashFlowPreTax = currLumpPlusFines - dailyOPEXPlusCAPEX[entry.date.year - latestProject.startDate.year + 1]
-	# 		entry.cashFlowPostTax = currDailyCashFlowPostTax = currDailyCashFlowPreTax - dailyTaxes[entry.date.year - latestProject.startDate.year + 1]
-
-	# 		currCumCashFlowPreTax += currDailyCashFlowPreTax
-	# 		currCumCashFlowPostTax += currDailyCashFlowPostTax
-	# 		entry.cumulativeCashFlowPreTax = currCumCashFlowPreTax
-	# 		entry.cumulativeCashFlowPostTax = currCumCashFlowPostTax
-	# 		entry.processed = True
-	# 		entry.save()
-
-	# 		# After updating Cash Flow data for the day, update the Financials data for the day as well.
-	# 		tblFinancials.objects.filter(projectID=latestProject.projectID, date=entry.date).delete()
-	# 		discountRates = [0.06, 0.08, 0.10, 0.12, 0.15, 0.20]
-	# 		currTime = timezone.localtime(timezone.now())
-	# 		for rate in discountRates:
-	# 			currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, startDate__lte=entry.date,
-	# 				endDate__gte=entry.date)
-	# 			currNPVPreTax = round(entry.cashFlowPreTax / Decimal(pow((1+rate),currPeriod.year)),2)
-	# 			currNPVPostTax = round(entry.cashFlowPostTax / Decimal(pow((1+rate),currPeriod.year)),2)
-	# 			financialsEntry = tblFinancials(projectID=latestProject, mineID=mineMatch, date=entry.date,
-	# 				discountRate=rate, NPVPreTax=currNPVPreTax, NPVPostTax=currNPVPostTax, IRRPreTax=None, IRRPostTax=None, dateAdded=currTime)
-	# 			financialsEntry.save()
-
 	# tblCashFlow and tblFinancials Data Processing (VERSION 2)
 	# No Pro-ration of Costs
 	# Annual Costs and Expenses charged on the last calculated day of the corresponding year
@@ -1800,8 +1368,8 @@ def index(request):
 	# Calculate and Update NPVs and IRRs
 	preTaxNPVs = []
 	postTaxNPVs = []
-	NPVCashFlowPreTax = [0] + cashFlowPreTax
-	NPVCashFlowPostTax = [0] + cashFlowPostTax
+	NPVCashFlowPreTax = [sumNegCAPEX] + cashFlowPreTax
+	NPVCashFlowPostTax = [sumNegCAPEX] + cashFlowPostTax
 	preTaxIRR = round(np.irr(NPVCashFlowPreTax)*100,2)
 	postTaxIRR = round(np.irr(NPVCashFlowPostTax)*100,2)
 	for rate in discountRates:
@@ -2413,10 +1981,15 @@ def index(request):
 
 	# request.session['reportData'] = reportData
 
-	filter_form = filterForm(mineID=mineID)
+	filter_form = filterForm(mineID=mineID, startDate=projectStartDate, endDate=projectEndDate)
+	default_filter_form = defaultFilterForm(mineID=mineID, thisYearStartDate=thisYearStartDate, thisYearEndDate=thisYearEndDate,
+			lastYearStartDate=lastYearStartDate, lastYearEndDate=lastYearEndDate,
+			thisQuarterStartDate=thisQuarterStartDate, thisQuarterEndDate=thisQuarterEndDate,
+			lastQuarterStartDate=lastQuarterStartDate, lastQuarterEndDate=lastQuarterEndDate)
 	report_form = reportForm(mineID=mineID, reportData=reportData)
 
 	return render(request, 'report/report.html', {'filterForm': filter_form, 'reportForm': report_form,
+		'defaultFilterForm': default_filter_form,
 		'yearVals': yearVals, 'fullYearVals': fullYearVals, 'commIDs': commIDs, 'commNameList': commNameList,
 		'numStockpiles': list(range(1, numStockpiles+1)),
 		'minePlanTonnageVals': minePlanTonnageVals, 'sumMinePlanTonnages': sumMinePlanTonnages,
@@ -2607,7 +2180,8 @@ def reportDL(request):
 					writer.writerow(row.split(','))
 
 				return response
-		elif "applyFilter" in request.POST:
+
+		elif "applyDefaultFilter" in request.POST:
 			filler = ""
 			mineID = request.session["mineID"]
 			mineMatch = tblMine.objects.get(mineID=int(mineID))
@@ -2621,6 +2195,68 @@ def reportDL(request):
 			latestProject = projectsList.order_by('-dateAdded')[0]
 			LOM = int(latestProject.LOM)
 			numStockpiles = latestProject.numStockpiles
+
+			projectPeriods = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).order_by('year')
+			projectStartDate = projectPeriods[0].startDate
+			projectEndDate = projectPeriods[projectPeriods.count()-1].endDate
+
+			# Check if default filter options are available
+			# Check "This year", "Last year", "This quarter", and "Last quarter"
+			# 1. This year
+			today = datetime.date.today()
+			if (today.year >= projectStartDate.year) and (today.year <= projectEndDate.year):
+				# thisYear = True
+				thisYearStartDate = datetime.date(today.year, 1, 1)
+				thisYearEndDate = datetime.date(today.year, 12, 31)
+			else:
+				# thisYear = False
+				thisYearStartDate = None
+				thisYearEndDate = None
+
+			# 2. Last year
+			if (today.year-1 >= projectStartDate.year) and (today.year-1 <= projectEndDate.year):
+				# lastYear = True
+				lastYearStartDate = datetime.date(today.year-1, 1, 1)
+				lastYearEndDate = datetime.date(today.year-1, 12, 31)
+			else:
+				# lastYear = False
+				lastYearStartDate = None
+				lastYearEndDate = None
+
+			# 3. This quarter
+			if thisYearStartDate:
+				todayQ = ceil(today.month/3.0)
+				if today.year == projectStartDate.year:
+					startDateQ = ceil(projectStartDate.month/3.0)
+					quarters = list(range(startDateQ, 5))			
+					if todayQ in quarters:
+						# thisQuarter = True
+						thisQuarterStartDate = datetime.date(today.year, 3*(todayQ - 1) + 1, 1)
+						thisQuarterEndDate = thisQuarterStartDate + relativedelta(months=+3) - relativedelta(days=+1)
+					else:
+						# thisQuarter = False
+						thisQuarterStartDate = None
+						thisQuarterEndDate = None
+				else:
+					# thisQuarter = True
+					thisQuarterStartDate = datetime.date(today.year, 3*(todayQ - 1) + 1, 1)
+					thisQuarterEndDate = thisQuarterStartDate + relativedelta(months=+3) - relativedelta(days=+1)
+			else:
+				# thisQuarter = False
+				thisQuarterStartDate = None
+				thisQuarterEndDate = None
+
+			# 4. Last quarter
+			threeMonthsAgo = today - relativedelta(months=+3)
+			if (threeMonthsAgo >= projectStartDate) and (threeMonthsAgo <= projectEndDate):
+				threeMonthsAgoQ = ceil(threeMonthsAgo.month/3.0)
+				# lastQuarter = True
+				lastQuarterStartDate = datetime.date(threeMonthsAgo.year, 3*(threeMonthsAgoQ - 1) + 1, 1)
+				lastQuarterEndDate = lastQuarterStartDate + relativedelta(months=+3) - relativedelta(days=+1)
+			else:
+				# lastQuarter = False
+				lastQuarterStartDate = None
+				lastQuarterEndDate = None
 
 			# Get list of Commodity IDs
 			commodities = tblCommodity.objects.filter(projectID=latestProject.projectID)
@@ -2711,7 +2347,1342 @@ def reportDL(request):
 			ultraFinesRevenues = None
 			sumUltraFinesRevenues = None
 
-			form = filterForm(request.POST, mineID=mineID)
+			# form = filterForm(request.POST, mineID=mineID)
+			form = defaultFilterForm(request.POST, mineID=mineID, thisYearStartDate=thisYearStartDate, thisYearEndDate=thisYearEndDate,
+				lastYearStartDate=lastYearStartDate, lastYearEndDate=lastYearEndDate,
+				thisQuarterStartDate=thisQuarterStartDate, thisQuarterEndDate=thisQuarterEndDate,
+				lastQuarterStartDate=lastQuarterStartDate, lastQuarterEndDate=lastQuarterEndDate)
+			if form.is_valid():
+				cleanData = form.cleaned_data
+				defaultFilter = cleanData["defaultFilter"]
+
+				divisor = 12.0
+				if defaultFilter == "thisYear":
+					startDate = cleanData["thisYearStartDate"]
+					endDate = cleanData["thisYearEndDate"]
+				elif defaultFilter == "lastYear":
+					startDate = cleanData["lastYearStartDate"]
+					endDate = cleanData["lastYearEndDate"]
+				elif defaultFilter == "thisQuarter":
+					startDate = cleanData["thisQuarterStartDate"]
+					endDate = cleanData["thisQuarterEndDate"]
+				elif defaultFilter == "lastQuarter":
+					startDate = cleanData["lastQuarterStartDate"]
+					endDate = cleanData["lastQuarterEndDate"]
+
+				startDateVals = []
+				endDateVals = []
+				dateVals = []
+				currDate = startDate
+				while currDate <= endDate:
+					startDateVals.append(currDate)
+					dateVals.append(currDate.strftime("%b-%Y"))
+					endDateVals.append(currDate + relativedelta(months=+1) - relativedelta(days=+1))
+					currDate = currDate + relativedelta(months=+1)
+
+				yearNum = startDate.year - projectPeriods[0].startDate.year + 1
+
+				totalRevenues = [Decimal(0.0)]*len(startDateVals)
+				lumpPlusFinesRevenues = [Decimal(0.0)]*len(startDateVals)
+
+				# Obtain Exchange Rate
+				fullExchangeRates = [round(Decimal(latestInput.exchangeRate),2)]*len(startDateVals)
+				xRate = round(Decimal(latestInput.exchangeRate),2)
+
+				totalProducts = [Decimal(0.0)]*len(startDateVals)
+
+				# Handle Mine Plan Tonnages Section
+				sumMinePlanTonnages = {}
+				minePlanTonnageVals = {}
+
+				# minePlanTonnagesByYear = {}
+				# dailyMinePlanTonnageVals = {}
+				for curr in range(1, numStockpiles+1):
+					MPTonnageEntries = tblMineProductTonnage.objects.filter(projectID=latestProject.projectID, stockpileID=curr, year=yearNum)
+					minePlanTonnageVals[curr] = [round(Decimal(MPTonnageEntries[0].tonnage/divisor), 2)]*len(startDateVals)
+					# minePlanTonnageVals[curr] = []
+					# minePlanTonnagesByYear[curr] = {}
+					# for year,yearNum in yearRanges.items():
+					# 	if calendar.isleap(year):
+					# 		minePlanTonnagesByYear[curr][year] = round(Decimal(MPTonnageEntries[yearNum-1].tonnage/366.0), 2)
+					# 	else:
+					# 		minePlanTonnagesByYear[curr][year] = round(Decimal(MPTonnageEntries[yearNum-1].tonnage/365.0), 2)
+
+					# currDate = startDate
+					# while currDate <= endDate:
+					# 	minePlanTonnageVals[curr].append(minePlanTonnagesByYear[curr][currDate.year])
+					# 	currDate += datetime.timedelta(days=1)
+					sumMinePlanTonnages[curr] = sum(minePlanTonnageVals[curr])
+
+				latestOPEX = tblOPEX.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
+				latestCAPEX = tblCAPEX.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
+				# OPEXByYear = tblOPEX.objects.filter(mineID=mineID, dateAdded=latestOPEX.dateAdded).order_by('year')
+				# CAPEXByYear = tblCAPEX.objects.filter(mineID=mineID, dateAdded=latestCAPEX.dateAdded).order_by('year')
+				OPEXEntry = tblOPEX.objects.get(mineID=mineID, year=yearNum, dateAdded=latestOPEX.dateAdded)
+				CAPEXEntry = tblCAPEX.objects.get(mineID=mineID, year=yearNum, dateAdded=latestCAPEX.dateAdded)
+
+				fullShippingCosts = [round(OPEXEntry.shipping/Decimal(divisor), 2)]*len(startDateVals)
+
+				mining = [round(OPEXEntry.mining/Decimal(divisor), 2)]*len(startDateVals)
+				infrastructure = [round(OPEXEntry.infrastructure/Decimal(divisor), 2)]*len(startDateVals)
+				stockpileLG = [round(OPEXEntry.stockpileLG/Decimal(divisor), 2)]*len(startDateVals)
+				dewatering = [round(OPEXEntry.dewatering/Decimal(divisor), 2)]*len(startDateVals)
+				processing = [round(OPEXEntry.processing/Decimal(divisor), 2)]*len(startDateVals)
+				hauling = [round(OPEXEntry.hauling/Decimal(divisor), 2)]*len(startDateVals)
+				loadOutRailLoop = [round(OPEXEntry.loadOutRailLoop/Decimal(divisor), 2)]*len(startDateVals)
+				GASite = [round(OPEXEntry.GASite/Decimal(divisor), 2)]*len(startDateVals)
+				GARoom = [round(OPEXEntry.GARoomBoardFIFO/Decimal(divisor), 2)]*len(startDateVals)
+				railTransport = [round(OPEXEntry.railTransport/Decimal(divisor), 2)]*len(startDateVals)
+				GACorp = [round(OPEXEntry.GACorp/Decimal(divisor), 2)]*len(startDateVals)
+				royalties = [round(OPEXEntry.royalties/Decimal(divisor), 2)]*len(startDateVals)
+				transportation = [round(OPEXEntry.transportation/Decimal(divisor), 2)]*len(startDateVals)
+				GA = [round(OPEXEntry.GA/Decimal(divisor), 2)]*len(startDateVals)
+
+				preStrip = [round(CAPEXEntry.preStrip/Decimal(divisor), 2)]*len(startDateVals)
+				mineEquipInitial = [round(CAPEXEntry.mineEquipInitial/Decimal(divisor), 2)]*len(startDateVals)
+				mineEquipSustain = [round(CAPEXEntry.mineEquipSustain/Decimal(divisor), 2)]*len(startDateVals)
+				infraDirectCost = [round(CAPEXEntry.infraDirectCost/Decimal(divisor), 2)]*len(startDateVals)
+				infraIndirectCost = [round(CAPEXEntry.infraIndirectCost/Decimal(divisor), 2)]*len(startDateVals)
+				contingency = [round(CAPEXEntry.contingency/Decimal(divisor), 2)]*len(startDateVals)
+				railcars = [round(CAPEXEntry.railcars/Decimal(divisor), 2)]*len(startDateVals)
+				otherMobEquip = [round(CAPEXEntry.otherMobEquip/Decimal(divisor), 2)]*len(startDateVals)
+				closureRehabAssure = [round(CAPEXEntry.closureRehabAssure/Decimal(divisor), 2)]*len(startDateVals)
+				depoProvisionPay = [round(CAPEXEntry.depoProvisionPay/Decimal(divisor), 2)]*len(startDateVals)
+				workCapCurrentProd = [round(CAPEXEntry.workCapCurrentProd/Decimal(divisor), 2)]*len(startDateVals)
+				workCapCostsLG = [round(CAPEXEntry.workCapCostsLG/Decimal(divisor), 2)]*len(startDateVals)
+				EPCM = [round(CAPEXEntry.EPCM/Decimal(divisor), 2)]*len(startDateVals)
+				ownerCost = [round(CAPEXEntry.ownerCost/Decimal(divisor), 2)]*len(startDateVals)
+
+				sumMining = sum(mining)
+				sumStockpileLG = sum(stockpileLG)
+				sumDewatering = sum(dewatering)
+				sumProcessing = sum(processing)
+				sumHauling = sum(hauling)
+				sumLoadOutRailLoop = sum(loadOutRailLoop)
+				sumGASite = sum(GASite)
+				sumGARoom = sum(GARoom)
+				sumRailTransport = sum(railTransport)
+				sumGACorp = sum(GACorp)
+				sumRoyalties = sum(royalties)
+
+				totalOPEX = [sum(x) for x in zip(mining, stockpileLG, dewatering, processing, hauling,
+					loadOutRailLoop, GASite, GARoom, railTransport, GACorp)]
+				sumTotalOPEX = sum(totalOPEX)
+
+				sumPreStrip = sum(preStrip)
+				sumMineEquipInitial = sum(mineEquipInitial)
+				sumMineEquipSustain = sum(mineEquipSustain)
+				sumInfraDirectCost = sum(infraDirectCost)
+				sumInfraIndirectCost = sum(infraIndirectCost)
+				sumContingency = sum(contingency)
+				sumRailcars = sum(railcars)
+				sumOtherMobEquip = sum(otherMobEquip)
+				sumClosureRehabAssure = sum(closureRehabAssure)
+				sumDepoProvisionPay = sum(depoProvisionPay)
+				sumWorkCapCurrentProd = sum(workCapCurrentProd)
+				sumWorkCapCostsLG = sum(workCapCostsLG)
+
+				totalCAPEX = [sum(x) for x in zip(preStrip, mineEquipInitial, mineEquipSustain, infraDirectCost, infraIndirectCost,
+					contingency, railcars, otherMobEquip, closureRehabAssure, depoProvisionPay)]
+				sumTotalCAPEX = sum(totalCAPEX)
+
+				latestTaxes = tblTaxes.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
+				taxesEntry = tblTaxes.objects.get(mineID=mineID, year=yearNum, dateAdded=latestTaxes.dateAdded)
+
+				federalTaxes = [round(Decimal(taxesEntry.federal/divisor), 2)]*len(startDateVals)
+				provincialTaxes = [round(Decimal(taxesEntry.provincial/divisor), 2)]*len(startDateVals)
+				miningTaxes = [round(Decimal(taxesEntry.mining/divisor), 2)]*len(startDateVals)
+
+				sumFederalTaxes = sum(federalTaxes)
+				sumProvincialTaxes = sum(provincialTaxes)
+				sumMiningTaxes = sum(miningTaxes)
+				totalTaxes = [sum(x) for x in zip(federalTaxes, provincialTaxes, miningTaxes)]
+				sumTotalTaxes = sum(totalTaxes)
+
+
+				# Handle values if no calculations have been run during selected range of dates
+				cashFlowEntries = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__gte=startDate, date__lte=endDate)
+				if not cashFlowEntries:
+					tonnageVals = {}
+					tonnageTotals = {}
+					gradeVals = {}
+					moistures = {}
+					for curr in range(1, numStockpiles+1):
+						tonnageVals[curr] = [filler]*len(startDateVals)
+						tonnageTotals[curr] = filler
+						gradeVals[curr] = {}
+						for i in range(len(commIDs)):
+							gradeVals[curr][commNameList[i]] = [filler]*len(startDateVals)
+						moistures[curr] = [round(latestInput.feedMoisture,2)]*len(startDateVals)
+
+					if 1 in PPIDs:
+						lumpTonnageVals = [filler]*len(startDateVals)
+						lumpTonnageTotal = filler
+						lumpGradeVals = {}
+						for i in range(len(commIDs)):
+							lumpGradeVals[commNameList[i]] = [filler]*len(startDateVals)
+						lumpMoistures = [round(latestInput.lumpMoisture,2)]*len(startDateVals)
+
+					if 2 in PPIDs:
+						finesTonnageVals = [filler]*len(startDateVals)
+						finesTonnageTotal = filler
+						finesGradeVals = {}
+						for i in range(len(commIDs)):
+							finesGradeVals[commNameList[i]] = [filler]*len(startDateVals)
+						finesMoistures = [round(latestInput.finesMoisture,2)]*len(startDateVals)
+
+					if 3 in PPIDs:
+						ultraFinesTonnageVals = [filler]*len(startDateVals)
+						ultraFinesTonnageTotal = filler
+						ultraFinesGradeVals = {}
+						for i in range(len(commIDs)):
+							ultraFinesGradeVals[commNameList[i]] = [filler]*len(startDateVals)
+						ultraFinesMoistures = [round(latestInput.ultraFinesMoisture,2)]*len(startDateVals)
+
+					if 4 in PPIDs:
+						rejectsTonnageVals = [filler]*len(startDateVals)
+						rejectsTonnageTotal = filler
+						rejectsGradeVals = {}
+						for i in range(len(commIDs)):
+							rejectsGradeVals[commNameList[i]] = [filler]*len(startDateVals)
+						rejectsMoistures = [round(latestInput.rejectsMoisture,2)]*len(startDateVals)
+
+					totalProducts = [filler]*len(startDateVals)
+					sumTotalProducts = filler
+
+					if 1 in PPIDs:
+						HGLumps = [Decimal(priceEntry.lump)]*len(startDateVals)
+						lumpPenaltyVals = {}
+						for i in range(len(commIDs)):
+							lumpPenaltyVals[commNameList[i]] = [filler]*len(startDateVals)
+						lumpSellingPrices = [filler]*len(startDateVals)
+						avgLumpSellingPrice = filler
+						netLumpPrices = [filler]*len(startDateVals)
+						avgNetLumpPrice = filler
+						exchangeNetLumpPrices = [filler]*len(startDateVals)
+						avgExchangeNetLumpPrice = filler
+
+					if 2 in PPIDs:
+						HGFines = [Decimal(priceEntry.fines)]*len(startDateVals)
+						finesPenaltyVals = {}
+						for i in range(len(commIDs)):
+							finesPenaltyVals[commNameList[i]] = [filler]*len(startDateVals)
+						finesSellingPrices = [filler]*len(startDateVals)
+						avgFinesSellingPrice = filler
+						netFinesPrices = [filler]*len(startDateVals)
+						avgNetFinesPrice = filler
+						exchangeNetFinesPrices = [filler]*len(startDateVals)
+						avgExchangeNetFinesPrice = filler
+
+					if 3 in PPIDs:
+						HGUltraFines = [Decimal(priceEntry.ultraFines)]*len(startDateVals)
+						ultraFinesPenaltyVals = {}
+						for i in range(len(commIDs)):
+							ultraFinesPenaltyVals[commNameList[i]] = [filler]*len(startDateVals)
+						ultraFinesSellingPrices = [filler]*len(startDateVals)
+						avgUltraFinesSellingPrice = filler
+						netUltraFinesPrices = [filler]*len(startDateVals)
+						avgNetUltraFinesPrice = filler
+						exchangeNetUltraFinesPrices = [filler]*len(startDateVals)
+						avgExchangeNetUltraFinesPrice = filler
+
+					if 1 in PPIDs:
+						lumpRevenues = [filler]*len(startDateVals)
+						sumLumpRevenues = filler
+
+					if 2 in PPIDs:
+						finesRevenues = [filler]*len(startDateVals)
+						sumFinesRevenues = filler
+
+					if 3 in PPIDs:
+						ultraFinesRevenues = [filler]*len(startDateVals)
+						sumUltraFinesRevenues = filler
+
+					totalRevenues = [filler]*len(startDateVals)
+					sumTotalRevenues = filler
+
+					# Create DL Form Data
+					reportRowCount = 1
+
+					reportData = ""
+
+					currRow = 'Item,'
+					for date in dateVals:
+						# currRow += 'Year{0},'.format(year)
+						currRow += date + ','
+					currRow += 'Total;'
+					reportData += currRow
+
+					reportData += ";Mining;"
+					for curr in range(1, numStockpiles+1):
+						currRow = "Stockpile {0} Ore (kt),".format(curr) + ''.join([*[str(round(x,2))+',' for x in minePlanTonnageVals[curr]]]) + str(round(sumMinePlanTonnages[curr],2)) + ";"
+						reportData += currRow
+
+					reportData += ";Processing;"
+					for curr in range(1, numStockpiles+1):
+						reportData += "Stockpile {0} Ore;".format(curr)
+						currRow = 'Tonnage (kt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in tonnageVals[curr]]]) + ',' + tonnageTotals[curr] + ";"
+						reportData += currRow
+						for i in range(len(commIDs)):
+							currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in gradeVals[curr][commNameList[i]]]]) + ';'
+							reportData += currRow
+						reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in moistures[curr]]]) + ';'
+
+					reportData += ";Plant Product;"
+
+					if 1 in PPIDs:
+						reportData += "Lump;"
+						currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpTonnageVals]]) + ',' + lumpTonnageTotal + ';'
+						reportData += currRow
+						for i in range(len(commIDs)):
+							currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpGradeVals[commNameList[i]]]]) + ';'
+							reportData += currRow
+						reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpMoistures]]) + ';'
+
+					if 2 in PPIDs:
+						reportData += "Fines;"
+						currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesTonnageVals]]) + ',' + finesTonnageTotal + ';'
+						reportData += currRow
+						for i in range(len(commIDs)):
+							currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesGradeVals[commNameList[i]]]]) + ';'
+							reportData += currRow
+						reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesMoistures]]) + ';'
+
+					if 3 in PPIDs:
+						reportData += "Ultra Fines;"
+						currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesTonnageVals]]) + ',' + ultraFinesTonnageTotal + ';'
+						reportData += currRow
+						for i in range(len(commIDs)):
+							currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesGradeVals[commNameList[i]]]]) + ';'
+							reportData += currRow
+						reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesMoistures]]) + ';'
+
+					reportData += 'Total Product (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalProducts]]) + ',' + sumTotalProducts + ';'
+
+					if 4 in PPIDs:
+						reportData += "Rejects;"
+						currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsTonnageVals]]) + ',' + rejectsTonnageTotal + ';'
+						reportData += currRow
+						for i in range(len(commIDs)):
+							currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsGradeVals[commNameList[i]]]]) + ';'
+							reportData += currRow
+						reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsMoistures]]) + ';'
+
+					reportData += ";Products Selling Price;"
+
+					if 1 in PPIDs:
+						reportData += 'Lump Selling Price (USD/dmt);'
+						reportData += 'Lump Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGLumps]]) + ';'
+						for i in range(len(commIDs)):
+							reportData += 'Lump {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpPenaltyVals[commNameList[i]]]]) + ';'
+						reportData += 'Lump Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpSellingPrices]]) + ',' + 'Avg: ' + avgLumpSellingPrice + ';'
+						reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
+						reportData += 'Net Lump Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netLumpPrices]]) + ',' + 'Avg: ' + avgNetLumpPrice + ';'
+						reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
+						reportData += 'Net Lump Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetLumpPrices]]) + ',' + 'Avg: ' + avgExchangeNetLumpPrice + ';'
+
+					if 2 in PPIDs:
+						reportData += 'Fines Selling Price (USD/dmt);'
+						reportData += 'Fines Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGFines]]) + ';'
+						for i in range(len(commIDs)):
+							reportData += 'Fines {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesPenaltyVals[commNameList[i]]]]) + ';'
+						reportData += 'Fines Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesSellingPrices]]) + ',' + 'Avg: ' + avgFinesSellingPrice + ';'
+						reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
+						reportData += 'Net Fines Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netFinesPrices]]) + ',' + 'Avg: ' + avgNetFinesPrice + ';'
+						reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
+						reportData += 'Net Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetFinesPrices]]) + ',' + 'Avg: ' + avgExchangeNetFinesPrice + ';'
+
+					if 3 in PPIDs:
+						reportData += 'Ultra Fines Selling Price (USD/dmt);'
+						reportData += 'Ultra Fines Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGUltraFines]]) + ';'
+						for i in range(len(commIDs)):
+							reportData += 'Ultra Fines {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesPenaltyVals[commNameList[i]]]]) + ';'
+						reportData += 'Ultra Fines Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesSellingPrices]]) + ',' + 'Avg: ' + avgUltraFinesSellingPrice + ';'
+						reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
+						reportData += 'Net Ultra Fines Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netUltraFinesPrices]]) + ',' + 'Avg: ' + avgNetUltraFinesPrice + ';'
+						reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
+						reportData += 'Net Ultra Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetUltraFinesPrices]]) + ',' + 'Avg: ' + avgExchangeNetUltraFinesPrice+ ';'
+
+					reportData += ';Revenues;'
+					if 1 in PPIDs:
+						reportData += 'Lump Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpRevenues]]) + ',' + sumLumpRevenues + ';'
+					if 2 in PPIDs:
+						reportData += 'Fines Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesRevenues]]) + ',' + sumFinesRevenues + ';'
+					if 3 in PPIDs:
+						reportData += 'Ultra Fines Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesRevenues]]) + ',' + sumUltraFinesRevenues + ';'
+					reportData += 'TOTAL REVENUE,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + sumTotalRevenues + ';'
+
+					reportData += ';COSTS;'
+					reportData += 'OPEX (millions CAD);'
+					reportData += 'Mining,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in mining]]) + ',' + str(round(sumMining,2)) + ';'
+					reportData += 'Stockpile LG Reclaiming,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in stockpileLG]]) + ',' + str(round(sumStockpileLG,2)) + ';'
+					reportData += 'Pit Dewatering,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in dewatering]]) + ',' + str(round(sumDewatering,2)) + ';'
+					reportData += 'Processing,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in processing]]) + ',' + str(round(sumProcessing,2)) + ';'
+					reportData += 'Product Hauling,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in hauling]]) + ',' + str(round(sumHauling,2)) + ';'
+					reportData += 'Load-out and Rail Loop,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in loadOutRailLoop]]) + ',' + str(round(sumLoadOutRailLoop,2)) + ';'
+					reportData += 'G&A (Site),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in GASite]]) + ',' + str(round(sumGASite,2)) + ';'
+					reportData += 'G&A (Room & Board / FIFO),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in GARoom]]) + ',' + str(round(sumGARoom,2)) + ';'
+					reportData += 'Rail Transportation Port and Shiploading,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in railTransport]]) + ',' + str(round(sumRailTransport,2)) + ';'
+					reportData += 'Corporate G&A,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in GACorp]]) + ',' + str(round(sumGACorp,2)) + ';'
+					reportData += 'TOTAL OPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]]) + ',' + str(round(sumTotalOPEX,2)) + ';'
+					reportData += 'ROYALTIES (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]]) + ',' + str(round(sumRoyalties,2)) + ';'
+
+					reportData += 'CAPEX (millions CAD);'
+					reportData += 'Pre-Stripping,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preStrip]]) + ',' + str(round(sumPreStrip,2)) + ';'
+					reportData += 'Mining Equipment Initial,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipInitial]]) + ',' + str(round(sumMineEquipInitial,2)) + ';'
+					reportData += 'Mining Equipment Sustaining,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipSustain]]) + ',' + str(round(sumMineEquipSustain,2)) + ';'
+					reportData += 'Project Infrastructure Direct Costs,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in infraDirectCost]]) + ',' + str(round(sumInfraDirectCost,2)) + ';'
+					reportData += 'Project Infrastructure Indirect Costs,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in infraIndirectCost]]) + ',' + str(round(sumInfraIndirectCost,2)) + ';'
+					reportData += 'Project Infrastructure Contingency,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in contingency]]) + ',' + str(round(sumContingency,2)) + ';'
+					reportData += 'Railcars,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in railcars]]) + ',' + str(round(sumRailcars,2)) + ';'
+					reportData += 'Other Mobile Equipment,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]]) + ',' + str(round(sumOtherMobEquip,2)) + ';'
+					reportData += 'Closure and Rehab Assurance Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]]) + ',' + str(round(sumClosureRehabAssure,2)) + ';'
+					reportData += 'Deposits Provision Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]]) + ',' + str(round(sumDepoProvisionPay,2)) + ';'
+					reportData += 'TOTAL CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
+
+					reportData += 'TAXES (millions CAD);'
+					reportData += 'Federal Corporate Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in federalTaxes]]) + ',' + str(round(sumFederalTaxes,2)) + ';'
+					reportData += 'Provincial Corporate Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in provincialTaxes]]) + ',' + str(round(sumProvincialTaxes,2)) + ';'
+					reportData += 'Mining Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in miningTaxes]]) + ',' + str(round(sumMiningTaxes,2)) + ';'
+					reportData += 'TOTAL (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
+
+					filter_form = filterForm(mineID=mineID, startDate=projectStartDate, endDate=projectEndDate)
+					default_filter_form = defaultFilterForm(mineID=mineID, thisYearStartDate=thisYearStartDate, thisYearEndDate=thisYearEndDate,
+						lastYearStartDate=lastYearStartDate, lastYearEndDate=lastYearEndDate,
+						thisQuarterStartDate=thisQuarterStartDate, thisQuarterEndDate=thisQuarterEndDate,
+						lastQuarterStartDate=lastQuarterStartDate, lastQuarterEndDate=lastQuarterEndDate)
+					report_form = reportForm(mineID=mineID, reportData=reportData)
+
+					return render(request, 'report/report2.html', {'filterForm': filter_form, 'reportForm': report_form,
+						'defaultFilterForm': default_filter_form,
+						'dateVals': dateVals, 'commIDs': commIDs, 'commNameList': commNameList,
+						'numStockpiles': list(range(1, numStockpiles+1)),
+						'minePlanTonnageVals': minePlanTonnageVals, 'sumMinePlanTonnages': sumMinePlanTonnages,
+						# 'minePlanHGTonnageVals': minePlanHGTonnageVals, 'minePlanLGTonnageVals': minePlanLGTonnageVals,
+						# 'minePlanWasteTonnageVals': minePlanWasteTonnageVals, 'minePlanOverburdenTonnageVals': minePlanOverburdenTonnageVals,
+						# 'sumMinePlanHGTonnage': sumMinePlanHGTonnage, 'sumMinePlanLGTonnage': sumMinePlanLGTonnage,
+						# 'sumMinePlanWasteTonnage': sumMinePlanWasteTonnage, 'sumMinePlanOverburdenTonnage': sumMinePlanOverburdenTonnage,
+						'tonnageVals': tonnageVals, 'tonnageTotals': tonnageTotals, 'gradeVals': gradeVals, 'moistures': moistures,
+						# 'HGTonnageVals': HGTonnageVals, 'HGTonnageTotal': HGTonnageTotal, 'HGGradeVals': HGGradeVals, 'HGMoistures': HGMoistures,
+						# 'LGTonnageVals': LGTonnageVals, 'LGTonnageTotal': LGTonnageTotal, 'LGGradeVals': LGGradeVals, 'LGMoistures': LGMoistures,
+						'lumpTonnageVals': lumpTonnageVals, 'lumpTonnageTotal': lumpTonnageTotal, 'lumpGradeVals': lumpGradeVals, 'lumpMoistures': lumpMoistures,
+						'finesTonnageVals': finesTonnageVals, 'finesTonnageTotal': finesTonnageTotal, 'finesGradeVals': finesGradeVals, 'finesMoistures': finesMoistures,
+						'ultraFinesTonnageVals': ultraFinesTonnageVals, 'ultraFinesTonnageTotal': ultraFinesTonnageTotal, 'ultraFinesGradeVals': ultraFinesGradeVals, 'ultraFinesMoistures': ultraFinesMoistures,
+						'totalProducts': totalProducts, 'sumTotalProducts': sumTotalProducts,
+						'rejectsTonnageVals': rejectsTonnageVals, 'rejectsTonnageTotal': rejectsTonnageTotal, 'rejectsGradeVals': rejectsGradeVals, 'rejectsMoistures': rejectsMoistures,
+						'fullShippingCosts': fullShippingCosts, 'fullExchangeRates': fullExchangeRates,
+						'HGLumps': HGLumps, 'lumpPenaltyVals': lumpPenaltyVals, 'lumpSellingPrices': lumpSellingPrices, 'avgLumpSellingPrice': avgLumpSellingPrice,
+						'netLumpPrices': netLumpPrices, 'avgNetLumpPrice': avgNetLumpPrice, 'exchangeNetLumpPrices': exchangeNetLumpPrices,
+						'avgExchangeNetLumpPrice': avgExchangeNetLumpPrice,
+						'HGFines': HGFines, 'finesPenaltyVals': finesPenaltyVals, 'finesSellingPrices': finesSellingPrices, 'avgFinesSellingPrice': avgFinesSellingPrice,
+						'netFinesPrices': netFinesPrices, 'avgNetFinesPrice': avgNetFinesPrice, 'exchangeNetFinesPrices': exchangeNetFinesPrices,
+						'avgExchangeNetFinesPrice': avgExchangeNetFinesPrice,
+						'HGUltraFines': HGUltraFines, 'ultraFinesPenaltyVals': ultraFinesPenaltyVals, 'ultraFinesSellingPrices': ultraFinesSellingPrices,
+						'avgUltraFinesSellingPrice': avgUltraFinesSellingPrice,
+						'netUltraFinesPrices': netUltraFinesPrices, 'exchangeNetUltraFinesPrices': exchangeNetUltraFinesPrices,
+						'avgExchangeNetUltraFinesPrice': avgExchangeNetUltraFinesPrice,
+						'lumpRevenues': lumpRevenues, 'finesRevenues': finesRevenues, 'ultraFinesRevenues': ultraFinesRevenues,
+						'sumLumpRevenues': sumLumpRevenues, 'sumFinesRevenues': sumFinesRevenues, 'sumUltraFinesRevenues': sumUltraFinesRevenues,
+						'totalRevenues': totalRevenues, 'sumTotalRevenues': sumTotalRevenues,
+						'mining': mining, 'stockpileLG': stockpileLG, 'dewatering': dewatering, 'processing': processing, 'hauling': hauling,
+						'loadOutRailLoop': loadOutRailLoop, 'GASite': GASite, 'GARoom': GARoom, 'railTransport': railTransport, 'GACorp': GACorp,
+						'sumMining': sumMining, 'sumStockpileLG': sumStockpileLG, 'sumDewatering': sumDewatering, 'sumProcessing': sumProcessing,
+						'sumHauling': sumHauling, 'sumLoadOutRailLoop': sumLoadOutRailLoop, 'sumGASite': sumGASite, 'sumGARoom': sumGARoom,
+						'sumRailTransport': sumRailTransport, 'sumGACorp': sumGACorp,
+						'totalOPEX': totalOPEX, 'sumTotalOPEX':sumTotalOPEX, 'royalties': royalties, 'sumRoyalties': sumRoyalties,
+						'preStrip': preStrip, 'mineEquipInitial': mineEquipInitial, 'mineEquipSustain': mineEquipSustain, 'infraDirectCost': infraDirectCost,
+						'infraIndirectCost': infraIndirectCost, 'contingency': contingency, 'railcars': railcars, 'otherMobEquip': otherMobEquip,
+						'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'sumPreStrip': sumPreStrip,
+						'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 'sumInfraDirectCost': sumInfraDirectCost,
+						'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency, 'sumRailcars': sumRailcars,
+						'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 'sumDepoProvisionPay': sumDepoProvisionPay,
+						'totalCAPEX': totalCAPEX, 'sumTotalCAPEX': sumTotalCAPEX,
+						'federalTaxes': federalTaxes, 'provincialTaxes': provincialTaxes, 'miningTaxes': miningTaxes,
+						'sumFederalTaxes': sumFederalTaxes, 'sumProvincialTaxes': sumProvincialTaxes, 'sumMiningTaxes': sumMiningTaxes,
+						'totalTaxes': totalTaxes, 'sumTotalTaxes': sumTotalTaxes,
+						'workCapCurrentProd': workCapCurrentProd, 'workCapCostsLG': workCapCostsLG,
+						'sumWorkCapCurrentProd': sumWorkCapCurrentProd, 'sumWorkCapCostsLG': sumWorkCapCostsLG})
+						# 'cashFlowPreTax': cashFlowPreTax, 'cashFlowPostTax': cashFlowPostTax,
+						# 'cumCashFlowPreTax': cumCashFlowPreTax, 'cumCashFlowPostTax': cumCashFlowPostTax,
+						# 'sumCashFlowPreTax': sumCashFlowPreTax, 'sumCashFlowPostTax': sumCashFlowPostTax,
+						# 'paybackPreTax': paybackPreTax, 'paybackPostTax': paybackPostTax,
+						# 'sumPaybackPreTax': sumPaybackPreTax, 'sumPaybackPostTax': sumPaybackPostTax,
+						# 'preTaxNPVs': preTaxNPVs, 'postTaxNPVs': postTaxNPVs, 'preTaxIRR': preTaxIRR, 'postTaxIRR': postTaxIRR,
+						# 'preTaxPVs': preTaxPVs, 'postTaxPVs': postTaxPVs, 'sumPreTaxNPV': sumPreTaxNPV, 'sumPostTaxNPV': sumPostTaxNPV})
+
+				tonnageVals = {}
+				tonnageTotals = {}
+				gradeVals = {}
+				moistures = {}
+				dailyTonnages = {}
+				dailyGrades = {}
+				for curr in range(1, numStockpiles+1):
+					tonnageVals[curr] = []
+					gradeVals[curr] = {}
+					dailyTonnages[curr] = {}
+					dailyGrades[curr] = {}
+
+					# Tonnages
+					MPTonnageEntries = tblMineProductTonnageOptimized.objects.filter(projectID=latestProject.projectID, stockpileID=curr, 
+						date__gte=startDate, date__lte=endDate).order_by("date")
+					cacheCheck = bool(MPTonnageEntries)
+
+					for i in range(len(startDateVals)):
+						dailyTonnages[curr][startDateVals[i]] = []
+						subEntries = MPTonnageEntries.filter(date__gte=startDateVals[i], date__lte=endDateVals[i]).order_by("date")
+						if subEntries:
+							for entry in subEntries:
+								dailyTonnages[curr][startDateVals[i]].append(entry.tonnage)
+							subTotal = subEntries.aggregate(sumTonnage=Sum('tonnage'))
+							tonnageVals[curr].append(subTotal['sumTonnage'])
+						else:
+							tonnageVals[curr].append(filler)
+					tonnageTotals[curr] = sum([0 if x==filler else x for x in tonnageVals[curr]])
+
+					# Grades
+					for i in range(len(commIDs)):
+						dailyGrades[curr][commNameList[i]] = {}
+						currGrades = []
+						MPGradeEntries = tblMineProductGradeOptimized.objects.filter(projectID=latestProject.projectID, stockpileID=curr,
+							commodityID=commIDs[i], date__gte=startDate, date__lte=endDate).order_by("date")
+						cacheCheck = bool(MPGradeEntries)
+
+						for j in range(len(startDateVals)):
+							dailyGrades[curr][commNameList[i]][startDateVals[j]] = []
+							subEntries = MPGradeEntries.filter(date__gte=startDateVals[j], date__lte=endDateVals[j]).order_by("date")
+							if subEntries:
+								for entry in subEntries:
+									dailyGrades[curr][commNameList[i]][startDateVals[j]].append(entry.grade)
+								currGrades.append(round(np.average(dailyGrades[curr][commNameList[i]][startDateVals[j]], weights=dailyTonnages[curr][startDateVals[j]]),2))
+							else:
+								currGrades.append(filler)
+						gradeVals[curr][commNameList[i]] = currGrades
+
+					# Moistures
+					moistures[curr] = [round(latestInput.feedMoisture,2)]*len(startDateVals)
+
+				# Lump data if declared
+				if 1 in PPIDs:
+					lumpTonnageVals = []
+					lumpGradeVals = {}
+					lumpDailyTonnages = {}
+					lumpDailyGrades = {}
+
+					# Tonnages
+					PPTonnageEntries = tblPlantProductTonnage.objects.filter(projectID=latestProject.projectID, plantProductID=1,
+						date__gte=startDate, date__lte=endDate).order_by("date")
+					cacheCheck = bool(PPTonnageEntries)
+
+					for i in range(len(startDateVals)):
+						lumpDailyTonnages[startDateVals[i]] = []
+						subEntries = PPTonnageEntries.filter(date__gte=startDateVals[i], date__lte=endDateVals[i]).order_by("date")
+						if subEntries:
+							for entry in subEntries:
+								lumpDailyTonnages[startDateVals[i]].append(entry.tonnageDMT)
+							subTotal = subEntries.aggregate(sumTonnage=Sum('tonnageDMT'))
+							lumpTonnageVals.append(subTotal['sumTonnage'])
+						else:
+							lumpTonnageVals.append(filler)
+					lumpTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in lumpTonnageVals])
+
+					# currDate = startDate
+					# for entry in PPTonnageEntries:
+					# 	while currDate < entry.date:
+					# 		lumpTonnageVals.append(filler)
+					# 		currDate += datetime.timedelta(days=1)
+					# 	lumpTonnageVals.append(round(Decimal(entry.tonnageDMT),2))
+					# lumpTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in lumpTonnageVals])
+					# lumpTonnageVals += [filler]*(endDate-currDate).days
+
+					totalProducts = [x+y for x,y in zip(totalProducts, [Decimal(0.0) if x==filler else x for x in lumpTonnageVals])]
+
+
+					# Grades
+					for i in range(len(commIDs)):
+						lumpDailyGrades[commNameList[i]] = {}
+						currGrades = []
+						PPGradeEntries = tblPlantProductGradeOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=1,
+							commodityID=commIDs[i], date__gte=startDate, date__lte=endDate).order_by("date")
+						cacheCheck = bool(PPGradeEntries)
+
+						for j in range(len(startDateVals)):
+							lumpDailyGrades[commNameList[i]][startDateVals[j]] = []
+							subEntries = PPGradeEntries.filter(date__gte=startDateVals[j], date__lte=endDateVals[j]).order_by("date")
+							if subEntries:
+								for entry in subEntries:
+									lumpDailyGrades[commNameList[i]][startDateVals[j]].append(entry.grade)
+								currGrades.append(round(np.average(lumpDailyGrades[commNameList[i]][startDateVals[j]], weights=lumpDailyTonnages[startDateVals[j]]),2))
+							else:
+								currGrades.append(filler)
+						lumpGradeVals[commNameList[i]] = currGrades
+
+					# # Grades
+					# for i in range(len(commIDs)):
+					# 	currGrades = []
+					# 	PPGradeEntries = tblPlantProductGradeOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=1,
+					# 		commodityID=commIDs[i], date__gte=startDate, date__lte=endDate).order_by("date")
+
+					# 	currDate = startDate
+					# 	for entry in PPGradeEntries:
+					# 		while currDate < entry.date:
+					# 			currGrades.append(filler)
+					# 			currDate += datetime.timedelta(days=1)
+					# 		currGrades.append(round(entry.grade,2))
+					# 	currGrades += [filler]*(endDate-currDate).days
+					# 	lumpGradeVals[commNameList[i]] = currGrades
+
+					# Moistures
+					lumpMoistures = [round(latestInput.lumpMoisture,2)]*len(startDateVals)
+
+
+
+				# Fines data if declared
+				if 2 in PPIDs:
+					finesTonnageVals = []
+					finesGradeVals = {}
+					finesDailyTonnages = {}
+					finesDailyGrades = {}
+
+					# Tonnages
+					PPTonnageEntries = tblPlantProductTonnage.objects.filter(projectID=latestProject.projectID, plantProductID=2,
+						date__gte=startDate, date__lte=endDate).order_by("date")
+					cacheCheck = bool(PPTonnageEntries)
+
+					for i in range(len(startDateVals)):
+						finesDailyTonnages[startDateVals[i]] = []
+						subEntries = PPTonnageEntries.filter(date__gte=startDateVals[i], date__lte=endDateVals[i]).order_by("date")
+						if subEntries:
+							for entry in subEntries:
+								finesDailyTonnages[startDateVals[i]].append(entry.tonnageDMT)
+							subTotal = subEntries.aggregate(sumTonnage=Sum('tonnageDMT'))
+							finesTonnageVals.append(subTotal['sumTonnage'])
+						else:
+							finesTonnageVals.append(filler)
+					finesTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in finesTonnageVals])
+					totalProducts = [x+y for x,y in zip(totalProducts, [Decimal(0.0) if x==filler else x for x in finesTonnageVals])]
+
+					# Grades
+					for i in range(len(commIDs)):
+						finesDailyGrades[commNameList[i]] = {}
+						currGrades = []
+						PPGradeEntries = tblPlantProductGradeOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=2,
+							commodityID=commIDs[i], date__gte=startDate, date__lte=endDate).order_by("date")
+						cacheCheck = bool(PPGradeEntries)
+
+						for j in range(len(startDateVals)):
+							finesDailyGrades[commNameList[i]][startDateVals[j]] = []
+							subEntries = PPGradeEntries.filter(date__gte=startDateVals[j], date__lte=endDateVals[j]).order_by("date")
+							if subEntries:
+								for entry in subEntries:
+									finesDailyGrades[commNameList[i]][startDateVals[j]].append(entry.grade)
+								currGrades.append(round(np.average(finesDailyGrades[commNameList[i]][startDateVals[j]], weights=finesDailyTonnages[startDateVals[j]]),2))
+							else:
+								currGrades.append(filler)
+						finesGradeVals[commNameList[i]] = currGrades
+
+					# Moistures
+					finesMoistures = [round(latestInput.finesMoisture,2)]*len(startDateVals)
+
+
+				# Ultra Fines data if declared
+				if 3 in PPIDs:
+					ultraFinesTonnageVals = []
+					ultraFinesGradeVals = {}
+					ultraFinesDailyTonnages = {}
+					ultraFinesDailyGrades = {}
+
+					# Tonnages
+					PPTonnageEntries = tblPlantProductTonnage.objects.filter(projectID=latestProject.projectID, plantProductID=3,
+						date__gte=startDate, date__lte=endDate).order_by("date")
+					cacheCheck = bool(PPTonnageEntries)
+
+					for i in range(len(startDateVals)):
+						ultraFinesDailyTonnages[startDateVals[i]] = []
+						subEntries = PPTonnageEntries.filter(date__gte=startDateVals[i], date__lte=endDateVals[i]).order_by("date")
+						if subEntries:
+							for entry in subEntries:
+								ultraFinesDailyTonnages[startDateVals[i]].append(entry.tonnageDMT)
+							subTotal = subEntries.aggregate(sumTonnage=Sum('tonnageDMT'))
+							ultraFinesTonnageVals.append(subTotal['sumTonnage'])
+						else:
+							ultraFinesTonnageVals.append(filler)
+					ultraFinesTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in ultraFinesTonnageVals])
+					totalProducts = [x+y for x,y in zip(totalProducts, [Decimal(0.0) if x==filler else x for x in ultraFinesTonnageVals])]
+
+					# Grades
+					for i in range(len(commIDs)):
+						ultraFinesDailyGrades[commNameList[i]] = {}
+						currGrades = []
+						PPGradeEntries = tblPlantProductGradeOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=3,
+							commodityID=commIDs[i], date__gte=startDate, date__lte=endDate).order_by("date")
+						cacheCheck = bool(PPGradeEntries)
+
+						for j in range(len(startDateVals)):
+							ultraFinesDailyGrades[commNameList[i]][startDateVals[j]] = []
+							subEntries = PPGradeEntries.filter(date__gte=startDateVals[j], date__lte=endDateVals[j]).order_by("date")
+							if subEntries:
+								for entry in subEntries:
+									ultraFinesDailyGrades[commNameList[i]][startDateVals[j]].append(entry.grade)
+								currGrades.append(round(np.average(ultraFinesDailyGrades[commNameList[i]][startDateVals[j]], weights=ultraFinesDailyTonnages[startDateVals[j]]),2))
+							else:
+								currGrades.append(filler)
+						ultraFinesGradeVals[commNameList[i]] = currGrades
+
+					# Moistures
+					ultraFinesMoistures = [round(latestInput.ultraFinesMoisture,2)]*len(startDateVals)
+
+
+				# Rejects data if declared
+				if 4 in PPIDs:
+					rejectsTonnageVals = []
+					rejectsGradeVals = {}
+					rejectsDailyTonnages = {}
+					rejectsDailyGrades = {}
+
+					# Tonnages
+					PPTonnageEntries = tblPlantProductTonnage.objects.filter(projectID=latestProject.projectID, plantProductID=4,
+						date__gte=startDate, date__lte=endDate).order_by("date")
+					cacheCheck = bool(PPTonnageEntries)
+
+					for i in range(len(startDateVals)):
+						rejectsDailyTonnages[startDateVals[i]] = []
+						subEntries = PPTonnageEntries.filter(date__gte=startDateVals[i], date__lte=endDateVals[i]).order_by("date")
+						if subEntries:
+							for entry in subEntries:
+								rejectsDailyTonnages[startDateVals[i]].append(entry.tonnageDMT)
+							subTotal = subEntries.aggregate(sumTonnage=Sum('tonnageDMT'))
+							rejectsTonnageVals.append(subTotal['sumTonnage'])
+						else:
+							rejectsTonnageVals.append(filler)
+					rejectsTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in ultraFinesTonnageVals])
+					# totalProducts = [x+y for x,y in zip(totalProducts, [Decimal(0.0) if x==filler else x for x in ultraFinesTonnageVals])]
+
+					# Grades
+					for i in range(len(commIDs)):
+						rejectsDailyGrades[commNameList[i]] = {}
+						currGrades = []
+						PPGradeEntries = tblPlantProductGradeOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=4,
+							commodityID=commIDs[i], date__gte=startDate, date__lte=endDate).order_by("date")
+						cacheCheck = bool(PPGradeEntries)
+
+						for j in range(len(startDateVals)):
+							rejectsDailyGrades[commNameList[i]][startDateVals[j]] = []
+							subEntries = PPGradeEntries.filter(date__gte=startDateVals[j], date__lte=endDateVals[j]).order_by("date")
+							if subEntries:
+								for entry in subEntries:
+									rejectsDailyGrades[commNameList[i]][startDateVals[j]].append(entry.grade)
+								currGrades.append(round(np.average(rejectsDailyGrades[commNameList[i]][startDateVals[j]], weights=rejectsDailyTonnages[startDateVals[j]]),2))
+							else:
+								currGrades.append(filler)
+						rejectsGradeVals[commNameList[i]] = currGrades
+
+					# Moistures
+					rejectsMoistures = [round(latestInput.rejectsMoisture,2)]*len(startDateVals)
+
+				# sumTotalProducts
+				sumTotalProducts = sum(totalProducts)
+
+
+				# Plant Product Selling Prices
+				if 1 in PPIDs:
+					sumLumpPenalties = [Decimal(0.0)]*len(startDateVals)
+					HGLumps = [Decimal(priceEntry.lump)]*len(startDateVals)
+					lumpPenaltyVals = {}
+					for i in range(len(commIDs)):
+						tempPenalties = []
+						penaltyEntries = tblSmelterTermsOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=1, commodityID=commIDs[i],
+								date__gte=startDate, date__lte=endDate).order_by("date")
+						cacheCheck = bool(penaltyEntries)
+						
+						for j in range(len(startDateVals)):
+							subEntries = penaltyEntries.filter(date__gte=startDateVals[j], date__lte=endDateVals[j]).order_by('date')								
+							if subEntries:
+								dailyPens = []
+								for entry in subEntries:
+									dailyPens.append(entry.penalty)
+								tempPenalties.append(round(Decimal(np.average(dailyPens, weights=lumpDailyTonnages[startDateVals[j]])),2))
+							else:
+								tempPenalties.append(filler)
+						lumpPenaltyVals[commNameList[i]] = tempPenalties
+						sumLumpPenalties = [x+y for x,y in zip(sumLumpPenalties, [Decimal(0.0) if x==filler else x for x in tempPenalties])]
+
+						# currDate = startDate
+						# for entry in penaltyEntries:
+						# 	while currDate < entry.date:
+						# 		tempPenalties.append(filler)
+						# 		currDate += datetime.timedelta(days=1)
+						# 	tempPenalties.append(round(Decimal(entry.penalty),2))
+						# tempPenalties += [filler]*(endDate-currDate).days
+						# lumpPenaltyVals[commNameList[i]] = tempPenalties
+						# sumLumpPenalties = [x+y for x,y in zip(sumLumpPenalties, [Decimal(0.0) if x==filler else x for x in tempPenalties])]
+
+					lumpSellingPrices = list(map(operator.add, HGLumps, sumLumpPenalties))
+					finalLumpSellingPrices = [filler if y==filler else x for x,y in zip(lumpSellingPrices,tempPenalties)]					
+					avgLumpSellingPrice = round(np.average([float(x) for x in lumpSellingPrices], 
+						weights=[0.0 if x==filler else float(x) for x in lumpTonnageVals]),2)
+					netLumpPrices = list(map(operator.sub, lumpSellingPrices, fullShippingCosts))
+					finalNetLumpPrices = [filler if y==filler else x for x,y in zip(netLumpPrices,tempPenalties)]
+					avgNetLumpPrice = round(Decimal(np.average([float(x) for x in netLumpPrices], 
+						weights=[0.0 if x==filler else float(x) for x in lumpTonnageVals])),2)
+					exchangeNetLumpPrices = list(map(operator.mul, fullExchangeRates, netLumpPrices))
+					exchangeNetLumpPrices = [round(x,2) for x in exchangeNetLumpPrices]
+					finalExchangeNetLumpPrices = [filler if y==filler else x for x,y in zip(exchangeNetLumpPrices,tempPenalties)]
+					avgExchangeNetLumpPrice = round(avgNetLumpPrice*fullExchangeRates[0], 2)
+
+					lumpSellingPrices = finalLumpSellingPrices
+					netLumpPrices = finalNetLumpPrices
+					exchangeNetLumpPrices = finalExchangeNetLumpPrices
+
+
+				if 2 in PPIDs:
+					sumFinesPenalties = [Decimal(0.0)]*len(startDateVals)
+					HGFines = [Decimal(priceEntry.fines)]*len(startDateVals)
+					finesPenaltyVals = {}
+					for i in range(len(commIDs)):
+						tempPenalties = []
+						penaltyEntries = tblSmelterTermsOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=2, commodityID=commIDs[i],
+								date__gte=startDate, date__lte=endDate).order_by("date")
+						cacheCheck = bool(penaltyEntries)
+						
+						for j in range(len(startDateVals)):
+							subEntries = penaltyEntries.filter(date__gte=startDateVals[j], date__lte=endDateVals[j]).order_by('date')								
+							if subEntries:
+								dailyPens = []
+								for entry in subEntries:
+									dailyPens.append(entry.penalty)
+								tempPenalties.append(round(Decimal(np.average(dailyPens, weights=finesDailyTonnages[startDateVals[j]])),2))
+							else:
+								tempPenalties.append(filler)
+						finesPenaltyVals[commNameList[i]] = tempPenalties
+						sumFinesPenalties = [x+y for x,y in zip(sumFinesPenalties, [Decimal(0.0) if x==filler else x for x in tempPenalties])]
+
+					finesSellingPrices = list(map(operator.add, HGFines, sumFinesPenalties))
+					finalFinesSellingPrices = [filler if y==filler else x for x,y in zip(finesSellingPrices,tempPenalties)]					
+					avgFinesSellingPrice = round(np.average([float(x) for x in finesSellingPrices], 
+						weights=[0.0 if x==filler else float(x) for x in finesTonnageVals]),2)
+					netFinesPrices = list(map(operator.sub, finesSellingPrices, fullShippingCosts))
+					finalNetFinesPrices = [filler if y==filler else x for x,y in zip(netFinesPrices,tempPenalties)]
+					avgNetFinesPrice = round(Decimal(np.average([float(x) for x in netFinesPrices], 
+						weights=[0.0 if x==filler else float(x) for x in finesTonnageVals])),2)
+					exchangeNetFinesPrices = list(map(operator.mul, fullExchangeRates, netFinesPrices))
+					exchangeNetFinesPrices = [round(x,2) for x in exchangeNetFinesPrices]
+					finalExchangeNetFinesPrices = [filler if y==filler else x for x,y in zip(exchangeNetFinesPrices,tempPenalties)]
+					avgExchangeNetFinesPrice = round(avgNetFinesPrice*fullExchangeRates[0], 2)
+
+					finesSellingPrices = finalFinesSellingPrices
+					netFinesPrices = finalNetFinesPrices
+					exchangeNetFinesPrices = finalExchangeNetFinesPrices
+
+
+				if 3 in PPIDs:
+					sumUltraFinesPenalties = [Decimal(0.0)]*len(startDateVals)
+					HGUltraFines = [Decimal(priceEntry.ultraFines)]*len(startDateVals)
+					ultraFinesPenaltyVals = {}
+					for i in range(len(commIDs)):
+						tempPenalties = []
+						penaltyEntries = tblSmelterTermsOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=3, commodityID=commIDs[i],
+								date__gte=startDate, date__lte=endDate).order_by("date")
+						cacheCheck = bool(penaltyEntries)
+						
+						for j in range(len(startDateVals)):
+							subEntries = penaltyEntries.filter(date__gte=startDateVals[j], date__lte=endDateVals[j]).order_by('date')								
+							if subEntries:
+								dailyPens = []
+								for entry in subEntries:
+									dailyPens.append(entry.penalty)
+								tempPenalties.append(round(Decimal(np.average(dailyPens, weights=ultraFinesDailyTonnages[startDateVals[j]])),2))
+							else:
+								tempPenalties.append(filler)
+						ultraFinesPenaltyVals[commNameList[i]] = tempPenalties
+						sumUltraFinesPenalties = [x+y for x,y in zip(sumUltraFinesPenalties, [Decimal(0.0) if x==filler else x for x in tempPenalties])]
+
+					ultraFinesSellingPrices = list(map(operator.add, HGUltraFines, sumUltraFinesPenalties))
+					finalUltraFinesSellingPrices = [filler if y==filler else x for x,y in zip(ultraFinesSellingPrices,tempPenalties)]
+					avgUltraFinesSellingPrice = round(np.average([float(x) for x in ultraFinesSellingPrices], 
+						weights=[0.0 if x==filler else float(x) for x in ultraFinesTonnageVals]),2)
+					netUltraFinesPrices = list(map(operator.sub, ultraFinesSellingPrices, fullShippingCosts))
+					finalNetUltraFinesPrices = [filler if y==filler else x for x,y in zip(netUltraFinesPrices,tempPenalties)]
+					avgNetUltraFinesPrice = round(Decimal(np.average([float(x) for x in netUltraFinesPrices], 
+						weights=[0.0 if x==filler else float(x) for x in ultraFinesTonnageVals])),2)
+					exchangeNetUltraFinesPrices = list(map(operator.mul, fullExchangeRates, netUltraFinesPrices))
+					exchangeNetUltraFinesPrices = [round(x,2) for x in exchangeNetUltraFinesPrices]
+					finalExchangeNetUltraFinesPrices = [filler if y==filler else x for x,y in zip(exchangeNetUltraFinesPrices,tempPenalties)]
+					avgExchangeNetUltraFinesPrice = round(avgNetUltraFinesPrice*fullExchangeRates[0], 2)
+
+					ultraFinesSellingPrices = finalUltraFinesSellingPrices
+					netUltraFinesPrices = finalNetUltraFinesPrices
+					exchangeNetUltraFinesPrices = finalExchangeNetUltraFinesPrices
+
+
+				# Handle Revenues Section
+				if 1 in PPIDs:
+					lumpRevenues = []
+					revenueEntries = tblRevenue.objects.filter(projectID=latestProject.projectID, plantProductID=1,
+						date__gte=startDate, date__lte=endDate).order_by("date")
+					cacheCheck = bool(revenueEntries)
+
+					for i in range(len(startDateVals)):
+						subEntries = revenueEntries.filter(date__gte=startDateVals[i], date__lte=endDateVals[i]).order_by('date')
+						if subEntries:
+							subTotal = subEntries.aggregate(sumRevenue=Sum('plantProductRevenue'))
+							lumpRevenues.append(round(Decimal(subTotal['sumRevenue']),2))
+						else:
+							lumpRevenues.append(filler)
+
+					# currDate = startDate
+					# for entry in revenueEntries:
+					# 	while currDate < entry.date:
+					# 		lumpRevenues.append(filler)
+					# 		currDate += datetime.timedelta(days=1)
+					# 	lumpRevenues.append(round(Decimal(entry.plantProductRevenue),2))
+					# lumpRevenues += [filler]*(endDate-currDate).days
+
+					sumLumpRevenues = sum([Decimal(0.0) if x==filler else x for x in lumpRevenues])
+					lumpPlusFinesRevenues = list(map(operator.add, lumpPlusFinesRevenues, [Decimal(0.0) if x==filler else x for x in lumpRevenues]))
+					totalRevenues = list(map(operator.add, totalRevenues, [Decimal(0.0) if x==filler else x for x in lumpRevenues]))
+
+				if 2 in PPIDs:
+					finesRevenues = []
+					revenueEntries = tblRevenue.objects.filter(projectID=latestProject.projectID, plantProductID=2,
+						date__gte=startDate, date__lte=endDate).order_by("date")
+					cacheCheck = bool(revenueEntries)
+
+					for i in range(len(startDateVals)):
+						subEntries = revenueEntries.filter(date__gte=startDateVals[i], date__lte=endDateVals[i]).order_by('date')
+						if subEntries:
+							subTotal = subEntries.aggregate(sumRevenue=Sum('plantProductRevenue'))
+							finesRevenues.append(round(Decimal(subTotal['sumRevenue']),2))
+						else:
+							finesRevenues.append(filler)
+
+					sumFinesRevenues = sum([Decimal(0.0) if x==filler else x for x in finesRevenues])
+					lumpPlusFinesRevenues = list(map(operator.add, lumpPlusFinesRevenues, [Decimal(0.0) if x==filler else x for x in finesRevenues]))
+					totalRevenues = list(map(operator.add, totalRevenues, [Decimal(0.0) if x==filler else x for x in finesRevenues]))
+
+				if 3 in PPIDs:
+					ultraFinesRevenues = []
+					revenueEntries = tblRevenue.objects.filter(projectID=latestProject.projectID, plantProductID=3,
+						date__gte=startDate, date__lte=endDate).order_by("date")
+
+					for i in range(len(startDateVals)):
+						subEntries = revenueEntries.filter(date__gte=startDateVals[i], date__lte=endDateVals[i]).order_by('date')
+						if subEntries:
+							subTotal = subEntries.aggregate(sumRevenue=Sum('plantProductRevenue'))
+							ultraFinesRevenues.append(round(Decimal(subTotal['sumRevenue']),2))
+						else:
+							ultraFinesRevenues.append(filler)
+
+					sumUltraFinesRevenues = sum([Decimal(0.0) if x==filler else x for x in ultraFinesRevenues])
+					# lumpPlusFinesRevenues = list(map(operator.add, lumpPlusFinesRevenues, [0.0 if x==filler else x for x in finesRevenues]))
+					totalRevenues = list(map(operator.add, totalRevenues, [Decimal(0.0) if x==filler else x for x in ultraFinesRevenues]))
+
+				sumTotalRevenues = sum(totalRevenues)
+				
+
+				# Create DL Form Data
+				reportRowCount = 1
+
+				reportData = ""
+
+				currRow = 'Item,'
+				for date in dateVals:
+					# currRow += 'Year{0},'.format(year)
+					currRow += date + ','
+				currRow += 'Total;'
+				reportData += currRow
+
+				reportData += ";Mining;"
+				for curr in range(1, numStockpiles+1):
+					currRow = "Stockpile {0} Ore (kt),".format(curr) + ''.join([*[str(round(x,2))+',' for x in minePlanTonnageVals[curr]]]) + str(round(sumMinePlanTonnages[curr],2)) + ";"
+					reportData += currRow
+
+				reportData += ";Processing;"
+				for curr in range(1, numStockpiles+1):
+					reportData += "Stockpile {0} Ore;".format(curr)
+					currRow = 'Tonnage (kt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in tonnageVals[curr]]]) + ',' + str(round(tonnageTotals[curr],2)) + ";"
+					reportData += currRow
+					for i in range(len(commIDs)):
+						currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in gradeVals[curr][commNameList[i]]]]) + ';'
+						reportData += currRow
+					reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in moistures[curr]]]) + ';'
+
+				reportData += ";Plant Product;"
+
+				if 1 in PPIDs:
+					reportData += "Lump;"
+					currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpTonnageVals]]) + ',' + str(round(lumpTonnageTotal,2)) + ';'
+					reportData += currRow
+					for i in range(len(commIDs)):
+						currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpGradeVals[commNameList[i]]]]) + ';'
+						reportData += currRow
+					reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpMoistures]]) + ';'
+
+				if 2 in PPIDs:
+					reportData += "Fines;"
+					currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesTonnageVals]]) + ',' + str(round(finesTonnageTotal,2)) + ';'
+					reportData += currRow
+					for i in range(len(commIDs)):
+						currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesGradeVals[commNameList[i]]]]) + ';'
+						reportData += currRow
+					reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesMoistures]]) + ';'
+
+				if 3 in PPIDs:
+					reportData += "Ultra Fines;"
+					currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesTonnageVals]]) + ',' + str(round(ultraFinesTonnageTotal,2)) + ';'
+					reportData += currRow
+					for i in range(len(commIDs)):
+						currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesGradeVals[commNameList[i]]]]) + ';'
+						reportData += currRow
+					reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesMoistures]]) + ';'
+
+				reportData += 'Total Product (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalProducts]]) + ',' + str(round(sumTotalProducts,2)) + ';'
+
+				if 4 in PPIDs:
+					reportData += "Rejects;"
+					currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsTonnageVals]]) + ',' + str(round(rejectsTonnageTotal,2)) + ';'
+					reportData += currRow
+					for i in range(len(commIDs)):
+						currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsGradeVals[commNameList[i]]]]) + ';'
+						reportData += currRow
+					reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsMoistures]]) + ';'
+
+				reportData += ";Products Selling Price;"
+
+				if 1 in PPIDs:
+					reportData += 'Lump Selling Price (USD/dmt);'
+					reportData += 'Lump Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGLumps]]) + ';'
+					for i in range(len(commIDs)):
+						reportData += 'Lump {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpPenaltyVals[commNameList[i]]]]) + ';'
+					reportData += 'Lump Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpSellingPrices]]) + ',' + 'Avg: ' + str(round(avgLumpSellingPrice,2)) + ';'
+					reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
+					reportData += 'Net Lump Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netLumpPrices]]) + ',' + 'Avg: ' + str(round(avgNetLumpPrice,2)) + ';'
+					reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
+					reportData += 'Net Lump Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetLumpPrices]]) + ',' + 'Avg: ' + str(round(avgExchangeNetLumpPrice,2)) + ';'
+
+				if 2 in PPIDs:
+					reportData += 'Fines Selling Price (USD/dmt);'
+					reportData += 'Fines Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGFines]]) + ';'
+					for i in range(len(commIDs)):
+						reportData += 'Fines {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesPenaltyVals[commNameList[i]]]]) + ';'
+					reportData += 'Fines Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesSellingPrices]]) + ',' + 'Avg: ' + str(round(avgFinesSellingPrice,2)) + ';'
+					reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
+					reportData += 'Net Fines Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netFinesPrices]]) + ',' + 'Avg: ' + str(round(avgNetFinesPrice,2)) + ';'
+					reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
+					reportData += 'Net Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetFinesPrices]]) + ',' + 'Avg: ' + str(round(avgExchangeNetFinesPrice,2)) + ';'
+
+				if 3 in PPIDs:
+					reportData += 'Ultra Fines Selling Price (USD/dmt);'
+					reportData += 'Ultra Fines Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGUltraFines]]) + ';'
+					for i in range(len(commIDs)):
+						reportData += 'Ultra Fines {0} Penalty (USD/t),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesPenaltyVals[commNameList[i]]]]) + ';'
+					reportData += 'Ultra Fines Selling Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesSellingPrices]]) + ',' + 'Avg: ' + str(round(avgUltraFinesSellingPrice,2)) + ';'
+					reportData += 'Shipping (USD/dmt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]) + ';'
+					reportData += 'Net Ultra Fines Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netUltraFinesPrices]]) + ',' + 'Avg: ' + str(round(avgNetUltraFinesPrice,2)) + ';'
+					reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
+					reportData += 'Net Ultra Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetUltraFinesPrices]]) + ',' + 'Avg: ' + str(round(avgExchangeNetUltraFinesPrice,2)) + ';'
+
+				reportData += ';Revenues;'
+				if 1 in PPIDs:
+					reportData += 'Lump Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpRevenues]]) + ',' + str(round(sumLumpRevenues,2)) + ';'
+				if 2 in PPIDs:
+					reportData += 'Fines Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesRevenues]]) + ',' + str(round(sumFinesRevenues,2)) + ';'
+				if 3 in PPIDs:
+					reportData += 'Ultra Fines Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesRevenues]]) + ',' + str(round(sumUltraFinesRevenues,2)) + ';'
+				reportData += 'TOTAL REVENUE,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + str(round(sumTotalRevenues,2)) + ';'
+
+				reportData += ';COSTS;'
+				reportData += 'OPEX (millions CAD);'
+				reportData += 'Mining,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in mining]]) + ',' + str(round(sumMining,2)) + ';'
+				reportData += 'Stockpile LG Reclaiming,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in stockpileLG]]) + ',' + str(round(sumStockpileLG,2)) + ';'
+				reportData += 'Pit Dewatering,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in dewatering]]) + ',' + str(round(sumDewatering,2)) + ';'
+				reportData += 'Processing,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in processing]]) + ',' + str(round(sumProcessing,2)) + ';'
+				reportData += 'Product Hauling,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in hauling]]) + ',' + str(round(sumHauling,2)) + ';'
+				reportData += 'Load-out and Rail Loop,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in loadOutRailLoop]]) + ',' + str(round(sumLoadOutRailLoop,2)) + ';'
+				reportData += 'G&A (Site),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in GASite]]) + ',' + str(round(sumGASite,2)) + ';'
+				reportData += 'G&A (Room & Board / FIFO),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in GARoom]]) + ',' + str(round(sumGARoom,2)) + ';'
+				reportData += 'Rail Transportation Port and Shiploading,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in railTransport]]) + ',' + str(round(sumRailTransport,2)) + ';'
+				reportData += 'Corporate G&A,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in GACorp]]) + ',' + str(round(sumGACorp,2)) + ';'
+				reportData += 'TOTAL OPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]]) + ',' + str(round(sumTotalOPEX,2)) + ';'
+				reportData += 'ROYALTIES (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]]) + ',' + str(round(sumRoyalties,2)) + ';'
+
+				reportData += 'CAPEX (millions CAD);'
+				reportData += 'Pre-Stripping,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preStrip]]) + ',' + str(round(sumPreStrip,2)) + ';'
+				reportData += 'Mining Equipment Initial,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipInitial]]) + ',' + str(round(sumMineEquipInitial,2)) + ';'
+				reportData += 'Mining Equipment Sustaining,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipSustain]]) + ',' + str(round(sumMineEquipSustain,2)) + ';'
+				reportData += 'Project Infrastructure Direct Costs,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in infraDirectCost]]) + ',' + str(round(sumInfraDirectCost,2)) + ';'
+				reportData += 'Project Infrastructure Indirect Costs,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in infraIndirectCost]]) + ',' + str(round(sumInfraIndirectCost,2)) + ';'
+				reportData += 'Project Infrastructure Contingency,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in contingency]]) + ',' + str(round(sumContingency,2)) + ';'
+				reportData += 'Railcars,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in railcars]]) + ',' + str(round(sumRailcars,2)) + ';'
+				reportData += 'Other Mobile Equipment,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]]) + ',' + str(round(sumOtherMobEquip,2)) + ';'
+				reportData += 'Closure and Rehab Assurance Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]]) + ',' + str(round(sumClosureRehabAssure,2)) + ';'
+				reportData += 'Deposits Provision Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]]) + ',' + str(round(sumDepoProvisionPay,2)) + ';'
+				reportData += 'TOTAL CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
+
+				reportData += 'TAXES (millions CAD);'
+				reportData += 'Federal Corporate Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in federalTaxes]]) + ',' + str(round(sumFederalTaxes,2)) + ';'
+				reportData += 'Provincial Corporate Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in provincialTaxes]]) + ',' + str(round(sumProvincialTaxes,2)) + ';'
+				reportData += 'Mining Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in miningTaxes]]) + ',' + str(round(sumMiningTaxes,2)) + ';'
+				reportData += 'TOTAL (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
+
+				# reportData += ';SUMMARY;'
+				# reportData += 'Revenues (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + str(round(sumTotalRevenues,2)) + ';'
+				# reportData += 'OPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]]) + ',' + str(round(sumTotalOPEX,2)) + ';'
+				# reportData += 'Royalties (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]]) + ',' + str(round(sumRoyalties,2)) + ';'
+				# reportData += 'CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
+				# reportData += 'Working Capital (Current Production) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCurrentProd]]) + ',' + str(round(sumWorkCapCurrentProd,2)) + ';'
+				# reportData += 'Working Capital (Costs of LG Stockpile) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCostsLG]]) + ',' + str(round(sumWorkCapCostsLG,2)) + ';'
+				# reportData += 'Taxes (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
+
+				# reportData += ';PRE-TAX CASH FLOW;'
+				# reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]]) + ',' + str(round(sumCashFlowPreTax,2)) + ';'
+				# reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]]) + ',' + str(round(sumCashFlowPreTax,2)) + ';'
+				# reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]]) + ',' + str(round(sumPaybackPreTax,2)) + ';'
+				# for rate in discountRates:
+				# 	reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPreTaxNPV[int(round(rate*100))],2)) + ';'
+				# reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(preTaxIRR,2)) + ';'
+
+				# reportData += ';POST-TAX CASH FLOW;'
+				# reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]]) + ',' + str(round(sumCashFlowPostTax,2)) + ';'
+				# reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]]) + ',' + str(round(sumCashFlowPostTax,2)) + ';'
+				# reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]]) + ',' + str(round(sumPaybackPostTax,2)) + ';'
+				# for rate in discountRates:
+				# 	reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPostTaxNPV[int(round(rate*100))],2)) + ';'
+				# reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(postTaxIRR,2)) + ';'
+
+
+				filter_form = filterForm(mineID=mineID, startDate=projectStartDate, endDate=projectEndDate)
+				default_filter_form = defaultFilterForm(mineID=mineID, thisYearStartDate=thisYearStartDate, thisYearEndDate=thisYearEndDate,
+					lastYearStartDate=lastYearStartDate, lastYearEndDate=lastYearEndDate,
+					thisQuarterStartDate=thisQuarterStartDate, thisQuarterEndDate=thisQuarterEndDate,
+					lastQuarterStartDate=lastQuarterStartDate, lastQuarterEndDate=lastQuarterEndDate)
+				report_form = reportForm(mineID=mineID, reportData=reportData)
+
+				return render(request, 'report/report2.html', {'filterForm': filter_form, 'reportForm': report_form,
+					'defaultFilterForm': default_filter_form,
+					'dateVals': dateVals, 'commIDs': commIDs, 'commNameList': commNameList,
+					'numStockpiles': list(range(1, numStockpiles+1)),
+					'minePlanTonnageVals': minePlanTonnageVals, 'sumMinePlanTonnages': sumMinePlanTonnages,
+					# 'minePlanHGTonnageVals': minePlanHGTonnageVals, 'minePlanLGTonnageVals': minePlanLGTonnageVals,
+					# 'minePlanWasteTonnageVals': minePlanWasteTonnageVals, 'minePlanOverburdenTonnageVals': minePlanOverburdenTonnageVals,
+					# 'sumMinePlanHGTonnage': sumMinePlanHGTonnage, 'sumMinePlanLGTonnage': sumMinePlanLGTonnage,
+					# 'sumMinePlanWasteTonnage': sumMinePlanWasteTonnage, 'sumMinePlanOverburdenTonnage': sumMinePlanOverburdenTonnage,
+					'tonnageVals': tonnageVals, 'tonnageTotals': tonnageTotals, 'gradeVals': gradeVals, 'moistures': moistures,
+					# 'HGTonnageVals': HGTonnageVals, 'HGTonnageTotal': HGTonnageTotal, 'HGGradeVals': HGGradeVals, 'HGMoistures': HGMoistures,
+					# 'LGTonnageVals': LGTonnageVals, 'LGTonnageTotal': LGTonnageTotal, 'LGGradeVals': LGGradeVals, 'LGMoistures': LGMoistures,
+					'lumpTonnageVals': lumpTonnageVals, 'lumpTonnageTotal': lumpTonnageTotal, 'lumpGradeVals': lumpGradeVals, 'lumpMoistures': lumpMoistures,
+					'finesTonnageVals': finesTonnageVals, 'finesTonnageTotal': finesTonnageTotal, 'finesGradeVals': finesGradeVals, 'finesMoistures': finesMoistures,
+					'ultraFinesTonnageVals': ultraFinesTonnageVals, 'ultraFinesTonnageTotal': ultraFinesTonnageTotal, 'ultraFinesGradeVals': ultraFinesGradeVals, 'ultraFinesMoistures': ultraFinesMoistures,
+					'totalProducts': totalProducts, 'sumTotalProducts': sumTotalProducts,
+					'rejectsTonnageVals': rejectsTonnageVals, 'rejectsTonnageTotal': rejectsTonnageTotal, 'rejectsGradeVals': rejectsGradeVals, 'rejectsMoistures': rejectsMoistures,
+					'fullShippingCosts': fullShippingCosts, 'fullExchangeRates': fullExchangeRates,
+					'HGLumps': HGLumps, 'lumpPenaltyVals': lumpPenaltyVals, 'lumpSellingPrices': lumpSellingPrices, 'avgLumpSellingPrice': avgLumpSellingPrice,
+					'netLumpPrices': netLumpPrices, 'avgNetLumpPrice': avgNetLumpPrice, 'exchangeNetLumpPrices': exchangeNetLumpPrices,
+					'avgExchangeNetLumpPrice': avgExchangeNetLumpPrice,
+					'HGFines': HGFines, 'finesPenaltyVals': finesPenaltyVals, 'finesSellingPrices': finesSellingPrices, 'avgFinesSellingPrice': avgFinesSellingPrice,
+					'netFinesPrices': netFinesPrices, 'avgNetFinesPrice': avgNetFinesPrice, 'exchangeNetFinesPrices': exchangeNetFinesPrices,
+					'avgExchangeNetFinesPrice': avgExchangeNetFinesPrice,
+					'HGUltraFines': HGUltraFines, 'ultraFinesPenaltyVals': ultraFinesPenaltyVals, 'ultraFinesSellingPrices': ultraFinesSellingPrices,
+					'avgUltraFinesSellingPrice': avgUltraFinesSellingPrice,
+					'netUltraFinesPrices': netUltraFinesPrices, 'exchangeNetUltraFinesPrices': exchangeNetUltraFinesPrices,
+					'avgExchangeNetUltraFinesPrice': avgExchangeNetUltraFinesPrice,
+					'lumpRevenues': lumpRevenues, 'finesRevenues': finesRevenues, 'ultraFinesRevenues': ultraFinesRevenues,
+					'sumLumpRevenues': sumLumpRevenues, 'sumFinesRevenues': sumFinesRevenues, 'sumUltraFinesRevenues': sumUltraFinesRevenues,
+					'totalRevenues': totalRevenues, 'sumTotalRevenues': sumTotalRevenues,
+					'mining': mining, 'stockpileLG': stockpileLG, 'dewatering': dewatering, 'processing': processing, 'hauling': hauling,
+					'loadOutRailLoop': loadOutRailLoop, 'GASite': GASite, 'GARoom': GARoom, 'railTransport': railTransport, 'GACorp': GACorp,
+					'sumMining': sumMining, 'sumStockpileLG': sumStockpileLG, 'sumDewatering': sumDewatering, 'sumProcessing': sumProcessing,
+					'sumHauling': sumHauling, 'sumLoadOutRailLoop': sumLoadOutRailLoop, 'sumGASite': sumGASite, 'sumGARoom': sumGARoom,
+					'sumRailTransport': sumRailTransport, 'sumGACorp': sumGACorp,
+					'totalOPEX': totalOPEX, 'sumTotalOPEX':sumTotalOPEX, 'royalties': royalties, 'sumRoyalties': sumRoyalties,
+					'preStrip': preStrip, 'mineEquipInitial': mineEquipInitial, 'mineEquipSustain': mineEquipSustain, 'infraDirectCost': infraDirectCost,
+					'infraIndirectCost': infraIndirectCost, 'contingency': contingency, 'railcars': railcars, 'otherMobEquip': otherMobEquip,
+					'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'sumPreStrip': sumPreStrip,
+					'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 'sumInfraDirectCost': sumInfraDirectCost,
+					'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency, 'sumRailcars': sumRailcars,
+					'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 'sumDepoProvisionPay': sumDepoProvisionPay,
+					'totalCAPEX': totalCAPEX, 'sumTotalCAPEX': sumTotalCAPEX,
+					'federalTaxes': federalTaxes, 'provincialTaxes': provincialTaxes, 'miningTaxes': miningTaxes,
+					'sumFederalTaxes': sumFederalTaxes, 'sumProvincialTaxes': sumProvincialTaxes, 'sumMiningTaxes': sumMiningTaxes,
+					'totalTaxes': totalTaxes, 'sumTotalTaxes': sumTotalTaxes,
+					'workCapCurrentProd': workCapCurrentProd, 'workCapCostsLG': workCapCostsLG,
+					'sumWorkCapCurrentProd': sumWorkCapCurrentProd, 'sumWorkCapCostsLG': sumWorkCapCostsLG})
+					# 'cashFlowPreTax': cashFlowPreTax, 'cashFlowPostTax': cashFlowPostTax,
+					# 'cumCashFlowPreTax': cumCashFlowPreTax, 'cumCashFlowPostTax': cumCashFlowPostTax,
+					# 'sumCashFlowPreTax': sumCashFlowPreTax, 'sumCashFlowPostTax': sumCashFlowPostTax,
+					# 'paybackPreTax': paybackPreTax, 'paybackPostTax': paybackPostTax,
+					# 'sumPaybackPreTax': sumPaybackPreTax, 'sumPaybackPostTax': sumPaybackPostTax,
+					# 'preTaxNPVs': preTaxNPVs, 'postTaxNPVs': postTaxNPVs, 'preTaxIRR': preTaxIRR, 'postTaxIRR': postTaxIRR,
+					# 'preTaxPVs': preTaxPVs, 'postTaxPVs': postTaxPVs, 'sumPreTaxNPV': sumPreTaxNPV, 'sumPostTaxNPV': sumPostTaxNPV})
+
+
+		elif "applyFilter" in request.POST:
+			filler = ""
+			mineID = request.session["mineID"]
+			mineMatch = tblMine.objects.get(mineID=int(mineID))
+
+			# Check project exists
+			projectsList  = tblProject.objects.filter(mineID=mineID)
+			if not projectsList:
+				return render(request, "report/noProjects.html", {})
+
+			# # Get LOM of the mine's most recent project
+			latestProject = projectsList.order_by('-dateAdded')[0]
+			LOM = int(latestProject.LOM)
+			numStockpiles = latestProject.numStockpiles
+
+			projectPeriods = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).order_by('year')
+			projectStartDate = projectPeriods[0].startDate
+			projectEndDate = projectPeriods[projectPeriods.count()-1].endDate
+
+			# Check if default filter options are available
+			# Check "This year", "Last year", "This quarter", and "Last quarter"
+			# 1. This year
+			today = datetime.date.today()
+			if (today.year >= projectStartDate.year) and (today.year <= projectEndDate.year):
+				# thisYear = True
+				thisYearStartDate = datetime.date(today.year, 1, 1)
+				thisYearEndDate = datetime.date(today.year, 12, 31)
+			else:
+				# thisYear = False
+				thisYearStartDate = None
+				thisYearEndDate = None
+
+			# 2. Last year
+			if (today.year-1 >= projectStartDate.year) and (today.year-1 <= projectEndDate.year):
+				# lastYear = True
+				lastYearStartDate = datetime.date(today.year-1, 1, 1)
+				lastYearEndDate = datetime.date(today.year-1, 12, 31)
+			else:
+				# lastYear = False
+				lastYearStartDate = None
+				lastYearEndDate = None
+
+			# 3. This quarter
+			if thisYearStartDate:
+				todayQ = ceil(today.month/3.0)
+				if today.year == projectStartDate.year:
+					startDateQ = ceil(projectStartDate.month/3.0)
+					quarters = list(range(startDateQ, 5))			
+					if todayQ in quarters:
+						# thisQuarter = True
+						thisQuarterStartDate = datetime.date(today.year, 3*(todayQ - 1) + 1, 1)
+						thisQuarterEndDate = thisQuarterStartDate + relativedelta(months=+3) - relativedelta(days=+1)
+					else:
+						# thisQuarter = False
+						thisQuarterStartDate = None
+						thisQuarterEndDate = None
+				else:
+					# thisQuarter = True
+					thisQuarterStartDate = datetime.date(today.year, 3*(todayQ - 1) + 1, 1)
+					thisQuarterEndDate = thisQuarterStartDate + relativedelta(months=+3) - relativedelta(days=+1)
+			else:
+				# thisQuarter = False
+				thisQuarterStartDate = None
+				thisQuarterEndDate = None
+
+			# 4. Last quarter
+			threeMonthsAgo = today - relativedelta(months=+3)
+			if (threeMonthsAgo >= projectStartDate) and (threeMonthsAgo <= projectEndDate):
+				threeMonthsAgoQ = ceil(threeMonthsAgo.month/3.0)
+				# lastQuarter = True
+				lastQuarterStartDate = datetime.date(threeMonthsAgo.year, 3*(threeMonthsAgoQ - 1) + 1, 1)
+				lastQuarterEndDate = lastQuarterStartDate + relativedelta(months=+3) - relativedelta(days=+1)
+			else:
+				# lastQuarter = False
+				lastQuarterStartDate = None
+				lastQuarterEndDate = None
+
+			# Get list of Commodity IDs
+			commodities = tblCommodity.objects.filter(projectID=latestProject.projectID)
+			commIDs = commodities.values_list('commodityID', flat=True)
+
+			# Get list of Commodity Names
+			commNameList = []
+			for ID in commIDs:
+				nameMatch = tblCommodityList.objects.get(commodityID=ID)
+				commNameList.append(nameMatch.name)
+
+			# Get list of Plant Product IDs
+			PPMatches = tblPlantProduct.objects.filter(projectID=latestProject.projectID)
+			PPIDs = PPMatches.values_list('plantProductID', flat=True)
+
+			# Get most recent tblInputs entry
+			latestInput = tblInputs.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
+			# Price entry
+			priceEntry = tblPrice.objects.get(projectID=latestProject.projectID, stockpileID=1)
+
+			# Handle OPEX Shipping Cost by Year
+			# shippingCosts = []
+			fullShippingCosts = []
+
+			# for year in range(1, yearCount+1):
+			# 	currOPEX = tblOPEX.objects.filter(mineID=mineID, year=year).order_by('-dateAdded')[0]
+			# 	fullShippingCosts.append(round(currOPEX.shipping,2))
+			# 	if year in yearVals:
+			# 		shippingCosts.append(round(currOPEX.shipping,2))
+
+			tonnageVals = None
+			tonnageTotals = None
+			gradeVals = None
+			moistures = None
+
+			lumpTonnageVals = None
+			lumpTonnageTotal = None
+			lumpGradeVals = None
+			lumpMoistures = None
+
+			finesTonnageVals = None
+			finesTonnageTotal = None
+			finesGradeVals = None
+			finesMoistures = None
+
+			ultraFinesTonnageVals = None
+			ultraFinesTonnageTotal = None
+			ultraFinesGradeVals = None
+			ultraFinesMoistures = None
+
+			rejectsTonnageVals = None
+			rejectsTonnageTotal = None
+			rejectsGradeVals = None
+			rejectsMoistures = None
+
+
+			HGLumps = None
+			lumpPenaltyVals = None
+			lumpSellingPrices = None
+			avgLumpSellingPrice = None
+			netLumpPrices = None
+			avgNetLumpPrice = None
+			exchangeNetLumpPrices = None
+			avgExchangeNetLumpPrice = None
+
+			HGFines = None
+			finesPenaltyVals = None
+			finesSellingPrices = None
+			avgFinesSellingPrice = None
+			netFinesPrices = None
+			avgNetFinesPrice = None
+			exchangeNetFinesPrices = None
+			avgExchangeNetFinesPrice = None
+
+			HGUltraFines = None
+			ultraFinesPenaltyVals = None
+			ultraFinesSellingPrices = None
+			avgUltraFinesSellingPrice = None
+			netUltraFinesPrices = None
+			avgNetUltraFinesPrice = None
+			exchangeNetUltraFinesPrices = None
+			avgExchangeNetUltraFinesPrice = None
+
+			lumpRevenues = None
+			sumLumpRevenues = None
+			finesRevenues = None
+			sumFinesRevenues = None
+			ultraFinesRevenues = None
+			sumUltraFinesRevenues = None
+
+			# form = filterForm(request.POST, mineID=mineID)
+			form = filterForm(request.POST, mineID=mineID, startDate=projectStartDate, endDate=projectEndDate)
 			if form.is_valid():
 				cleanData = form.cleaned_data
 				startDate = cleanData["startDate"]
@@ -3252,10 +4223,15 @@ def reportDL(request):
 					# reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(postTaxIRR,2)) + ';'
 
 
-					filter_form = filterForm(mineID=mineID)
+					filter_form = filterForm(mineID=mineID, startDate=projectStartDate, endDate=projectEndDate)
+					default_filter_form = defaultFilterForm(mineID=mineID, thisYearStartDate=thisYearStartDate, thisYearEndDate=thisYearEndDate,
+						lastYearStartDate=lastYearStartDate, lastYearEndDate=lastYearEndDate,
+						thisQuarterStartDate=thisQuarterStartDate, thisQuarterEndDate=thisQuarterEndDate,
+						lastQuarterStartDate=lastQuarterStartDate, lastQuarterEndDate=lastQuarterEndDate)
 					report_form = reportForm(mineID=mineID, reportData=reportData)
 
 					return render(request, 'report/report2.html', {'filterForm': filter_form, 'reportForm': report_form,
+						'defaultFilterForm': default_filter_form,
 						'dateVals': dateVals, 'commIDs': commIDs, 'commNameList': commNameList,
 						'numStockpiles': list(range(1, numStockpiles+1)),
 						'minePlanTonnageVals': minePlanTonnageVals, 'sumMinePlanTonnages': sumMinePlanTonnages,
@@ -3869,10 +4845,15 @@ def reportDL(request):
 				# reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(postTaxIRR,2)) + ';'
 
 
-				filter_form = filterForm(mineID=mineID)
+				filter_form = filterForm(mineID=mineID, startDate=projectStartDate, endDate=projectEndDate)
+				default_filter_form = defaultFilterForm(mineID=mineID, thisYearStartDate=thisYearStartDate, thisYearEndDate=thisYearEndDate,
+					lastYearStartDate=lastYearStartDate, lastYearEndDate=lastYearEndDate,
+					thisQuarterStartDate=thisQuarterStartDate, thisQuarterEndDate=thisQuarterEndDate,
+					lastQuarterStartDate=lastQuarterStartDate, lastQuarterEndDate=lastQuarterEndDate)
 				report_form = reportForm(mineID=mineID, reportData=reportData)
 
 				return render(request, 'report/report2.html', {'filterForm': filter_form, 'reportForm': report_form,
+					'defaultFilterForm': default_filter_form,
 					'dateVals': dateVals, 'commIDs': commIDs, 'commNameList': commNameList,
 					'numStockpiles': list(range(1, numStockpiles+1)),
 					'minePlanTonnageVals': minePlanTonnageVals, 'sumMinePlanTonnages': sumMinePlanTonnages,

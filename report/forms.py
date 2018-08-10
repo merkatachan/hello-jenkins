@@ -10,9 +10,96 @@ class csvForm(forms.Form):
 		for i in range(1,len(reportRows)+1):
 			self.fields["row{0}".format(i)] = forms.CharField(initial=reportRows[i-1], widget=forms.HiddenInput())
 
+class defaultFilterForm(forms.Form):
+	def __init__(self, *args, **kwargs):
+		mineID = kwargs.pop('mineID')
+		thisYearStartDate = kwargs.pop('thisYearStartDate')
+		thisYearEndDate = kwargs.pop('thisYearEndDate')
+		lastYearStartDate = kwargs.pop('lastYearStartDate')
+		lastYearEndDate = kwargs.pop('lastYearEndDate')
+		thisQuarterStartDate = kwargs.pop('thisQuarterStartDate')
+		thisQuarterEndDate = kwargs.pop('thisQuarterEndDate')
+		lastQuarterStartDate = kwargs.pop('lastQuarterStartDate')
+		lastQuarterEndDate = kwargs.pop('lastQuarterEndDate')
+		# projectStartDate = kwargs.pop('startDate')
+		# projectEndDate = kwargs.pop('endDate')
+
+		super(defaultFilterForm, self).__init__(*args, **kwargs)
+
+		# self.fields["startDate"] = forms.DateField(required=True, label='Start Date',
+		# 	widget=forms.DateInput(format="%Y-%m-%d", attrs={'class':'datepicker'}))
+
+		# self.fields["endDate"] = forms.DateField(required=True, label='End Date',
+		# 	widget=forms.DateInput(format="%Y-%m-%d", attrs={'class':'datepicker'}))
+
+		defaultFilterChoices = []
+		defaultFilterChoices.append(("", ""))
+		defaultFilterChoices.append(("thisYear", "This Year"))
+		defaultFilterChoices.append(("lastYear", "Last Year"))
+		defaultFilterChoices.append(("thisQuarter", "This Quarter"))
+		defaultFilterChoices.append(("lastQuarter", "Last Quarter"))
+
+		# if thisYearStartDate:
+		# 	defaultFilterChoices.append(("thisYear", "This Year"))
+		# else:
+		# 	defaultFilterChoices.append(("thisYearDisabled", "This Year (Not Available)"))
+
+		# if lastYearStartDate:
+		# 	defaultFilterChoices.append(("lastYear", "Last Year"))
+		# else:
+		# 	defaultFilterChoices.append(("lastYearDisabled", "Last Year (Not Available)"))
+
+		# if thisQuarterStartDate:
+		# 	defaultFilterChoices.append(("thisQuarter", "This Quarter"))
+		# else:
+		# 	defaultFilterChoices.append(("thisQuarterDisabled", "This Quarter (Not Available)"))
+
+		# if lastQuarterStartDate:
+		# 	defaultFilterChoices.append(("lastQuarter", "Last Quarter"))
+		# else:
+		# 	defaultFilterChoices.append(("lastQuarterDisabled", "Last Quarter (Not Available)"))
+
+		defaultFilterChoices = tuple(defaultFilterChoices)
+
+		self.fields["defaultFilter"] = forms.ChoiceField(choices=defaultFilterChoices, required=True, label="Default Filters")
+
+		# defaultFilter = forms.ChoiceField(choices=defaultFilterChoices, required=True, label="Default Filters")
+
+		self.fields["thisYearStartDate"] = forms.DateField(required=False, initial=thisYearStartDate,
+			widget=forms.HiddenInput())
+
+		self.fields["thisYearEndDate"] = forms.DateField(required=False, initial=thisYearEndDate,
+			widget=forms.HiddenInput())
+
+		self.fields["lastYearStartDate"] = forms.DateField(required=False, initial=lastYearStartDate,
+			widget=forms.HiddenInput())
+
+		self.fields["lastYearEndDate"] = forms.DateField(required=False, initial=lastYearEndDate,
+			widget=forms.HiddenInput())
+
+		self.fields["thisQuarterStartDate"] = forms.DateField(required=False, initial=thisQuarterStartDate,
+			widget=forms.HiddenInput())
+
+		self.fields["thisQuarterEndDate"] = forms.DateField(required=False, initial=thisQuarterEndDate,
+			widget=forms.HiddenInput())
+
+		self.fields["lastQuarterStartDate"] = forms.DateField(required=False, initial=lastQuarterStartDate,
+			widget=forms.HiddenInput())
+
+		self.fields["lastQuarterEndDate"] = forms.DateField(required=False, initial=lastQuarterEndDate,
+			widget=forms.HiddenInput())
+
+		# self.fields["defaultStartDate"] = forms.DateField(required=False, initial=projectStartDate,
+		# 	widget=forms.HiddenInput())
+
+		# self.fields["defaultEndDate"] = forms.DateField(required=False, initial=projectEndDate,
+		# 	widget=forms.HiddenInput())
+
 class filterForm(forms.Form):
 	def __init__(self, *args, **kwargs):
 		mineID = kwargs.pop('mineID')
+		projectStartDate = kwargs.pop('startDate')
+		projectEndDate = kwargs.pop('endDate')
 		# reportData = kwargs.pop('reportData')
 
 		# Obtain latest projectID
@@ -51,6 +138,12 @@ class filterForm(forms.Form):
 
 		self.fields["endDate"] = forms.DateField(required=True, label='End Date',
 			widget=forms.DateInput(format="%Y-%m-%d", attrs={'class':'datepicker'}))
+
+		self.fields["projectStartDate"] = forms.DateField(required=False, initial=projectStartDate,
+			widget=forms.HiddenInput())
+
+		self.fields["projectEndDate"] = forms.DateField(required=False, initial=projectEndDate,
+			widget=forms.HiddenInput())
 
 class reportForm(forms.Form):
 	def __init__(self, *args, **kwargs):

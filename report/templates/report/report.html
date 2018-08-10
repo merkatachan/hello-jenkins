@@ -38,11 +38,37 @@
 
     </div>
 
-    <div>
+    <div class="row">
         <div class="col-sm-4">
         </div>
 
         <div class="col-sm-4">
+        <span id="defaultErrorMsg">        </span>
+        <form class="form-reportDefaultFilter" id="form-reportDefaultFilter" role="form" action="{% url 'report:reportDL' %}" method="POST">
+            <br>
+            {% csrf_token %}
+
+            {{ defaultFilterForm.as_p }}
+
+            <center>
+                <button class="btn btn-group-lg btn-primary" type="submit" id="applyDefaultFilter" name="applyDefaultFilter">Apply Filters</button>
+            </center>
+
+            <br>
+        </form>
+
+        </div>
+
+        <div class="col-sm-4">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+        </div>
+
+        <div class="col-sm-4">
+        <span id="customErrorMsg"></span>
         <form class="form-reportFilter" id="form-reportFilter" role="form" action="{% url 'report:reportDL' %}" method="POST">
             <br>
             {% csrf_token %}
@@ -50,7 +76,7 @@
             {{ filterForm.as_p }}
 
             <center>
-                <button class="btn btn-group-lg btn-primary" type="submit" name="applyFilter">Apply Filters</button>
+                <button class="btn btn-group-lg btn-primary" type="submit" id="applyFilter" name="applyFilter">Apply Custom Filters</button>
             </center>
 
             <br>
@@ -1128,6 +1154,50 @@ $(document).ready(function() {
 
     $('.datepicker').datepicker({ 
         dateFormat:'yy-mm-dd' 
+    });
+
+    // $('select option[value*="Disabled"]').prop('disabled',true);
+
+    $('#applyFilter').prop('disabled', true);
+    $('#applyDefaultFilter').prop('disabled', true);
+
+    $('#id_defaultFilter').change( function(){
+        if (!$(this).val()) {
+            $('#defaultErrorMsg').html("Please select a default filter.");
+            $('#applyDefaultFilter').prop('disabled', true);
+        } else if ($(this).val() == "thisYear") {
+            if (!$('#id_thisYearStartDate').val()) {
+                $('#defaultErrorMsg').html("This year is out of range. Please select another option.");
+                $('#applyDefaultFilter').prop('disabled', true);
+            } else {
+                $('#defaultErrorMsg').html("");
+                $('#applyDefaultFilter').prop('disabled', false);
+            }
+        } else if ($(this).val() == "lastYear") {
+            if (!$('#id_lastYearStartDate').val()) {
+                $('#defaultErrorMsg').html("Last year is out of range. Please select another option.");
+                $('#applyDefaultFilter').prop('disabled', true);
+            } else {
+                $('#defaultErrorMsg').html("");
+                $('#applyDefaultFilter').prop('disabled', false);
+            }
+        } else if ($(this).val() == "thisQuarter") {
+            if (!$('#id_thisQuarterStartDate').val()) {
+                $('#defaultErrorMsg').html("This quarter is out of range. Please select another option.");
+                $('#applyDefaultFilter').prop('disabled', true);
+            } else {
+                $('#defaultErrorMsg').html("");
+                $('#applyDefaultFilter').prop('disabled', false);
+            }
+        } else if ($(this).val() == "lastQuarter") {
+            if (!$('#id_lastQuarterStartDate').val()) {
+                $('#defaultErrorMsg').html("Last quarter is out of range. Please select another option.");
+                $('#applyDefaultFilter').prop('disabled', true);
+            } else {
+                $('#defaultErrorMsg').html("");
+                $('#applyDefaultFilter').prop('disabled', false);
+            }
+        }
     });
 
     {% for curr in numStockpiles %}
