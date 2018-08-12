@@ -888,6 +888,8 @@ $(document).ready(function() {
         dateFormat:'yy-mm-dd' 
     });
 
+    $('.datepicker').prop("readonly", true);
+
     // $('select option[value*="Disabled"]').prop('disabled',true);
 
     $('#applyFilter').prop('disabled', true);
@@ -930,6 +932,92 @@ $(document).ready(function() {
                 $('#applyDefaultFilter').prop('disabled', false);
             }
         }
+    });
+
+    $('#id_startDate').change( function(){
+        do {
+            var chosenStartDate = $(this).val();
+            var startDate = $('#id_projectStartDate').val();
+            var endDate = $('#id_projectEndDate').val();
+
+            if (!chosenStartDate) {
+                $('#customErrorMsg').html("Please choose a start date.");
+                $('#applyFilter').prop('disabled', true);
+                break;
+            }
+
+            if (chosenStartDate < startDate || chosenStartDate > endDate) {
+                $('#customErrorMsg').html("Chosen start date is out of range. Please choose again.");
+                $('#applyFilter').prop('disabled', true);
+                break;
+            }
+
+            var chosenEndDate = $('#id_endDate').val();
+            if (!chosenEndDate) {
+                $('#customErrorMsg').html("Please choose an end date.");
+                $('#applyFilter').prop('disabled', true);
+                break;
+            }
+
+            if (chosenEndDate > endDate) {
+                $('#customErrorMsg').html("Chosen end date is out of range. Please choose again.");
+                $('#applyFilter').prop('disabled', true);
+                break;
+            }
+
+            if (chosenEndDate < chosenStartDate) {
+                $('#customErrorMsg').html("Your end date is earlier than the start date. Please choose again.");
+                $('#applyFilter').prop('disabled', true);
+                break;
+            }
+
+            $('#customErrorMsg').html("");
+            $('#applyFilter').prop('disabled', false);
+
+        } while (0);
+    });
+
+    $('#id_endDate').change( function(){
+        do {
+            var chosenEndDate = $(this).val();
+            var startDate = $('#id_projectStartDate').val();
+            var endDate = $('#id_projectEndDate').val();
+
+            if (!chosenEndDate) {
+                $('#customErrorMsg').html("Please choose an end date.");
+                $('#applyFilter').prop('disabled', true);
+                break;
+            }
+
+            if (chosenEndDate < startDate || chosenEndDate > endDate) {
+                $('#customErrorMsg').html("Chosen end date is out of range. Please choose again.");
+                $('#applyFilter').prop('disabled', true);
+                break;
+            }
+
+            var chosenStartDate = $('#id_startDate').val();
+            if (!chosenStartDate) {
+                $('#customErrorMsg').html("Please choose a start date.");
+                $('#applyFilter').prop('disabled', true);
+                break;
+            }
+
+            if (chosenStartDate < startDate) {
+                $('#customErrorMsg').html("Chosen start date is out of range. Please choose again.");
+                $('#applyFilter').prop('disabled', true);
+                break;
+            }
+
+            if (chosenEndDate < chosenStartDate) {
+                $('#customErrorMsg').html("Your start date is later than the end date. Please choose again.");
+                $('#applyFilter').prop('disabled', true);
+                break;
+            }
+
+            $('#customErrorMsg').html("");
+            $('#applyFilter').prop('disabled', false);
+
+        } while (0);
     });
 
     {% for curr in numStockpiles %}
