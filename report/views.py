@@ -2880,7 +2880,7 @@ def reportDL(request):
 							for entry in subEntries:
 								lumpDailyTonnages[startDateVals[i]].append(entry.tonnageDMT)
 							subTotal = subEntries.aggregate(sumTonnage=Sum('tonnageDMT'))
-							lumpTonnageVals.append(subTotal['sumTonnage'])
+							lumpTonnageVals.append(round(subTotal['sumTonnage'],2))
 						else:
 							lumpTonnageVals.append(filler)
 					lumpTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in lumpTonnageVals])
@@ -2955,7 +2955,7 @@ def reportDL(request):
 							for entry in subEntries:
 								finesDailyTonnages[startDateVals[i]].append(entry.tonnageDMT)
 							subTotal = subEntries.aggregate(sumTonnage=Sum('tonnageDMT'))
-							finesTonnageVals.append(subTotal['sumTonnage'])
+							finesTonnageVals.append(round(subTotal['sumTonnage'],2))
 						else:
 							finesTonnageVals.append(filler)
 					finesTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in finesTonnageVals])
@@ -3003,7 +3003,7 @@ def reportDL(request):
 							for entry in subEntries:
 								ultraFinesDailyTonnages[startDateVals[i]].append(entry.tonnageDMT)
 							subTotal = subEntries.aggregate(sumTonnage=Sum('tonnageDMT'))
-							ultraFinesTonnageVals.append(subTotal['sumTonnage'])
+							ultraFinesTonnageVals.append(round(subTotal['sumTonnage'],2))
 						else:
 							ultraFinesTonnageVals.append(filler)
 					ultraFinesTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in ultraFinesTonnageVals])
@@ -3051,7 +3051,7 @@ def reportDL(request):
 							for entry in subEntries:
 								rejectsDailyTonnages[startDateVals[i]].append(entry.tonnageDMT)
 							subTotal = subEntries.aggregate(sumTonnage=Sum('tonnageDMT'))
-							rejectsTonnageVals.append(subTotal['sumTonnage'])
+							rejectsTonnageVals.append(round(subTotal['sumTonnage'],2))
 						else:
 							rejectsTonnageVals.append(filler)
 					rejectsTonnageTotal = sum([Decimal(0.0) if x==filler else x for x in ultraFinesTonnageVals])
