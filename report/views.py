@@ -87,16 +87,6 @@ def index(request):
 	latestInput = tblInputs.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
 
 	yearVals = []
-	# HGTonnageVals = None
-	# HGTonnageTotal = None
-	# HGGradeVals = None
-	# HGMoistures = None
-
-	# LGTonnageVals = None
-	# LGTonnageTotal = None
-	# LGGradeVals = None
-	# LGMoistures = None
-
 	tonnageVals = None
 	tonnageTotals = None
 	gradeVals = None
@@ -230,12 +220,15 @@ def index(request):
 
 	fullYearVals = list(range(1, yearCount+1))
 	fullYearVals = [x+latestProject.startDate.year-1 for x in fullYearVals]
+	fullYears = []
 
 	for i in range(yearCount):
 		i += 1
-		currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=i)
+		currPeriod = projectPeriods.get(year=i)
+		# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=i)
 		currStart = currPeriod.startDate
 		currEnd = currPeriod.endDate
+		fullYears.append(currPeriod.startDate.year)
 		calculated = tblRevenue.objects.filter(projectID=latestProject.projectID, date__gte=currStart, date__lte=currEnd)
 		if calculated:
 			yearVals.append(i)
@@ -276,6 +269,21 @@ def index(request):
 	royalties = []
 	transportation = []
 	GA = []
+
+	dailyMining = {}
+	dailyInfrastructure = {}
+	dailyStockpileLG = {}
+	dailyDewatering = {}
+	dailyProcessing = {}
+	dailyHauling = {}
+	dailyLoadOutRailLoop = {}
+	dailyGASite = {}
+	dailyGARoom = {}
+	dailyRailTransport = {}
+	dailyGACorp = {}
+	dailyRoyalties = {}
+	dailyTransportation = {}
+	dailyGA = {}
 
 	for year in range(1, yearCount+1):
 		currOPEX = tblOPEX.objects.filter(mineID=mineID, year=year).order_by('-dateAdded')[0]
@@ -382,6 +390,7 @@ def index(request):
 	federalTaxes = []
 	provincialTaxes = []
 	miningTaxes = []
+	proratedTaxes = {}
 
 	for year in range(1, yearCount+1):
 		currTaxes = tblTaxes.objects.filter(mineID=mineID, year=year).order_by('-dateAdded')[0]
@@ -392,6 +401,9 @@ def index(request):
 	sumProvincialTaxes = sum(provincialTaxes)
 	sumMiningTaxes = sum(miningTaxes)
 	totalTaxes = [sum(x) for x in zip(federalTaxes, provincialTaxes, miningTaxes)]
+	for i in range(len(totalTaxes)):
+		currYear = projectStartDate.year + i
+		proratedTaxes[currYear] = totalTaxes[i]/Decimal(366.0) if calendar.isleap(currYear) else totalTaxes[i]/Decimal(365.0)
 	sumTotalTaxes = sum(totalTaxes)
 
 
@@ -799,7 +811,8 @@ def index(request):
 		currTonnageVals = []
 		currGrades = {}
 		for year in yearVals:
-			currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+			currPeriod = projectPeriods.get(year=year)
+			# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 			currTonnageEntries = tblMineProductTonnageOptimized.objects.filter(projectID=latestProject.projectID, stockpileID=curr,
 				date__gte=currPeriod.startDate, date__lte=currPeriod.endDate).order_by("date")
 
@@ -815,7 +828,8 @@ def index(request):
 		for i in range(len(commIDs)):
 			tempGradesByYear = []
 			for year in yearVals:
-				currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+				currPeriod = projectPeriods.get(year=year)
+				# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 				currGradeEntries = tblMineProductGradeOptimized.objects.filter(projectID=latestProject.projectID, stockpileID=curr, commodityID=commIDs[i],
 					date__gte=currPeriod.startDate, date__lte=currPeriod.endDate).order_by("date")
 
@@ -901,7 +915,8 @@ def index(request):
 			# TO FIX: After Year column has been added to tblMineProductTonnageOptimized
 			# lumpTonnageEntry = tblPlantProductTonnage.objects.filter(mineID=mineID, plantProductID=1).order_by('-dateAdded')[0]
 			# lumpTonnageVals.append(round(Decimal(lumpTonnageEntry.tonnageDMT),2))
-			currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+			currPeriod = projectPeriods.get(year=year)
+			# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 			lumpTonnageEntries = tblPlantProductTonnage.objects.filter(projectID=latestProject.projectID, plantProductID=1,
 				date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 
@@ -922,7 +937,8 @@ def index(request):
 				# TO FIX: After Year column has been added to tblMineProduct
 				# lumpEntry = tblPlantProduct.objects.filter(mineID=mineID, plantProductID=1, commodityID=commIDs[i]).order_by('-dateAdded')[0]
 				# tempGrades.append(round(lumpEntry.grade,2))
-				currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+				currPeriod = projectPeriods.get(year=year)
+				# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 				lumpEntries = tblPlantProductGradeOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=1, commodityID=commIDs[i],
 					date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 				# avgGrade = lumpEntries.aggregate(avgGrade=Avg('grade'))
@@ -945,7 +961,8 @@ def index(request):
 			# TO FIX: After Year column has been added to tblMineProductTonnageOptimized
 			# finesTonnageEntry = tblPlantProductTonnage.objects.filter(mineID=mineID, plantProductID=2).order_by('-dateAdded')[0]
 			# finesTonnageVals.append(round(Decimal(finesTonnageEntry.tonnageDMT),2))
-			currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+			currPeriod = projectPeriods.get(year=year)
+			# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 			finesTonnageEntries = tblPlantProductTonnage.objects.filter(projectID=latestProject.projectID, plantProductID=2,
 				date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 
@@ -966,7 +983,8 @@ def index(request):
 				# TO FIX: After Year column has been added to tblMineProduct
 				# finesEntry = tblPlantProduct.objects.filter(mineID=mineID, plantProductID=2, commodityID=commIDs[i]).order_by('-dateAdded')[0]
 				# tempGrades.append(round(finesEntry.grade,2))
-				currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+				currPeriod = projectPeriods.get(year=year)
+				# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 				finesEntries = tblPlantProductGradeOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=2, commodityID=commIDs[i],
 					date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 				# avgGrade = finesEntries.aggregate(avgGrade=Avg('grade'))
@@ -990,7 +1008,8 @@ def index(request):
 			# TO FIX: After Year column has been added to tblMineProductTonnageOptimized
 			# ultraFinesTonnageEntry = tblPlantProductTonnage.objects.filter(mineID=mineID, plantProductID=3).order_by('-dateAdded')[0]
 			# ultraFinesTonnageVals.append(round(Decimal(ultraFinesTonnageEntry.tonnageDMT),2))
-			currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+			currPeriod = projectPeriods.get(year=year)
+			# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 			ultraFinesTonnageEntries = tblPlantProductTonnage.objects.filter(projectID=latestProject.projectID, plantProductID=3,
 				date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 
@@ -1012,7 +1031,8 @@ def index(request):
 				# ultraFinesEntry = tblPlantProduct.objects.filter(mineID=mineID, plantProductID=3, commodityID=commIDs[i]).order_by('-dateAdded')[0]
 				# tempGrades.append(round(ultraFinesEntry.grade,2))
 				# testVal = MPEntry.grade
-				currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+				currPeriod = projectPeriods.get(year=year)
+				# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 				ultraFinesEntries = tblPlantProductGradeOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=3, commodityID=commIDs[i],
 					date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 				# avgGrade = ultraFinesEntries.aggregate(avgGrade=Avg('grade'))
@@ -1037,7 +1057,8 @@ def index(request):
 			# TO FIX: After Year column has been added to tblMineProductTonnageOptimized
 			# rejectsTonnageEntry = tblPlantProductTonnage.objects.filter(mineID=mineID, plantProductID=4).order_by('-dateAdded')[0]
 			# rejectsTonnageVals.append(rejectsTonnageEntry.tonnageDMT)
-			currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+			currPeriod = projectPeriods.get(year=year)
+			# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 			rejectsTonnageEntries = tblPlantProductTonnage.objects.filter(projectID=latestProject.projectID, plantProductID=4,
 				date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 			sumTonnageDMT = rejectsTonnageEntries.aggregate(sumTonnageDMT=Sum('tonnageDMT'))
@@ -1050,8 +1071,9 @@ def index(request):
 			for year in yearVals:
 				# TO FIX: After Year column has been added to tblMineProduct
 				# rejectsEntry = tblPlantProduct.objects.filter(mineID=mineID, plantProductID=4, commodityID=commIDs[i]).order_by('-dateAdded')[0]
-				# tempGrades.append(round(rejectsEntry.grade,2))				
-				currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+				# tempGrades.append(round(rejectsEntry.grade,2))
+				currPeriod = projectPeriods.get(year=year)				
+				# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 				rejectsEntries = tblPlantProductGradeOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=4, commodityID=commIDs[i],
 					date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 				avgGrade = rejectsEntries.aggregate(avgGrade=Avg('grade'))
@@ -1082,7 +1104,8 @@ def index(request):
 			for year in yearVals:
 				# TO FIX: After Year column has been added to tblSmelterTermsOptimized
 				# penaltyEntry = tblSmelterTermsOptimized.objects.filter(mineID=mineID, commodityID=commIDs[i], plantProductID=1).order_by('-dateAdded')[0]
-				currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+				currPeriod = projectPeriods.get(year=year)
+				# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 				penaltyEntries = tblSmelterTermsOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=1, commodityID=commIDs[i],
 					date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 				# sumPenalty = penaltyEntries.aggregate(sumPenalty=Sum('penalty'))
@@ -1117,7 +1140,8 @@ def index(request):
 				# TO FIX: After Year column has been added to tblSmelterTermsOptimized
 				# penaltyEntry = tblSmelterTermsOptimized.objects.filter(mineID=mineID, commodityID=commIDs[i], plantProductID=2).order_by('-dateAdded')[0]
 				# tempPenalties.append(round(Decimal(penaltyEntry.penalty),2))
-				currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+				currPeriod = projectPeriods.get(year=year)
+				# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 				penaltyEntries = tblSmelterTermsOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=2, commodityID=commIDs[i],
 					date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 				sumPenalty = penaltyEntries.aggregate(sumPenalty=Sum('penalty'))
@@ -1145,7 +1169,8 @@ def index(request):
 				# TO FIX: After Year column has been added to tblSmelterTermsOptimized
 				# penaltyEntry = tblSmelterTermsOptimized.objects.filter(mineID=mineID, commodityID=commIDs[i], plantProductID=3).order_by('-dateAdded')[0]
 				# tempPenalties.append(round(Decimal(penaltyEntry.penalty),2))
-				currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+				currPeriod = projectPeriods.get(year=year)
+				# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 				penaltyEntries = tblSmelterTermsOptimized.objects.filter(projectID=latestProject.projectID, plantProductID=3, commodityID=commIDs[i],
 					date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 				sumPenalty = penaltyEntries.aggregate(sumPenalty=Sum('penalty'))
@@ -1173,7 +1198,8 @@ def index(request):
 			# currRevenue = round(Decimal(revenueEntry.plantProductRevenue),2)
 			# lumpRevenues.append(currRevenue)
 			# sumLumpRevenues += currRevenue
-			currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+			currPeriod = projectPeriods.get(year=year)
+			# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 			revenueEntries = tblRevenue.objects.filter(projectID=latestProject.projectID, plantProductID=1,
 				date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 			sumPPRevenue = revenueEntries.aggregate(sumPPRevenue=Sum('plantProductRevenue'))
@@ -1192,7 +1218,8 @@ def index(request):
 			# currRevenue = round(Decimal(revenueEntry.plantProductRevenue),2)
 			# finesRevenues.append(currRevenue)
 			# sumFinesRevenues += currRevenue
-			currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+			currPeriod = projectPeriods.get(year=year)
+			# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 			revenueEntries = tblRevenue.objects.filter(projectID=latestProject.projectID, plantProductID=2,
 				date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 			sumPPRevenue = revenueEntries.aggregate(sumPPRevenue=Sum('plantProductRevenue'))
@@ -1210,7 +1237,8 @@ def index(request):
 			# currRevenue = round(Decimal(revenueEntry.plantProductRevenue),2)
 			# ultraFinesRevenues.append(currRevenue)
 			# sumUltraFinesRevenues += currRevenue
-			currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+			currPeriod = projectPeriods.get(year=year)
+			# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 			revenueEntries = tblRevenue.objects.filter(projectID=latestProject.projectID, plantProductID=3,
 				date__gte=currPeriod.startDate, date__lte=currPeriod.endDate)
 			sumPPRevenue = revenueEntries.aggregate(sumPPRevenue=Sum('plantProductRevenue'))
@@ -1221,41 +1249,21 @@ def index(request):
 
 	sumTotalRevenues = sum(totalRevenues)
 
-	# tblCashFlow and tblFinancials Data Processing (VERSION 2)
-	# No Pro-ration of Costs
-	# Annual Costs and Expenses charged on the last calculated day of the corresponding year
+	# Find first not processed entry
 	notProcessed = tblCashFlow.objects.filter(projectID=latestProject.projectID, processed=False).order_by('date')
 	if notProcessed:
 		toProcess = notProcessed[0]
 
-		annualOPEXPlusCAPEX = {}
-		annualTaxes = {}
+		# Build annual CAPEX+OPEX+Taxes values here (Pro-rationed daily)
+		totalCAPEXOPEX = [sum(x) for x in zip(cashFlowCAPEX, cashFlowOPEX)]
+		totalCAPEXOPEXTaxes = [sum(x) for x in zip(totalCAPEXOPEX, totalTaxes)]
+		dailyTotalCAPEXOPEX = [x/Decimal(366.0) if calendar.isleap(y) else x/Decimal(365.0) for x,y in zip(totalCAPEXOPEX, fullYears)]
+		dailyTotalCAPEXOPEXTaxes = [x/Decimal(366.0) if calendar.isleap(y) else x/Decimal(365.0) for x,y in zip(totalCAPEXOPEXTaxes, fullYears)]
 
-		latestOPEX = tblOPEX.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
-		latestCAPEX = tblCAPEX.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
-		latestTaxes = tblTaxes.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
-		OPEXEntries = tblOPEX.objects.filter(mineID=mineID, dateAdded=latestOPEX.dateAdded).order_by('year')
-		CAPEXEntries = tblCAPEX.objects.filter(mineID=mineID, dateAdded=latestCAPEX.dateAdded).order_by('year')
-		taxesEntries = tblTaxes.objects.filter(mineID=mineID, dateAdded=latestTaxes.dateAdded).order_by('year')
-		for i in range(len(OPEXEntries)):
-			OPEXrow = OPEXEntries[i]
-			CAPEXrow = CAPEXEntries[i]
-			taxesRow = taxesEntries[i]
-			currOPEX = (OPEXrow.mining+OPEXrow.infrastructure+OPEXrow.stockpileLG+OPEXrow.dewatering+OPEXrow.processing+
-				OPEXrow.hauling+OPEXrow.loadOutRailLoop+OPEXrow.GASite+OPEXrow.GARoomBoardFIFO+OPEXrow.railTransport+OPEXrow.GACorp+
-				OPEXrow.royalties+OPEXrow.transportation+OPEXrow.GA)
-			currCAPEX = (CAPEXrow.preStrip+CAPEXrow.mineEquipInitial+CAPEXrow.mineEquipSustain+CAPEXrow.infraDirectCost+
-				CAPEXrow.infraIndirectCost+CAPEXrow.contingency+CAPEXrow.railcars+CAPEXrow.otherMobEquip+CAPEXrow.closureRehabAssure+
-				CAPEXrow.depoProvisionPay+CAPEXrow.workCapCurrentProd+CAPEXrow.workCapCostsLG+CAPEXrow.EPCM+CAPEXrow.ownerCost)
-			currOPEXPlusCAPEX = round((Decimal(currCAPEX) + Decimal(currOPEX)),2)
-			currTaxes = round(Decimal(taxesRow.federal + taxesRow.provincial + taxesRow.mining),2)
-
-			annualOPEXPlusCAPEX[i+1] = currOPEXPlusCAPEX
-			annualTaxes[i+1] = currTaxes
-
-		projectPeriods = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).order_by('year')
-		toProcessPeriod = projectPeriods.filter(startDate__lte=toProcess.date, endDate__gte=toProcess.date)[0]
-		toProcessYears = yearVals[yearVals.index(toProcessPeriod.year):]
+		if projectStartDate.month != 1 or projectStartDate.day != 1:
+			tempEnd = datetime.date(projectStartDate.year, 12, 31)
+			dailyTotalCAPEXOPEX[0] = totalCAPEXOPEX[0]/Decimal((tempEnd - projectStartDate).days)
+			dailyTotalCAPEXOPEXTaxes[0] = totalCAPEXOPEXTaxes[0]/Decimal((tempEnd - projectStartDate).days)
 
 		earlyEntries = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__lt=toProcess.date).order_by('-date')
 		if earlyEntries:
@@ -1263,53 +1271,152 @@ def index(request):
 			currCumCashFlowPreTax = Decimal(lastCashFlowEntry.cumulativeCashFlowPreTax)
 			currCumCashFlowPostTax = Decimal(lastCashFlowEntry.cumulativeCashFlowPostTax)
 		else:
-			currCumCashFlowPreTax = Decimal(0.0)
-			currCumCashFlowPostTax = Decimal(0.0)
+			# If there are no earlier entries, then initialize with negative CAPEX values
+			currCumCashFlowPreTax = (-1)*sumNegCAPEX
+			currCumCashFlowPostTax = (-1)*sumNegCAPEX
 
-		for year in toProcessYears:
-			currPeriod = projectPeriods.filter(year=year)[0]
-			if year == toProcessPeriod.year:
-				toUpdate = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__gte=toProcess.date, 
-					date__lte=currPeriod.endDate).order_by('date')
+		toUpdate = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__gte=toProcess.date).order_by('date')
+		toUpdateRevenue = tblRevenue.objects.filter(projectID=latestProject.projectID, date__gte=toProcess.date).order_by('date')
+		toUpdateFinancials = tblFinancials.objects.filter(projectID=latestProject.projectID, date__gte=toProcess.date).order_by('date')
+
+		if earlyEntries:
+			lastDate = earlyEntries[0].date
+		else:
+			lastDate = projectStartDate			
+		for entry in toUpdate:
+			currLumpPlusFines = Decimal(0.0)
+			if 1 in PPIDs:
+				currRev = toUpdateRevenue.get(plantProductID=1, date=entry.date)
+				currLumpPlusFines += Decimal(currRev.plantProductRevenue)
+			if 2 in PPIDs:
+				currRev = toUpdateRevenue.get(plantProductID=2, date=entry.date)
+				currLumpPlusFines += Decimal(currRev.plantProductRevenue)
+
+			if lastDate.year == entry.date.year:
+				multiplier = (entry.date - lastDate).days
+				entry.cashFlowPreTax = currDailyCashFlowPreTax = currLumpPlusFines - dailyTotalCAPEXOPEX[entry.date.year - projectStartDate.year]*multiplier
+				entry.cashFlowPostTax = currDailyCashFlowPostTax = currLumpPlusFines - dailyTotalCAPEXOPEXTaxes[entry.date.year - projectStartDate.year]*multiplier
 			else:
-				toUpdate = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__gte=currPeriod.startDate, 
-					date__lte=currPeriod.endDate).order_by('date')
+				multiplier1 = (datetime.date(lastDate.year, 12, 31) - lastDate).days
+				multiplier2 = (entry.date - datetime.date(entry.date.year, 1, 1)).days
+				entry.cashFlowPreTax = currDailyCashFlowPreTax = currLumpPlusFines - dailyTotalCAPEXOPEX[lastDate.year - projectStartDate.year]*multiplier1 - dailyTotalCAPEXOPEX[entry.date.year - projectStartDate.year]*multiplier2
+				entry.cashFlowPostTax = currDailyCashFlowPostTax = currLumpPlusFines - dailyTotalCAPEXOPEXTaxes[lastDate.year - projectStartDate.year]*multiplier1 - dailyTotalCAPEXOPEXTaxes[entry.date.year - projectStartDate.year]*multiplier2
 
-			for i in range(len(toUpdate)):
-				currLumpPlusFines = Decimal(0.0)
-				if 1 in PPIDs:
-					currRev = tblRevenue.objects.get(projectID=latestProject.projectID, plantProductID=1, date=toUpdate[i].date)
-					currLumpPlusFines += Decimal(currRev.plantProductRevenue)
-				if 2 in PPIDs:
-					currRev = tblRevenue.objects.get(projectID=latestProject.projectID, plantProductID=2, date=toUpdate[i].date)
-					currLumpPlusFines += Decimal(currRev.plantProductRevenue)
+			lastDate = entry.date
 
-				if i != (len(toUpdate)-1):
-					toUpdate[i].cashFlowPreTax = currDailyCashFlowPreTax = currLumpPlusFines
-					toUpdate[i].cashFlowPostTax = currDailyCashFlowPostTax = currLumpPlusFines
-				else:
-					toUpdate[i].cashFlowPreTax = currDailyCashFlowPreTax = currLumpPlusFines - annualOPEXPlusCAPEX[currPeriod.year]
-					toUpdate[i].cashFlowPostTax = currDailyCashFlowPostTax = currDailyCashFlowPreTax - annualTaxes[currPeriod.year]
+			currCumCashFlowPreTax += currDailyCashFlowPreTax
+			currCumCashFlowPostTax += currDailyCashFlowPostTax
+			entry.cumulativeCashFlowPreTax = currCumCashFlowPreTax
+			entry.cumulativeCashFlowPostTax = currCumCashFlowPostTax
+			entry.processed = True
+			entry.save()
+			
+			# After updating Cash Flow data for the day, update the Financials data for the day as well.
+			toUpdateFinancials.filter(date=entry.date).delete()
+			# tblFinancials.objects.filter(projectID=latestProject.projectID, date=entry.date).delete()
+			discountRates = [Decimal(0.06), Decimal(0.08), Decimal(0.10), Decimal(0.12), Decimal(0.15), Decimal(0.20)]
+			currTime = timezone.localtime(timezone.now())
+			for rate in discountRates:
+				currPeriod = projectPeriods.get(startDate__lte=entry.date, endDate__gte=entry.date)
+				# currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, startDate__lte=entry.date,
+				# 	endDate__gte=entry.date)
+				currNPVPreTax = round(entry.cashFlowPreTax / Decimal(pow((1+rate),currPeriod.year)),2)
+				currNPVPostTax = round(entry.cashFlowPostTax / Decimal(pow((1+rate),currPeriod.year)),2)
+				financialsEntry = tblFinancials(projectID=latestProject, mineID=mineMatch, date=entry.date,
+					discountRate=int(round(rate*100)), NPVPreTax=currNPVPreTax, NPVPostTax=currNPVPostTax, IRRPreTax=None, IRRPostTax=None, dateAdded=currTime)
+				financialsEntry.save()
 
-				currCumCashFlowPreTax += currDailyCashFlowPreTax
-				currCumCashFlowPostTax += currDailyCashFlowPostTax
-				toUpdate[i].cumulativeCashFlowPreTax = currCumCashFlowPreTax
-				toUpdate[i].cumulativeCashFlowPostTax = currCumCashFlowPostTax
-				toUpdate[i].processed = True
-				toUpdate[i].save()
+	# # tblCashFlow and tblFinancials Data Processing (VERSION 2)
+	# # No Pro-ration of Costs
+	# # Annual Costs and Expenses charged on the last calculated day of the corresponding year
+	# notProcessed = tblCashFlow.objects.filter(projectID=latestProject.projectID, processed=False).order_by('date')
+	# if notProcessed:
+	# 	toProcess = notProcessed[0]
 
-				# After updating Cash Flow data for the day, update the Financials data for the day as well.
-				tblFinancials.objects.filter(projectID=latestProject.projectID, date=toUpdate[i].date).delete()
-				discountRates = [Decimal(0.06), Decimal(0.08), Decimal(0.10), Decimal(0.12), Decimal(0.15), Decimal(0.20)]
-				currTime = timezone.localtime(timezone.now())
-				for rate in discountRates:
-					currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, startDate__lte=toUpdate[i].date,
-						endDate__gte=toUpdate[i].date)
-					currNPVPreTax = round(toUpdate[i].cashFlowPreTax / Decimal(pow((1+rate),currPeriod.year)),2)
-					currNPVPostTax = round(toUpdate[i].cashFlowPostTax / Decimal(pow((1+rate),currPeriod.year)),2)
-					financialsEntry = tblFinancials(projectID=latestProject, mineID=mineMatch, date=toUpdate[i].date,
-						discountRate=int(round(rate*100)), NPVPreTax=currNPVPreTax, NPVPostTax=currNPVPostTax, IRRPreTax=None, IRRPostTax=None, dateAdded=currTime)
-					financialsEntry.save()
+	# 	# Form dictionaries of annual OPEX+CAPEX and Taxes
+	# 	annualOPEXPlusCAPEX = {}
+	# 	annualTaxes = {}
+
+	# 	latestOPEX = tblOPEX.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
+	# 	latestCAPEX = tblCAPEX.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
+	# 	latestTaxes = tblTaxes.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
+	# 	OPEXEntries = tblOPEX.objects.filter(mineID=mineID, dateAdded=latestOPEX.dateAdded).order_by('year')
+	# 	CAPEXEntries = tblCAPEX.objects.filter(mineID=mineID, dateAdded=latestCAPEX.dateAdded).order_by('year')
+	# 	taxesEntries = tblTaxes.objects.filter(mineID=mineID, dateAdded=latestTaxes.dateAdded).order_by('year')
+	# 	for i in range(len(OPEXEntries)):
+	# 		OPEXrow = OPEXEntries[i]
+	# 		CAPEXrow = CAPEXEntries[i]
+	# 		taxesRow = taxesEntries[i]
+	# 		currOPEX = (OPEXrow.mining+OPEXrow.infrastructure+OPEXrow.stockpileLG+OPEXrow.dewatering+OPEXrow.processing+
+	# 			OPEXrow.hauling+OPEXrow.loadOutRailLoop+OPEXrow.GASite+OPEXrow.GARoomBoardFIFO+OPEXrow.railTransport+OPEXrow.GACorp+
+	# 			OPEXrow.royalties+OPEXrow.transportation+OPEXrow.GA)
+	# 		currCAPEX = (CAPEXrow.preStrip+CAPEXrow.mineEquipInitial+CAPEXrow.mineEquipSustain+CAPEXrow.infraDirectCost+
+	# 			CAPEXrow.infraIndirectCost+CAPEXrow.contingency+CAPEXrow.railcars+CAPEXrow.otherMobEquip+CAPEXrow.closureRehabAssure+
+	# 			CAPEXrow.depoProvisionPay+CAPEXrow.workCapCurrentProd+CAPEXrow.workCapCostsLG+CAPEXrow.EPCM+CAPEXrow.ownerCost)
+	# 		currOPEXPlusCAPEX = round((Decimal(currCAPEX) + Decimal(currOPEX)),2)
+	# 		currTaxes = round(Decimal(taxesRow.federal + taxesRow.provincial + taxesRow.mining),2)
+
+	# 		annualOPEXPlusCAPEX[i+1] = currOPEXPlusCAPEX
+	# 		annualTaxes[i+1] = currTaxes
+
+	# 	projectPeriods = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).order_by('year')
+	# 	toProcessPeriod = projectPeriods.filter(startDate__lte=toProcess.date, endDate__gte=toProcess.date)[0]
+	# 	toProcessYears = yearVals[yearVals.index(toProcessPeriod.year):]
+
+	# 	earlyEntries = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__lt=toProcess.date).order_by('-date')
+	# 	if earlyEntries:
+	# 		lastCashFlowEntry = earlyEntries[0]
+	# 		currCumCashFlowPreTax = Decimal(lastCashFlowEntry.cumulativeCashFlowPreTax)
+	# 		currCumCashFlowPostTax = Decimal(lastCashFlowEntry.cumulativeCashFlowPostTax)
+	# 	else:
+	# 		currCumCashFlowPreTax = Decimal(0.0)
+	# 		currCumCashFlowPostTax = Decimal(0.0)
+
+	# 	for year in toProcessYears:
+	# 		currPeriod = projectPeriods.filter(year=year)[0]
+	# 		if year == toProcessPeriod.year:
+	# 			toUpdate = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__gte=toProcess.date, 
+	# 				date__lte=currPeriod.endDate).order_by('date')
+	# 		else:
+	# 			toUpdate = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__gte=currPeriod.startDate, 
+	# 				date__lte=currPeriod.endDate).order_by('date')
+
+			
+	# 		for i in range(len(toUpdate)):
+	# 			currLumpPlusFines = Decimal(0.0)
+	# 			if 1 in PPIDs:
+	# 				currRev = tblRevenue.objects.get(projectID=latestProject.projectID, plantProductID=1, date=toUpdate[i].date)
+	# 				currLumpPlusFines += Decimal(currRev.plantProductRevenue)
+	# 			if 2 in PPIDs:
+	# 				currRev = tblRevenue.objects.get(projectID=latestProject.projectID, plantProductID=2, date=toUpdate[i].date)
+	# 				currLumpPlusFines += Decimal(currRev.plantProductRevenue)
+
+	# 			if i != (len(toUpdate)-1):
+	# 				toUpdate[i].cashFlowPreTax = currDailyCashFlowPreTax = currLumpPlusFines
+	# 				toUpdate[i].cashFlowPostTax = currDailyCashFlowPostTax = currLumpPlusFines
+	# 			else:
+	# 				toUpdate[i].cashFlowPreTax = currDailyCashFlowPreTax = currLumpPlusFines - annualOPEXPlusCAPEX[currPeriod.year]
+	# 				toUpdate[i].cashFlowPostTax = currDailyCashFlowPostTax = currDailyCashFlowPreTax - annualTaxes[currPeriod.year]
+
+	# 			currCumCashFlowPreTax += currDailyCashFlowPreTax
+	# 			currCumCashFlowPostTax += currDailyCashFlowPostTax
+	# 			toUpdate[i].cumulativeCashFlowPreTax = currCumCashFlowPreTax
+	# 			toUpdate[i].cumulativeCashFlowPostTax = currCumCashFlowPostTax
+	# 			toUpdate[i].processed = True
+	# 			toUpdate[i].save()
+
+	# 			# After updating Cash Flow data for the day, update the Financials data for the day as well.
+	# 			tblFinancials.objects.filter(projectID=latestProject.projectID, date=toUpdate[i].date).delete()
+	# 			discountRates = [Decimal(0.06), Decimal(0.08), Decimal(0.10), Decimal(0.12), Decimal(0.15), Decimal(0.20)]
+	# 			currTime = timezone.localtime(timezone.now())
+	# 			for rate in discountRates:
+	# 				currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, startDate__lte=toUpdate[i].date,
+	# 					endDate__gte=toUpdate[i].date)
+	# 				currNPVPreTax = round(toUpdate[i].cashFlowPreTax / Decimal(pow((1+rate),currPeriod.year)),2)
+	# 				currNPVPostTax = round(toUpdate[i].cashFlowPostTax / Decimal(pow((1+rate),currPeriod.year)),2)
+	# 				financialsEntry = tblFinancials(projectID=latestProject, mineID=mineMatch, date=toUpdate[i].date,
+	# 					discountRate=int(round(rate*100)), NPVPreTax=currNPVPreTax, NPVPostTax=currNPVPostTax, IRRPreTax=None, IRRPostTax=None, dateAdded=currTime)
+	# 				financialsEntry.save()
 
 
 	cashFlowPreTax = []
@@ -1317,21 +1424,43 @@ def index(request):
 	cumCashFlowPreTax = []
 	cumCashFlowPostTax = []
 	# Beginning populating tblCashFlow data for HTML report here
-	currCumCashFlowPreTax = Decimal(0.0)
-	currCumCashFlowPostTax = Decimal(0.0)
+	currCumCashFlowPreTax = (-1)*sumNegCAPEX
+	currCumCashFlowPostTax = (-1)*sumNegCAPEX
+
+	# currCumCashFlowPreTax = Decimal(0.0)
+	# currCumCashFlowPostTax = Decimal(0.0)
+	cashFlowEntries = tblCashFlow.objects.filter(projectID=latestProject.projectID)
 	for year in yearVals:
-		currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
+		currPeriod = projectPeriods.get(year=year)
 		currStart = currPeriod.startDate
 		currEnd = currPeriod.endDate
-		lastCashFlow = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__gte=currStart, date__lte=currEnd).order_by('-date')[0]
+		lastCashFlow = cashFlowEntries.filter(date__gte=currStart, date__lte=currEnd).order_by('-date')[0]
 		cumCashFlowPreTax.append(round(Decimal(lastCashFlow.cumulativeCashFlowPreTax),2))
 		cumCashFlowPostTax.append(round(Decimal(lastCashFlow.cumulativeCashFlowPostTax),2))
 		cashFlowPreTax.append(round(Decimal(lastCashFlow.cumulativeCashFlowPreTax) - currCumCashFlowPreTax,2))
 		cashFlowPostTax.append(round(Decimal(lastCashFlow.cumulativeCashFlowPostTax) - currCumCashFlowPostTax,2))
 		currCumCashFlowPreTax = cumCashFlowPreTax[-1]
 		currCumCashFlowPostTax = cumCashFlowPostTax[-1]
-	sumCashFlowPreTax = cumCashFlowPreTax[-1]
-	sumCashFlowPostTax = cumCashFlowPostTax[-1]
+	sumCashFlowPreTax = sum(cashFlowPreTax)
+	sumCashFlowPostTax = sum(cashFlowPostTax)
+
+	# New: Append extra values for blank years here
+	if len(yearVals) != yearCount:
+		cashFlowPreTax = padList(yearVals, yearCount, cashFlowPreTax, Decimal(0.0))
+		cashFlowPostTax = padList(yearVals, yearCount, cashFlowPostTax, Decimal(0.0))
+
+		for i in range(1, yearCount+1):
+			if i not in yearVals:
+				cumCashFlowPreTax.insert(i-1, (-1)*sumNegCAPEX if i==1 else cumCashFlowPreTax[i-2])
+				cumCashFlowPostTax.insert(i-1, (-1)*sumNegCAPEX if i==1 else cumCashFlowPostTax[i-2])
+
+		# preTaxNPVs = padList(yearVals, yearCount, preTaxNPVs, filler)
+		# postTaxNPVs = padList(yearVals, yearCount, postTaxNPVs, filler)
+
+		# for rate in discountRates:
+		# 	rate = int(round(rate*100))
+		# 	preTaxPVs[rate] = padList(yearVals, yearCount, preTaxPVs[rate], filler)
+		# 	postTaxPVs[rate] = padList(yearVals, yearCount, postTaxPVs[rate], filler)
 
 	positiveFlow = False
 	paybackPreTax = []
@@ -1368,8 +1497,8 @@ def index(request):
 	# Calculate and Update NPVs and IRRs
 	preTaxNPVs = []
 	postTaxNPVs = []
-	NPVCashFlowPreTax = [sumNegCAPEX] + cashFlowPreTax
-	NPVCashFlowPostTax = [sumNegCAPEX] + cashFlowPostTax
+	NPVCashFlowPreTax = [(-1)*sumNegCAPEX] + cashFlowPreTax
+	NPVCashFlowPostTax = [(-1)*sumNegCAPEX] + cashFlowPostTax
 	preTaxIRR = round(np.irr(NPVCashFlowPreTax)*100,2)
 	postTaxIRR = round(np.irr(NPVCashFlowPostTax)*100,2)
 	for rate in discountRates:
@@ -1382,6 +1511,7 @@ def index(request):
 	postTaxPVs = {}
 	sumPreTaxNPV = {}
 	sumPostTaxNPV = {}
+	financialsEntries = tblFinancials.objects.filter(projectID=latestProject.projectID)
 	for rate in discountRates:
 		rate = int(round(rate*100))
 		preTaxPVs[rate] = []
@@ -1390,7 +1520,7 @@ def index(request):
 			currPeriod = tblProjectPeriods.objects.get(projectID=latestProject.projectID, year=year)
 			currStart = currPeriod.startDate
 			currEnd = currPeriod.endDate
-			currPVs = tblFinancials.objects.filter(projectID=latestProject.projectID, discountRate=rate,
+			currPVs = financialsEntries.filter(discountRate=rate,
 				date__lte=currEnd, date__gte=currStart)
 			sumPVPreTax = currPVs.aggregate(sumPVPreTax=Sum('NPVPreTax'))
 			sumPVPostTax = currPVs.aggregate(sumPVPostTax=Sum('NPVPostTax'))
@@ -1468,12 +1598,12 @@ def index(request):
 		
 		totalRevenues = padList(yearVals, yearCount, totalRevenues, filler)
 
-		cashFlowPreTax = padList(yearVals, yearCount, cashFlowPreTax, filler)
-		cashFlowPostTax = padList(yearVals, yearCount, cashFlowPostTax, filler)
-		cumCashFlowPreTax = padList(yearVals, yearCount, cumCashFlowPreTax, filler)
-		cumCashFlowPostTax = padList(yearVals, yearCount, cumCashFlowPostTax, filler)
-		paybackPreTax = padList(yearVals, yearCount, paybackPreTax, filler)
-		paybackPostTax = padList(yearVals, yearCount, paybackPostTax, filler)
+		# cashFlowPreTax = padList(yearVals, yearCount, cashFlowPreTax, filler)
+		# cashFlowPostTax = padList(yearVals, yearCount, cashFlowPostTax, filler)
+		# cumCashFlowPreTax = padList(yearVals, yearCount, cumCashFlowPreTax, filler)
+		# cumCashFlowPostTax = padList(yearVals, yearCount, cumCashFlowPostTax, filler)
+		# paybackPreTax = padList(yearVals, yearCount, paybackPreTax, filler)
+		# paybackPostTax = padList(yearVals, yearCount, paybackPostTax, filler)
 		preTaxNPVs = padList(yearVals, yearCount, preTaxNPVs, filler)
 		postTaxNPVs = padList(yearVals, yearCount, postTaxNPVs, filler)
 
@@ -1493,29 +1623,10 @@ def index(request):
 	currRow += 'Total;'
 	reportData += currRow
 
-	# currDataRow = []
-	# currDataRow.append('Item')
-	# for year in range(1, yearCount+1):
-	# 	currDataRow.append('Year{0}'.format(year))
-	# currDataRow.append('Total')
-	# request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
 	reportData += ";Mining;"
 	for curr in range(1, numStockpiles+1):
 		currRow = "Stockpile {0} Ore (kt),".format(curr) + ''.join([*[str(round(x,2))+',' for x in minePlanTonnageVals[curr]]]) + str(round(sumMinePlanTonnages[curr],2)) + ";"
 		reportData += currRow
-
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Mining']
-
-	# for curr in range(1, numStockpiles+1):
-	# 	reportRowCount += 1
-	# 	currDataRow = ["Stockpile {0} Ore (kt)".format(curr)] + [*[str(round(x,2)) for x in minePlanTonnageVals[curr]]]
-	# 	# currDataRow += [*[str(round(x,2)) for x in minePlanTonnageVals[curr]]]
-	# 	currDataRow.append(str(round(sumMinePlanTonnages[curr],2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 
 	reportData += ";Processing;"
 	for curr in range(1, numStockpiles+1):
@@ -1526,26 +1637,6 @@ def index(request):
 			currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in gradeVals[curr][commNameList[i]]]]) + ';'
 			reportData += currRow
 		reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in moistures[curr]]]) + ';'
-
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Processing']
-
-	# for curr in range(1, numStockpiles+1):
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ["Stockpile {0} Ore".format(curr)]
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Tonnage (kt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in tonnageVals[curr]]]
-	# 	currDataRow.append(str(round(tonnageTotals[curr],2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	for i in range(len(commIDs)):
-	# 		reportRowCount += 1
-	# 		currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in gradeVals[curr][commNameList[i]]]]
-	# 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in moistures[curr]]]
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 
 	reportData += ";Plant Product;"
 
@@ -1558,26 +1649,6 @@ def index(request):
 			reportData += currRow
 		reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpMoistures]]) + ';'
 
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Plant Product']
-
-	# if 1 in PPIDs:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Lump']
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpTonnageVals]]
-	# 	currDataRow.append(str(round(lumpTonnageTotal,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	for i in range(len(commIDs)):
-	# 		reportRowCount += 1
-	# 		currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpGradeVals[commNameList[i]]]]
-	# 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpMoistures]]
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
 	if 2 in PPIDs:
 		reportData += "Fines;"
 		currRow = 'Tonnage (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesTonnageVals]]) + ',' + str(round(finesTonnageTotal,2)) + ';'
@@ -1586,21 +1657,6 @@ def index(request):
 			currRow = '{0} Grade (%),'.format(commNameList[i]) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesGradeVals[commNameList[i]]]]) + ';'
 			reportData += currRow
 		reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in finesMoistures]]) + ';'
-
-	# if 2 in PPIDs:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Fines']
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesTonnageVals]]
-	# 	currDataRow.append(str(round(finesTonnageTotal,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	for i in range(len(commIDs)):
-	# 		reportRowCount += 1
-	# 		currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesGradeVals[commNameList[i]]]]
-	# 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesMoistures]]
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 
 	if 3 in PPIDs:
 		reportData += "Ultra Fines;"
@@ -1611,27 +1667,7 @@ def index(request):
 			reportData += currRow
 		reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesMoistures]]) + ';'
 
-	# if 3 in PPIDs:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines']
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesTonnageVals]]
-	# 	currDataRow.append(str(round(ultraFinesTonnageTotal,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	for i in range(len(commIDs)):
-	# 		reportRowCount += 1
-	# 		currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesGradeVals[commNameList[i]]]]
-	# 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesMoistures]]
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
 	reportData += 'Total Product (dkt),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalProducts]]) + ',' + str(round(sumTotalProducts,2)) + ';'
-
-	# reportRowCount += 1
-	# currDataRow = ['Total Product (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalProducts]]
-	# currDataRow.append(str(round(sumTotalProducts,2)))
-	# request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 
 	if 4 in PPIDs:
 		reportData += "Rejects;"
@@ -1642,27 +1678,7 @@ def index(request):
 			reportData += currRow
 		reportData += 'Moisture (%),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsMoistures]]) + ';'
 
-	# if 4 in PPIDs:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Rejects']
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Tonnage (dkt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsTonnageVals]]
-	# 	currDataRow.append(str(round(rejectsTonnageTotal,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	for i in range(len(commIDs)):
-	# 		reportRowCount += 1
-	# 		currDataRow = ['{0} Grade (%)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsGradeVals[commNameList[i]]]]
-	# 		request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Moisture (%)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in rejectsMoistures]]
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
 	reportData += ";Products Selling Price;"
-
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Products Selling Price']
 
 	if 1 in PPIDs:
 		reportData += 'Lump Selling Price (USD/dmt);'
@@ -1675,31 +1691,6 @@ def index(request):
 		reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
 		reportData += 'Net Lump Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetLumpPrices]]) + ',' + 'Avg: ' + str(round(avgExchangeNetLumpPrice,2)) + ';'
 
-	# if 1 in PPIDs:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Lump Selling Price (USD/dmt)']
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Lump Base (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in HGLumps]]
-	# 	for i in range(len(commIDs)):
-	# 		reportRowCount += 1
-	# 		request.session['reportRow{0}'.format(reportRowCount)] = ['Lump {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpPenaltyVals[commNameList[i]]]]
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Lump Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpSellingPrices]]
-	# 	currDataRow.append('Avg: ' + str(round(avgLumpSellingPrice,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Net Lump Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netLumpPrices]]
-	# 	currDataRow.append('Avg: ' + str(round(avgNetLumpPrice,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Net Lump Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetLumpPrices]]
-	# 	currDataRow.append('Avg: ' + str(round(avgExchangeNetLumpPrice,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
 	if 2 in PPIDs:
 		reportData += 'Fines Selling Price (USD/dmt);'
 		reportData += 'Fines Base (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in HGFines]]) + ';'
@@ -1710,31 +1701,6 @@ def index(request):
 		reportData += 'Net Fines Price (USD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in netFinesPrices]]) + ',' + 'Avg: ' + str(round(avgNetFinesPrice,2)) + ';'
 		reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
 		reportData += 'Net Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetFinesPrices]]) + ',' + 'Avg: ' + str(round(avgExchangeNetFinesPrice,2)) + ';'
-
-	# if 2 in PPIDs:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Fines Selling Price (USD/dmt)']
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Fines Base (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in HGFines]]
-	# 	for i in range(len(commIDs)):
-	# 		reportRowCount += 1
-	# 		request.session['reportRow{0}'.format(reportRowCount)] = ['Fines {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesPenaltyVals[commNameList[i]]]]
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Fines Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesSellingPrices]]
-	# 	currDataRow.append('Avg: ' + str(round(avgFinesSellingPrice,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Net Fines Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netFinesPrices]]
-	# 	currDataRow.append('Avg: ' + str(round(avgNetFinesPrice,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Net Fines Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetFinesPrices]]
-	# 	currDataRow.append('Avg: ' + str(round(avgExchangeNetFinesPrice,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
 
 	if 3 in PPIDs:
 		reportData += 'Ultra Fines Selling Price (USD/dmt);'
@@ -1747,31 +1713,6 @@ def index(request):
 		reportData += 'Exchange Rate (USD to CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]) + ';'
 		reportData += 'Net Ultra Fines Price (CAD/t),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetUltraFinesPrices]]) + ',' + 'Avg: ' + str(round(avgExchangeNetUltraFinesPrice,2)) + ';'
 
-	# if 3 in PPIDs:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines Selling Price (USD/dmt)']
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines Base (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in HGUltraFines]]
-	# 	for i in range(len(commIDs)):
-	# 		reportRowCount += 1
-	# 		request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines {0} Penalty (USD/t)'.format(commNameList[i])] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesPenaltyVals[commNameList[i]]]]
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Ultra Fines Selling Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesSellingPrices]]
-	# 	currDataRow.append('Avg: ' + str(round(avgUltraFinesSellingPrice,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Shipping (USD/dmt)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullShippingCosts]]
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Net Ultra Fines Price (USD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in netUltraFinesPrices]]
-	# 	currDataRow.append('Avg: ' + str(round(avgNetUltraFinesPrice,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Exchange Rate (USD to CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in fullExchangeRates]]
-	# 	reportRowCount += 1
-	# 	currDataRow = ['Net Ultra Fines Price (CAD/t)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in exchangeNetUltraFinesPrices]]
-	# 	currDataRow.append('Avg: ' + str(round(avgExchangeNetUltraFinesPrice,2)))
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = currDataRow
-
 	reportData += ';Revenues;'
 	if 1 in PPIDs:
 		reportData += 'Lump Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in lumpRevenues]]) + ',' + str(round(sumLumpRevenues,2)) + ';'
@@ -1780,24 +1721,6 @@ def index(request):
 	if 3 in PPIDs:
 		reportData += 'Ultra Fines Revenue,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesRevenues]]) + ',' + str(round(sumUltraFinesRevenues,2)) + ';'
 	reportData += 'TOTAL REVENUE,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + str(round(sumTotalRevenues,2)) + ';'
-
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Revenues']
-
-	# if 1 in PPIDs:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Lump Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in lumpRevenues]] + [str(round(sumLumpRevenues,2))]
-	# if 2 in PPIDs:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Fines Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in finesRevenues]] + [str(round(sumFinesRevenues,2))]
-	# if 3 in PPIDs:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['Ultra Fines Revenue'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in ultraFinesRevenues]] + [str(round(sumUltraFinesRevenues,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL REVENUE'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]] + [str(round(sumTotalRevenues,2))]
-
 
 	reportData += ';COSTS;'
 	reportData += 'OPEX (millions CAD);'
@@ -1814,37 +1737,6 @@ def index(request):
 	reportData += 'TOTAL OPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]]) + ',' + str(round(sumTotalOPEX,2)) + ';'
 	reportData += 'ROYALTIES (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]]) + ',' + str(round(sumRoyalties,2)) + ';'
 
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['COSTS']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['OPEX (millions CAD)']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Mining'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in mining]] + [str(round(sumMining,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Stockpile LG Reclaiming'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in stockpileLG]] + [str(round(sumStockpileLG,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Pit Dewatering'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in dewatering]] + [str(round(sumDewatering,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Processing'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in processing]] + [str(round(sumProcessing,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Product Hauling'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in hauling]] + [str(round(sumHauling,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Load-out and Rail Loop'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in loadOutRailLoop]] + [str(round(sumLoadOutRailLoop,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['G&A (Site)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in GASite]] + [str(round(sumGASite,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['G&A (Room & Board / FIFO)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in GARoom]] + [str(round(sumGARoom,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Rail Transportation, Port and Shiploading'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in railTransport]] + [str(round(sumRailTransport,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Corporate G&A'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in GACorp]] + [str(round(sumGACorp,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL OPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]] + [str(round(sumTotalOPEX,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['ROYALTIES (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]] + [str(round(sumRoyalties,2))]
-
 	reportData += 'CAPEX (millions CAD);'
 	reportData += 'Pre-Stripping,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preStrip]]) + ',' + str(round(sumPreStrip,2)) + ';'
 	reportData += 'Mining Equipment Initial,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipInitial]]) + ',' + str(round(sumMineEquipInitial,2)) + ';'
@@ -1858,47 +1750,11 @@ def index(request):
 	reportData += 'Deposits Provision Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]]) + ',' + str(round(sumDepoProvisionPay,2)) + ';'
 	reportData += 'TOTAL CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
 
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['CAPEX (millions CAD)']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Pre-Stripping'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in preStrip]] + [str(round(sumPreStrip,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Mining Equipment Initial'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipInitial]] + [str(round(sumMineEquipInitial,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Mining Equipment Sustaining'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in mineEquipSustain]] + [str(round(sumMineEquipSustain,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Project Infrastructure Direct Costs'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in infraDirectCost]] + [str(round(sumInfraDirectCost,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Project Infrastructure Indirect Costs'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in infraIndirectCost]] + [str(round(sumInfraIndirectCost,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Project Infrastructure Contingency'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in contingency]] + [str(round(sumContingency,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Railcars'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in railcars]] + [str(round(sumRailcars,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Other Mobile Equipment'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]] + [str(round(sumOtherMobEquip,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Closure and Rehab Assurance Payments'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]] + [str(round(sumClosureRehabAssure,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Deposits Provision Payments'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]] + [str(round(sumDepoProvisionPay,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL CAPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]] + [str(round(sumTotalCAPEX,2))]
-
 	reportData += 'TAXES (millions CAD);'
 	reportData += 'Federal Corporate Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in federalTaxes]]) + ',' + str(round(sumFederalTaxes,2)) + ';'
 	reportData += 'Provincial Corporate Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in provincialTaxes]]) + ',' + str(round(sumProvincialTaxes,2)) + ';'
 	reportData += 'Mining Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in miningTaxes]]) + ',' + str(round(sumMiningTaxes,2)) + ';'
 	reportData += 'TOTAL (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
-
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['TAXES (millions CAD)']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Federal Corporate Taxes'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in federalTaxes]] + [str(round(sumFederalTaxes,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Provincial Corporate Taxes'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in provincialTaxes]] + [str(round(sumProvincialTaxes,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Mining Taxes'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in miningTaxes]] + [str(round(sumMiningTaxes,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['TOTAL (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]] + [str(round(sumTotalTaxes,2))]
 
 	reportData += ';SUMMARY;'
 	reportData += 'Revenues (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + str(round(sumTotalRevenues,2)) + ';'
@@ -1909,26 +1765,6 @@ def index(request):
 	reportData += 'Working Capital (Costs of LG Stockpile) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCostsLG]]) + ',' + str(round(sumWorkCapCostsLG,2)) + ';'
 	reportData += 'Taxes (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
 
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['SUMMARY']
-
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Revenues (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]] + [str(round(sumTotalRevenues,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['OPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]] + [str(round(sumTotalOPEX,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Royalties (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]] + [str(round(sumRoyalties,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['CAPEX (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]] + [str(round(sumTotalCAPEX,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Working Capital (Current Production) (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCurrentProd]] + [str(round(sumWorkCapCurrentProd,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Working Capital (Costs of LG Stockpile) (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCostsLG]] + [str(round(sumWorkCapCostsLG,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Taxes (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]] + [str(round(sumTotalTaxes,2))]
-
 	reportData += ';PRE-TAX CASH FLOW;'
 	reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]]) + ',' + str(round(sumCashFlowPreTax,2)) + ';'
 	reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]]) + ',' + str(round(sumCashFlowPreTax,2)) + ';'
@@ -1937,22 +1773,6 @@ def index(request):
 		reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPreTaxNPV[int(round(rate*100))],2)) + ';'
 	reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(preTaxIRR,2)) + ';'
 
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['PRE-TAX CASH FLOW']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]] + [str(round(sumCashFlowPreTax,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Cumulative Undiscounted Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]] + [str(round(sumCashFlowPreTax,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Payback Period (year)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]] + [str(round(sumPaybackPreTax,2))]
-	# for rate in discountRates:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['PRE-TAX NPV @ {0}%'.format(int(round(rate*100)))] + [*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]] + [str(round(sumPreTaxNPV[int(round(rate*100))],2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['INTERNAL RATE OF RETURN (IRR)'] + [str(round(preTaxIRR,2))]
-
 	reportData += ';POST-TAX CASH FLOW;'
 	reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]]) + ',' + str(round(sumCashFlowPostTax,2)) + ';'
 	reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]]) + ',' + str(round(sumCashFlowPostTax,2)) + ';'
@@ -1960,26 +1780,6 @@ def index(request):
 	for rate in discountRates:
 		reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPostTaxNPV[int(round(rate*100))],2)) + ';'
 	reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(postTaxIRR,2)) + ';'
-
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['POST-TAX CASH FLOW']
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]] + [str(round(sumCashFlowPostTax,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Cumulative Undiscounted Cash Flow (millions CAD)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]] + [str(round(sumCashFlowPostTax,2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['Payback Period (year)'] + [*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]] + [str(round(sumPaybackPostTax,2))]
-	# for rate in discountRates:
-	# 	reportRowCount += 1
-	# 	request.session['reportRow{0}'.format(reportRowCount)] = ['POST-TAX NPV @ {0}%'.format(int(round(rate*100)))] + [*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]] + [str(round(sumPostTaxNPV[int(round(rate*100))],2))]
-	# reportRowCount += 1
-	# request.session['reportRow{0}'.format(reportRowCount)] = ['INTERNAL RATE OF RETURN (IRR)'] + [str(round(postTaxIRR,2))]
-
-	# request.session['reportRowCount'] = reportRowCount
-
-	# request.session['reportData'] = reportData
 
 	filter_form = filterForm(mineID=mineID, startDate=projectStartDate, endDate=projectEndDate)
 	default_filter_form = defaultFilterForm(mineID=mineID, thisYearStartDate=thisYearStartDate, thisYearEndDate=thisYearEndDate,
