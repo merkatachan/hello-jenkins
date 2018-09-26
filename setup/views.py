@@ -368,20 +368,20 @@ def index5(request):
 			# 	EPCM.append(float(cleanData["year{0}EPCM".format(year)]))
 			# 	ownerCost.append(float(cleanData["year{0}OwnersCosts".format(year)]))
 
-			request.session["preStrip"] = [x*1000000.0 for x in preStrip]
-			request.session["mineEquipInitial"] = [x*1000000.0 for x in mineEquipInitial]
-			request.session["mineEquipSustain"] = [x*1000000.0 for x in mineEquipSustain]
-			request.session["infraDirectCost"] = [x*1000000.0 for x in infraDirectCost]
-			request.session["infraIndirectCost"] = [x*1000000.0 for x in infraIndirectCost]
-			request.session["contingency"] = [x*1000000.0 for x in contingency]
-			request.session["railcars"] = [x*1000000.0 for x in railcars]
-			request.session["otherMobEquip"] = [x*1000000.0 for x in otherMobEquip]
-			request.session["closureRehabAssure"] = [x*1000000.0 for x in closureRehabAssure]
-			request.session["depoProvisionPay"] = [x*1000000.0 for x in depoProvisionPay]
-			request.session["workCapCurrentProd"] = [x*1000000.0 for x in workCapCurrentProd]
-			request.session["workCapCostsLG"] = [x*1000000.0 for x in workCapCostsLG]
-			request.session["EPCM"] = [x*1000000.0 for x in EPCM]
-			request.session["ownerCost"] = [x*1000000.0 for x in ownerCost]
+			request.session["preStrip"] = preStrip
+			request.session["mineEquipInitial"] = mineEquipInitial
+			request.session["mineEquipSustain"] = mineEquipSustain
+			request.session["infraDirectCost"] = infraDirectCost
+			request.session["infraIndirectCost"] = infraIndirectCost
+			request.session["contingency"] = contingency
+			request.session["railcars"] = railcars
+			request.session["otherMobEquip"] = otherMobEquip
+			request.session["closureRehabAssure"] = closureRehabAssure
+			request.session["depoProvisionPay"] = depoProvisionPay
+			request.session["workCapCurrentProd"] = workCapCurrentProd
+			request.session["workCapCostsLG"] = workCapCostsLG
+			request.session["EPCM"] = EPCM
+			request.session["ownerCost"] = ownerCost
 
 			# Pass LOM to next form (OPEX)
 			next_form = OPEXForm(LOM=yearCount)
@@ -439,22 +439,22 @@ def index6(request):
 				shipping.append(float(cleanData["year{0}ShippingCost".format(year)]))
 				opexPT.append(float(cleanData["year{0}OpexPT".format(year)]))
 
-			request.session["mining"] = [x*1000000.0 for x in mining]
-			request.session["infrastructure"] = [x*1000000.0 for x in infrastructure]
-			request.session["stockpileLG"] = [x*1000000.0 for x in stockpileLG]
-			request.session["dewatering"] = [x*1000000.0 for x in dewatering]
-			request.session["processing"] = [x*1000000.0 for x in processing]
-			request.session["hauling"] = [x*1000000.0 for x in hauling]
-			request.session["loadOutRailLoop"] = [x*1000000.0 for x in loadOutRailLoop]
-			request.session["GASite"] = [x*1000000.0 for x in GASite]
-			request.session["GARoomBoardFIFO"] = [x*1000000.0 for x in GARoomBoardFIFO]
-			request.session["railTransport"] = [x*1000000.0 for x in railTransport]
-			request.session["GACorp"] = [x*1000000.0 for x in GACorp]
-			request.session["royalties"] = [x*1000000.0 for x in royalties]
-			request.session["transportation"] = [x*1000000.0 for x in transportation]
-			request.session["GA"] = [x*1000000.0 for x in GA]
-			request.session["shipping"] = [x*1000000.0 for x in shipping]
-			request.session["opexPT"] = [x*1000000.0 for x in opexPT]
+			request.session["mining"] = mining
+			request.session["infrastructure"] = infrastructure
+			request.session["stockpileLG"] = stockpileLG
+			request.session["dewatering"] = dewatering
+			request.session["processing"] = processing
+			request.session["hauling"] = hauling
+			request.session["loadOutRailLoop"] = loadOutRailLoop
+			request.session["GASite"] = GASite
+			request.session["GARoomBoardFIFO"] = GARoomBoardFIFO
+			request.session["railTransport"] = railTransport
+			request.session["GACorp"] = GACorp
+			request.session["royalties"] = royalties
+			request.session["transportation"] = transportation
+			request.session["GA"] = GA
+			request.session["shipping"] = shipping
+			request.session["opexPT"] = opexPT
 
 			# Pass list of commodities to smelterForm
 			# latestCommodity = tblCommodity.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
@@ -633,9 +633,9 @@ def index9(request):
 				provincial.append(float(cleanData["year{0}Provincial".format(year)]))
 				mining.append(float(cleanData["year{0}Mining".format(year)]))
 
-			request.session["taxesFederal"] = [x*1000000.0 for x in federal]
-			request.session["taxesProvincial"] = [x*1000000.0 for x in provincial]
-			request.session["taxesMining"] = [x*1000000.0 for x in mining]
+			request.session["taxesFederal"] = federal
+			request.session["taxesProvincial"] = provincial
+			request.session["taxesMining"] = mining
 
 			next_form_class = inputsForm(plantProducts=request.session["projectPlantProducts"])
 			return render(request, 'setup/inputs.html', {'form': next_form_class,

@@ -13,7 +13,7 @@
 
 			<form class="form-signup" role="form" action="{% url 'setup:index5' %}" method="POST">
 				<center>
-		        <h2 class="form-signup-heading">Declare CAPEX (in million CAN$):</h2>
+		        <h2 class="form-signup-heading">Declare CAPEX (in CAN$):</h2>
 		        </center>
 		        <br>
 		        {% csrf_token %}
@@ -46,128 +46,128 @@
     		<tbody>
     			<tr>
     				<th>Pre-Stripping</th>
-                    <td><input id="id_year-3PreStripping" name="year-3PreStripping" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2PreStripping" name="year-2PreStripping" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1PreStripping" name="year-1PreStripping" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3PreStripping" name="year-3PreStripping" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2PreStripping" name="year-2PreStripping" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1PreStripping" name="year-1PreStripping" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}PreStripping" name="year{{ forloop.counter0|add:'1' }}PreStripping" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}PreStripping" name="year{{ forloop.counter0|add:'1' }}PreStripping" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Mining Equipment Initial</th>
-                    <td><input id="id_year-3MiningEquipmentInitial" name="year-3MiningEquipmentInitial" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2MiningEquipmentInitial" name="year-2MiningEquipmentInitial" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1MiningEquipmentInitial" name="year-1MiningEquipmentInitial" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3MiningEquipmentInitial" name="year-3MiningEquipmentInitial" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2MiningEquipmentInitial" name="year-2MiningEquipmentInitial" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1MiningEquipmentInitial" name="year-1MiningEquipmentInitial" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}MiningEquipmentInitial" name="year{{ forloop.counter0|add:'1' }}MiningEquipmentInitial" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}MiningEquipmentInitial" name="year{{ forloop.counter0|add:'1' }}MiningEquipmentInitial" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Mining Equipment Sustaining</th>
-                    <td><input id="id_year-3MiningEquipmentSustaining" name="year-3MiningEquipmentSustaining" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2MiningEquipmentSustaining" name="year-2MiningEquipmentSustaining" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1MiningEquipmentSustaining" name="year-1MiningEquipmentSustaining" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3MiningEquipmentSustaining" name="year-3MiningEquipmentSustaining" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2MiningEquipmentSustaining" name="year-2MiningEquipmentSustaining" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1MiningEquipmentSustaining" name="year-1MiningEquipmentSustaining" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}MiningEquipmentSustaining" name="year{{ forloop.counter0|add:'1' }}MiningEquipmentSustaining" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}MiningEquipmentSustaining" name="year{{ forloop.counter0|add:'1' }}MiningEquipmentSustaining" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Infrastructure Direct Costs</th>
-                    <td><input id="id_year-3InfrastructureDirectCosts" name="year-3InfrastructureDirectCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2InfrastructureDirectCosts" name="year-2InfrastructureDirectCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1InfrastructureDirectCosts" name="year-1InfrastructureDirectCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3InfrastructureDirectCosts" name="year-3InfrastructureDirectCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2InfrastructureDirectCosts" name="year-2InfrastructureDirectCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1InfrastructureDirectCosts" name="year-1InfrastructureDirectCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}InfrastructureDirectCosts" name="year{{ forloop.counter0|add:'1' }}InfrastructureDirectCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}InfrastructureDirectCosts" name="year{{ forloop.counter0|add:'1' }}InfrastructureDirectCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Infrastructure Indirect Costs</th>
-                    <td><input id="id_year-3InfrastructureIndirectCosts" name="year-3InfrastructureIndirectCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2InfrastructureIndirectCosts" name="year-2InfrastructureIndirectCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1InfrastructureIndirectCosts" name="year-1InfrastructureIndirectCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3InfrastructureIndirectCosts" name="year-3InfrastructureIndirectCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2InfrastructureIndirectCosts" name="year-2InfrastructureIndirectCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1InfrastructureIndirectCosts" name="year-1InfrastructureIndirectCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}InfrastructureIndirectCosts" name="year{{ forloop.counter0|add:'1' }}InfrastructureIndirectCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}InfrastructureIndirectCosts" name="year{{ forloop.counter0|add:'1' }}InfrastructureIndirectCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Contingency</th>
-                    <td><input id="id_year-3Contingency" name="year-3Contingency" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2Contingency" name="year-2Contingency" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1Contingency" name="year-1Contingency" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3Contingency" name="year-3Contingency" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2Contingency" name="year-2Contingency" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1Contingency" name="year-1Contingency" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Contingency" name="year{{ forloop.counter0|add:'1' }}Contingency" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Contingency" name="year{{ forloop.counter0|add:'1' }}Contingency" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Railcars</th>
-                    <td><input id="id_year-3Railcars" name="year-3Railcars" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2Railcars" name="year-2Railcars" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1Railcars" name="year-1Railcars" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3Railcars" name="year-3Railcars" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2Railcars" name="year-2Railcars" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1Railcars" name="year-1Railcars" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Railcars" name="year{{ forloop.counter0|add:'1' }}Railcars" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}Railcars" name="year{{ forloop.counter0|add:'1' }}Railcars" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Other Mobile Equipment</th>
-                    <td><input id="id_year-3OtherMobileEquipment" name="year-3OtherMobileEquipment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2OtherMobileEquipment" name="year-2OtherMobileEquipment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1OtherMobileEquipment" name="year-1OtherMobileEquipment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3OtherMobileEquipment" name="year-3OtherMobileEquipment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2OtherMobileEquipment" name="year-2OtherMobileEquipment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1OtherMobileEquipment" name="year-1OtherMobileEquipment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}OtherMobileEquipment" name="year{{ forloop.counter0|add:'1' }}OtherMobileEquipment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}OtherMobileEquipment" name="year{{ forloop.counter0|add:'1' }}OtherMobileEquipment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Closure and Rehab Assurance</th>
-                    <td><input id="id_year-3ClosureAndRehabAssurancePayment" name="year-3ClosureAndRehabAssurancePayment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2ClosureAndRehabAssurancePayment" name="year-2ClosureAndRehabAssurancePayment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1ClosureAndRehabAssurancePayment" name="year-1ClosureAndRehabAssurancePayment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3ClosureAndRehabAssurancePayment" name="year-3ClosureAndRehabAssurancePayment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2ClosureAndRehabAssurancePayment" name="year-2ClosureAndRehabAssurancePayment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1ClosureAndRehabAssurancePayment" name="year-1ClosureAndRehabAssurancePayment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}ClosureAndRehabAssurancePayment" name="year{{ forloop.counter0|add:'1' }}ClosureAndRehabAssurancePayment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}ClosureAndRehabAssurancePayment" name="year{{ forloop.counter0|add:'1' }}ClosureAndRehabAssurancePayment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Deposits Provision Payment</th>
-                    <td><input id="id_year-3DepositsProvisionPayment" name="year-3DepositsProvisionPayment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2DepositsProvisionPayment" name="year-2DepositsProvisionPayment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1DepositsProvisionPayment" name="year-1DepositsProvisionPayment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3DepositsProvisionPayment" name="year-3DepositsProvisionPayment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2DepositsProvisionPayment" name="year-2DepositsProvisionPayment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1DepositsProvisionPayment" name="year-1DepositsProvisionPayment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}DepositsProvisionPayment" name="year{{ forloop.counter0|add:'1' }}DepositsProvisionPayment" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}DepositsProvisionPayment" name="year{{ forloop.counter0|add:'1' }}DepositsProvisionPayment" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Working Capital</th>
-                    <td><input id="id_year-3WorkingCapCurrentProd" name="year-3WorkingCapCurrentProd" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2WorkingCapCurrentProd" name="year-2WorkingCapCurrentProd" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1WorkingCapCurrentProd" name="year-1WorkingCapCurrentProd" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3WorkingCapCurrentProd" name="year-3WorkingCapCurrentProd" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2WorkingCapCurrentProd" name="year-2WorkingCapCurrentProd" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1WorkingCapCurrentProd" name="year-1WorkingCapCurrentProd" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}WorkingCapCurrentProd" name="year{{ forloop.counter0|add:'1' }}WorkingCapCurrentProd" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}WorkingCapCurrentProd" name="year{{ forloop.counter0|add:'1' }}WorkingCapCurrentProd" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Working Capital Stockpile Reclaim</th>
-                    <td><input id="id_year-3WorkingCapCostsOfLG" name="year-3WorkingCapCostsOfLG" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2WorkingCapCostsOfLG" name="year-2WorkingCapCostsOfLG" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1WorkingCapCostsOfLG" name="year-1WorkingCapCostsOfLG" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3WorkingCapCostsOfLG" name="year-3WorkingCapCostsOfLG" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2WorkingCapCostsOfLG" name="year-2WorkingCapCostsOfLG" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1WorkingCapCostsOfLG" name="year-1WorkingCapCostsOfLG" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}WorkingCapCostsOfLG" name="year{{ forloop.counter0|add:'1' }}WorkingCapCostsOfLG" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}WorkingCapCostsOfLG" name="year{{ forloop.counter0|add:'1' }}WorkingCapCostsOfLG" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>EPCM</th>
-                    <td><input id="id_year-3EPCM" name="year-3EPCM" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2EPCM" name="year-2EPCM" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1EPCM" name="year-1EPCM" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3EPCM" name="year-3EPCM" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2EPCM" name="year-2EPCM" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1EPCM" name="year-1EPCM" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}EPCM" name="year{{ forloop.counter0|add:'1' }}EPCM" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}EPCM" name="year{{ forloop.counter0|add:'1' }}EPCM" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     			<tr>
     				<th>Owner's Costs</th>
-                    <td><input id="id_year-3OwnersCosts" name="year-3OwnersCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-2OwnersCosts" name="year-2OwnersCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
-                    <td><input id="id_year-1OwnersCosts" name="year-1OwnersCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+                    <td><input id="id_year-3OwnersCosts" name="year-3OwnersCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-2OwnersCosts" name="year-2OwnersCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
+                    <td><input id="id_year-1OwnersCosts" name="year-1OwnersCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% for i in "x"|rjust:LOM %}
-    					<td><input id="id_year{{ forloop.counter0|add:'1' }}OwnersCosts" name="year{{ forloop.counter0|add:'1' }}OwnersCosts" placeholder="Max 8 Decimals" step="0.00000001" type="number" required=""></td>
+    					<td><input id="id_year{{ forloop.counter0|add:'1' }}OwnersCosts" name="year{{ forloop.counter0|add:'1' }}OwnersCosts" placeholder="Max 2 Decimals" step="0.01" type="number" required=""></td>
     				{% endfor %}
     			</tr>
     		</tbody>
