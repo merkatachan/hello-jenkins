@@ -295,31 +295,31 @@ def editCAPEX(request):
 				latestCAPEX = tblCAPEX.objects.filter(mineID=int(mineID), year=year).order_by('-dateAdded')				
 				if latestCAPEX:
 					latestCAPEX = latestCAPEX[0]
-					latestCAPEX.preStrip = preStrip*1000000.0
-					latestCAPEX.mineEquipInitial = mineEquipInitial*1000000.0
-					latestCAPEX.mineEquipSustain = mineEquipSustain*1000000.0
-					latestCAPEX.infraDirectCost = infraDirectCost*1000000.0
-					latestCAPEX.infraIndirectCost = infraIndirectCost*1000000.0
-					latestCAPEX.contingency = contingency*1000000.0
-					latestCAPEX.railcars = railcars*1000000.0
-					latestCAPEX.otherMobEquip = otherMobEquip*1000000.0
-					latestCAPEX.closureRehabAssure = closureRehabAssure*1000000.0
-					latestCAPEX.depoProvisionPay = depoProvisionPay*1000000.0
-					latestCAPEX.workCapCurrentProd = workCapCurrentProd*1000000.0
-					latestCAPEX.workCapCostsLG = workCapCostsLG*1000000.0
-					latestCAPEX.EPCM = EPCM*1000000.0
-					latestCAPEX.ownerCost = ownerCost*1000000.0
+					latestCAPEX.preStrip = preStrip
+					latestCAPEX.mineEquipInitial = mineEquipInitial
+					latestCAPEX.mineEquipSustain = mineEquipSustain
+					latestCAPEX.infraDirectCost = infraDirectCost
+					latestCAPEX.infraIndirectCost = infraIndirectCost
+					latestCAPEX.contingency = contingency
+					latestCAPEX.railcars = railcars
+					latestCAPEX.otherMobEquip = otherMobEquip
+					latestCAPEX.closureRehabAssure = closureRehabAssure
+					latestCAPEX.depoProvisionPay = depoProvisionPay
+					latestCAPEX.workCapCurrentProd = workCapCurrentProd
+					latestCAPEX.workCapCostsLG = workCapCostsLG
+					latestCAPEX.EPCM = EPCM
+					latestCAPEX.ownerCost = ownerCost
 					latestCAPEX.dateAdded = dateAdded
 					latestCAPEX.save()
 				else:
 					mineMatch = tblMine.objects.get(mineID=int(mineID))
-					tblCAPEXObj = tblCAPEX(mineID=mineMatch, year=year, preStrip=preStrip*1000000.0,
-						mineEquipInitial=mineEquipInitial*1000000.0, mineEquipSustain=mineEquipSustain*1000000.0,
-						infraDirectCost=infraDirectCost*1000000.0, infraIndirectCost=infraIndirectCost*1000000.0,
-						contingency=contingency*1000000.0, railcars=railcars*1000000.0, otherMobEquip=otherMobEquip*1000000.0,
-						closureRehabAssure=closureRehabAssure*1000000.0, depoProvisionPay=depoProvisionPay*1000000.0,
-						workCapCurrentProd=workCapCurrentProd*1000000.0, workCapCostsLG=workCapCostsLG*1000000.0,
-						EPCM=EPCM*1000000.0, ownerCost=ownerCost*1000000.0, dateAdded=dateAdded)
+					tblCAPEXObj = tblCAPEX(mineID=mineMatch, year=year, preStrip=preStrip,
+						mineEquipInitial=mineEquipInitial, mineEquipSustain=mineEquipSustain,
+						infraDirectCost=infraDirectCost, infraIndirectCost=infraIndirectCost,
+						contingency=contingency, railcars=railcars, otherMobEquip=otherMobEquip,
+						closureRehabAssure=closureRehabAssure, depoProvisionPay=depoProvisionPay,
+						workCapCurrentProd=workCapCurrentProd, workCapCostsLG=workCapCostsLG,
+						EPCM=EPCM, ownerCost=ownerCost, dateAdded=dateAdded)
 					tblCAPEXObj.save()
 
 			for year in range(1, LOM+1):
@@ -339,20 +339,20 @@ def editCAPEX(request):
 				ownerCost = float(cleanData["year{0}OwnersCosts".format(year)])
 
 				latestCAPEX = tblCAPEX.objects.filter(mineID=int(mineID), year=year).order_by('-dateAdded')[0]
-				latestCAPEX.preStrip = preStrip*1000000.0
-				latestCAPEX.mineEquipInitial = mineEquipInitial*1000000.0
-				latestCAPEX.mineEquipSustain = mineEquipSustain*1000000.0
-				latestCAPEX.infraDirectCost = infraDirectCost*1000000.0
-				latestCAPEX.infraIndirectCost = infraIndirectCost*1000000.0
-				latestCAPEX.contingency = contingency*1000000.0
-				latestCAPEX.railcars = railcars*1000000.0
-				latestCAPEX.otherMobEquip = otherMobEquip*1000000.0
-				latestCAPEX.closureRehabAssure = closureRehabAssure*1000000.0
-				latestCAPEX.depoProvisionPay = depoProvisionPay*1000000.0
-				latestCAPEX.workCapCurrentProd = workCapCurrentProd*1000000.0
-				latestCAPEX.workCapCostsLG = workCapCostsLG*1000000.0
-				latestCAPEX.EPCM = EPCM*1000000.0
-				latestCAPEX.ownerCost = ownerCost*1000000.0
+				latestCAPEX.preStrip = preStrip
+				latestCAPEX.mineEquipInitial = mineEquipInitial
+				latestCAPEX.mineEquipSustain = mineEquipSustain
+				latestCAPEX.infraDirectCost = infraDirectCost
+				latestCAPEX.infraIndirectCost = infraIndirectCost
+				latestCAPEX.contingency = contingency
+				latestCAPEX.railcars = railcars
+				latestCAPEX.otherMobEquip = otherMobEquip
+				latestCAPEX.closureRehabAssure = closureRehabAssure
+				latestCAPEX.depoProvisionPay = depoProvisionPay
+				latestCAPEX.workCapCurrentProd = workCapCurrentProd
+				latestCAPEX.workCapCostsLG = workCapCostsLG
+				latestCAPEX.EPCM = EPCM
+				latestCAPEX.ownerCost = ownerCost
 				latestCAPEX.dateAdded = dateAdded
 				latestCAPEX.save()
 
@@ -412,20 +412,20 @@ def editCAPEX(request):
 			row = CAPEXEntries.filter(year=i)
 			if row:
 				row = row[0]
-				preStripNeg[i] = row.preStrip/Decimal(1000000.0)
-				mineEquipInitialNeg[i] = row.mineEquipInitial/Decimal(1000000.0)
-				mineEquipSustainNeg[i] = row.mineEquipSustain/Decimal(1000000.0)
-				infraDirectCostNeg[i] = row.infraDirectCost/Decimal(1000000.0)
-				infraIndirectCostNeg[i] = row.infraIndirectCost/Decimal(1000000.0)
-				contingencyNeg[i] = row.contingency/Decimal(1000000.0)
-				railcarsNeg[i] = row.railcars/Decimal(1000000.0)
-				otherMobEquipNeg[i] = row.otherMobEquip/Decimal(1000000.0)
-				closureRehabAssureNeg[i] = row.closureRehabAssure/Decimal(1000000.0)
-				depoProvisionPayNeg[i] = row.depoProvisionPay/Decimal(1000000.0)
-				workCapCurrentProdNeg[i] = row.workCapCurrentProd/Decimal(1000000.0)
-				workCapCostsLGNeg[i] = row.workCapCostsLG/Decimal(1000000.0)
-				EPCMNeg[i] = row.EPCM/Decimal(1000000.0)
-				ownerCostNeg[i] = row.ownerCost/Decimal(1000000.0)
+				preStripNeg[i] = row.preStrip
+				mineEquipInitialNeg[i] = row.mineEquipInitial
+				mineEquipSustainNeg[i] = row.mineEquipSustain
+				infraDirectCostNeg[i] = row.infraDirectCost
+				infraIndirectCostNeg[i] = row.infraIndirectCost
+				contingencyNeg[i] = row.contingency
+				railcarsNeg[i] = row.railcars
+				otherMobEquipNeg[i] = row.otherMobEquip
+				closureRehabAssureNeg[i] = row.closureRehabAssure
+				depoProvisionPayNeg[i] = row.depoProvisionPay
+				workCapCurrentProdNeg[i] = row.workCapCurrentProd
+				workCapCostsLGNeg[i] = row.workCapCostsLG
+				EPCMNeg[i] = row.EPCM
+				ownerCostNeg[i] = row.ownerCost
 			else:
 				preStripNeg[i] = Decimal(0.0)
 				mineEquipInitialNeg[i] = Decimal(0.0)
@@ -464,20 +464,20 @@ def editCAPEX(request):
 			# result = tblCAPEX.objects.filter(mineID=int(mineID), year=i, dateAdded=timestamp)
 			subEntry = CAPEXEntries.filter(year=i+1)		
 			row = subEntry[0]
-			preStrip.append(row.preStrip/Decimal(1000000.0))
-			mineEquipInitial.append(row.mineEquipInitial/Decimal(1000000.0))
-			mineEquipSustain.append(row.mineEquipSustain/Decimal(1000000.0))
-			infraDirectCost.append(row.infraDirectCost/Decimal(1000000.0))
-			infraIndirectCost.append(row.infraIndirectCost/Decimal(1000000.0))
-			contingency.append(row.contingency/Decimal(1000000.0))
-			railcars.append(row.railcars/Decimal(1000000.0))
-			otherMobEquip.append(row.otherMobEquip/Decimal(1000000.0))
-			closureRehabAssure.append(row.closureRehabAssure/Decimal(1000000.0))
-			depoProvisionPay.append(row.depoProvisionPay/Decimal(1000000.0))
-			workCapCurrentProd.append(row.workCapCurrentProd/Decimal(1000000.0))
-			workCapCostsLG.append(row.workCapCostsLG/Decimal(1000000.0))
-			EPCM.append(row.EPCM/Decimal(1000000.0))
-			ownerCost.append(row.ownerCost/Decimal(1000000.0))
+			preStrip.append(row.preStrip)
+			mineEquipInitial.append(row.mineEquipInitial)
+			mineEquipSustain.append(row.mineEquipSustain)
+			infraDirectCost.append(row.infraDirectCost)
+			infraIndirectCost.append(row.infraIndirectCost)
+			contingency.append(row.contingency)
+			railcars.append(row.railcars)
+			otherMobEquip.append(row.otherMobEquip)
+			closureRehabAssure.append(row.closureRehabAssure)
+			depoProvisionPay.append(row.depoProvisionPay)
+			workCapCurrentProd.append(row.workCapCurrentProd)
+			workCapCostsLG.append(row.workCapCostsLG)
+			EPCM.append(row.EPCM)
+			ownerCost.append(row.ownerCost)
 
 			# if result:
 			# 	row = result[0]
@@ -522,7 +522,8 @@ def editOPEX(request):
 	form_class = OPEXForm(mineID=mineID)
 
 	if request.method == 'POST':
-		projectMatch = tblProject.objects.filter(mineID=int(mineID)).order_by('-projectID')[0]
+		# projectMatch = tblProject.objects.filter(mineID=int(mineID)).order_by('-projectID')[0]
+		latestProject = tblProject.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
 		LOM = tblProjectPeriods.objects.filter(projectID=latestProject.projectID).count()
 		# LOM = projectMatch.LOM
 		form = OPEXForm(request.POST, mineID=mineID)
@@ -550,22 +551,22 @@ def editOPEX(request):
 				opexPT = float(cleanData["year{0}OpexPT".format(year)])
 
 				latestOPEX = tblOPEX.objects.filter(mineID=int(mineID), year=year).order_by('-dateAdded')[0]
-				latestOPEX.mining = mining*1000000.0
-				latestOPEX.infrastructure = infrastructure*1000000.0
-				latestOPEX.stockpileLG = stockpileLG*1000000.0
-				latestOPEX.dewatering = dewatering*1000000.0
-				latestOPEX.processing = processing*1000000.0
-				latestOPEX.hauling = hauling*1000000.0
-				latestOPEX.loadOutRailLoop = loadOutRailLoop*1000000.0
-				latestOPEX.GASite = GASite*1000000.0
-				latestOPEX.GARoomBoardFIFO = GARoomBoardFIFO*1000000.0
-				latestOPEX.railTransport = railTransport*1000000.0
-				latestOPEX.GACorp = GACorp*1000000.0
-				latestOPEX.royalties = royalties*1000000.0
-				latestOPEX.transportation = transportation*1000000.0
-				latestOPEX.GA = GA*1000000.0
-				latestOPEX.shipping = shipping*1000000.0
-				latestOPEX.opexPT = opexPT*1000000.0
+				latestOPEX.mining = mining
+				latestOPEX.infrastructure = infrastructure
+				latestOPEX.stockpileLG = stockpileLG
+				latestOPEX.dewatering = dewatering
+				latestOPEX.processing = processing
+				latestOPEX.hauling = hauling
+				latestOPEX.loadOutRailLoop = loadOutRailLoop
+				latestOPEX.GASite = GASite
+				latestOPEX.GARoomBoardFIFO = GARoomBoardFIFO
+				latestOPEX.railTransport = railTransport
+				latestOPEX.GACorp = GACorp
+				latestOPEX.royalties = royalties
+				latestOPEX.transportation = transportation
+				latestOPEX.GA = GA
+				latestOPEX.shipping = shipping
+				latestOPEX.opexPT = opexPT
 				latestOPEX.dateAdded = dateAdded
 
 				latestOPEX.save()
@@ -606,22 +607,22 @@ def editOPEX(request):
 				row = result[0]
 				# initialValues["year{0}PreStripping".format(i)] = row.preStrip
 				# initialValues["year{0}PreStripping".format(i)] = Float(0.33)
-				mining.append(row.mining/Decimal(1000000.0))
-				infrastructure.append(row.infrastructure/Decimal(1000000.0))
-				stockpileLG.append(row.stockpileLG/Decimal(1000000.0))
-				dewatering.append(row.dewatering/Decimal(1000000.0))
-				processing.append(row.processing/Decimal(1000000.0))
-				hauling.append(row.hauling/Decimal(1000000.0))
-				loadOutRailLoop.append(row.loadOutRailLoop/Decimal(1000000.0))
-				GASite.append(row.GASite/Decimal(1000000.0))
-				GARoomBoardFIFO.append(row.GARoomBoardFIFO/Decimal(1000000.0))
-				railTransport.append(row.railTransport/Decimal(1000000.0))
-				GACorp.append(row.GACorp/Decimal(1000000.0))
-				royalties.append(row.royalties/Decimal(1000000.0))
-				transportation.append(row.transportation/Decimal(1000000.0))
-				GA.append(row.GA/Decimal(1000000.0))
-				shipping.append(row.shipping/Decimal(1000000.0))
-				opexPT.append(row.opexPT/Decimal(1000000.0))
+				mining.append(row.mining)
+				infrastructure.append(row.infrastructure)
+				stockpileLG.append(row.stockpileLG)
+				dewatering.append(row.dewatering)
+				processing.append(row.processing)
+				hauling.append(row.hauling)
+				loadOutRailLoop.append(row.loadOutRailLoop)
+				GASite.append(row.GASite)
+				GARoomBoardFIFO.append(row.GARoomBoardFIFO)
+				railTransport.append(row.railTransport)
+				GACorp.append(row.GACorp)
+				royalties.append(row.royalties)
+				transportation.append(row.transportation)
+				GA.append(row.GA)
+				shipping.append(row.shipping)
+				opexPT.append(row.opexPT)
 
 		return render(request, "settings/opex.html", {'form': form_class, 'LOM': LOM,
 			'mining': mining, 'infrastructure': infrastructure,
