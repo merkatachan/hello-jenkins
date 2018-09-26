@@ -356,14 +356,10 @@ def editCAPEX(request):
 				latestCAPEX.dateAdded = dateAdded
 				latestCAPEX.save()
 
-				# tblCAPEXObj = tblCAPEX(mineID=mineMatch, year=year, preStrip=preStrip,
-				# 	mineEquipInitial=mineEquipInitial, mineEquipSustain=mineEquipSustain,
-				# 	infraDirectCost=infraDirectCost, infraIndirectCost=infraIndirectCost,
-				# 	contingency=contingency, railcars=railcars, otherMobEquip=otherMobEquip,
-				# 	closureRehabAssure=closureRehabAssure, depoProvisionPay=depoProvisionPay,
-				# 	workCapCurrentProd=workCapCurrentProd, workCapCostsLG=workCapCostsLG,
-				# 	EPCM=EPCM, ownerCost=ownerCost, dateAdded=dateAdded)
-				# tblCAPEXObj.save()
+			# Toggle Processed tag in tblCashFlow
+			cashFlowEntry = tblCashFlow.objects.filter(projectID=latestProject.projectID).order_by('date')[0]
+			cashFlowEntry.processed = False
+			cashFlowEntry.save()
 
 			return render(request, 'settings/success.html', { }) #Redirect
 
@@ -570,6 +566,11 @@ def editOPEX(request):
 				latestOPEX.dateAdded = dateAdded
 
 				latestOPEX.save()
+
+			# Toggle Processed tag in tblCashFlow
+			cashFlowEntry = tblCashFlow.objects.filter(projectID=latestProject.projectID).order_by('date')[0]
+			cashFlowEntry.processed = False
+			cashFlowEntry.save()
 
 			return render(request, 'settings/success.html', { }) #Redirect
 
