@@ -3139,8 +3139,8 @@ def reportDL(request):
 					currCumCashFlowPreTax = (-1)*sumNegCAPEX
 					currCumCashFlowPostTax = (-1)*sumNegCAPEX
 				else:
-					currCumCashFlowPreTax = Decimal(prevCashFlows[0].cumulativeCashFlowPreTax)
-					currCumCashFlowPostTax = Decimal(prevCashFlows[0].cumulativeCashFlowPostTax)
+					currCumCashFlowPreTax = round(Decimal(prevCashFlows[0].cumulativeCashFlowPreTax),2)
+					currCumCashFlowPostTax = round(Decimal(prevCashFlows[0].cumulativeCashFlowPostTax),2)
 				for i in range(len(startDateVals)):
 					currCashFlows = cashFlowEntries.filter(date__gte=startDateVals[i], date__lte=endDateVals[i]).order_by('-date')
 					if not currCashFlows:
