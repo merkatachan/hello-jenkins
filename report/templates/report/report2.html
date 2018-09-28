@@ -875,6 +875,160 @@
         </table>
 
 
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white">
+                <th class="firstcol">PRE-TAX CASH FLOW</th>
+                {% for date in dateVals %}
+                    <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            <tr>
+                <th class="subhead">Cash Flow (millions CAD)</th>
+                {% for val in cashFlowPreTax %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumCashFlowPreTax|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">Cumulative Undiscounted Cash Flow (millions CAD)</th>
+                {% for val in cumCashFlowPreTax %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval"></td>
+            </tr>
+            <tr>
+                <th class="subhead">Payback Period (year)</th>
+                {% for val in paybackPreTax %}
+                    <td class="numval">{{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">{{ sumPaybackPreTax|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 6%</th>
+                {% for val in preTaxPVs|get_item:6 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:6|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 8%</th>
+                {% for val in preTaxPVs|get_item:8 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:8|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 10%</th>
+                {% for val in preTaxPVs|get_item:10 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:10|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 12%</th>
+                {% for val in preTaxPVs|get_item:12 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:12|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 15%</th>
+                {% for val in preTaxPVs|get_item:15 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:15|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">PRE-TAX NPV @ 20%</th>
+                {% for val in preTaxPVs|get_item:20 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPreTaxNPV|get_item:20|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">INTERNAL RATE OF RETURN (IRR)</th>
+                <td class="numval">{{ preTaxIRR|intcomma }}%</td>
+            </tr>
+        </table>
+
+
+        <table class="report-table table table-hover borderless">
+            <tr class="bg-info text-white">
+                <th class="firstcol">POST-TAX CASH FLOW</th>
+                {% for date in dateVals %}
+                    <th></th>
+                {% endfor %}
+                <th></th>
+            </tr>
+            <tr>
+                <th class="subhead">Cash Flow (millions CAD)</th>
+                {% for val in cashFlowPostTax %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumCashFlowPostTax|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">Cumulative Undiscounted Cash Flow (millions CAD)</th>
+                {% for val in cumCashFlowPostTax %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval"></td>
+            </tr>
+            <tr>
+                <th class="subhead">Payback Period (year)</th>
+                {% for val in paybackPostTax %}
+                    <td class="numval">{{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">{{ sumPaybackPostTax|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 6%</th>
+                {% for val in postTaxPVs|get_item:6 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:6|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 8%</th>
+                {% for val in postTaxPVs|get_item:8 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:8|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 10%</th>
+                {% for val in postTaxPVs|get_item:10 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:10|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 12%</th>
+                {% for val in postTaxPVs|get_item:12 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:12|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 15%</th>
+                {% for val in postTaxPVs|get_item:15 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:15|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">POST-TAX NPV @ 20%</th>
+                {% for val in postTaxPVs|get_item:20 %}
+                    <td class="numval">${{ val|intcomma }}</td>
+                {% endfor %}
+                <td class="numval">${{ sumPostTaxNPV|get_item:20|intcomma }}</td>
+            </tr>
+            <tr>
+                <th class="subhead">INTERNAL RATE OF RETURN (IRR)</th>
+                <td class="numval">{{ postTaxIRR|intcomma }}%</td>
+            </tr>
+        </table>
     </div>
 
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css"> 
