@@ -3905,6 +3905,7 @@ def reportDL(request):
 				totalTaxes = [sum(x) for x in zip(federalTaxes, provincialTaxes, miningTaxes)]
 				sumTotalTaxes = sum(totalTaxes)
 
+				discountRates = [Decimal(0.06), Decimal(0.08), Decimal(0.10), Decimal(0.12), Decimal(0.15), Decimal(0.20)]
 
 				# Handle values if no calculations have been run during selected range of dates
 				cashFlowEntries = tblCashFlow.objects.filter(projectID=latestProject.projectID, date__gte=startDate, date__lte=endDate)
@@ -4006,6 +4007,30 @@ def reportDL(request):
 
 					totalRevenues = [filler]*((endDate - startDate).days+1)
 					sumTotalRevenues = filler
+
+					cashFlowPreTax = [filler]*len(startDateVals)
+					cashFlowPostTax = [filler]*len(startDateVals)
+					cumCashFlowPreTax = [filler]*len(startDateVals)
+					cumCashFlowPostTax = [filler]*len(startDateVals)
+					sumCashFlowPreTax = filler
+					sumCashFlowPostTax = filler
+					paybackPreTax = [filler]*len(startDateVals)
+					paybackPostTax = [filler]*len(startDateVals)
+					sumPaybackPreTax = filler
+					sumPaybackPostTax = filler
+					preTaxIRR = filler
+					postTaxIRR = filler
+
+					preTaxPVs = {}
+					postTaxPVs = {}
+					sumPreTaxNPV = {}
+					sumPostTaxNPV = {}
+					for rate in discountRates:
+						rate = int(round(rate*100))
+						preTaxPVs[rate] = [filler]*len(startDateVals)
+						postTaxPVs[rate] = [filler]*len(startDateVals)
+						sumPreTaxNPV[rate] = filler
+						sumPostTaxNPV[rate] = filler
 
 					# Create DL Form Data
 					reportRowCount = 1
@@ -4152,31 +4177,30 @@ def reportDL(request):
 					reportData += 'Mining Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in miningTaxes]]) + ',' + str(round(sumMiningTaxes,2)) + ';'
 					reportData += 'TOTAL (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
 
-					# reportData += ';SUMMARY;'
-					# reportData += 'Revenues (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + str(round(sumTotalRevenues,2)) + ';'
-					# reportData += 'OPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]]) + ',' + str(round(sumTotalOPEX,2)) + ';'
-					# reportData += 'Royalties (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]]) + ',' + str(round(sumRoyalties,2)) + ';'
-					# reportData += 'CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
-					# reportData += 'Working Capital (Current Production) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCurrentProd]]) + ',' + str(round(sumWorkCapCurrentProd,2)) + ';'
-					# reportData += 'Working Capital (Costs of LG Stockpile) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCostsLG]]) + ',' + str(round(sumWorkCapCostsLG,2)) + ';'
-					# reportData += 'Taxes (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
+					reportData += ';SUMMARY;'
+					reportData += 'Revenues (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + filler + ';'
+					reportData += 'OPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]]) + ',' + str(round(sumTotalOPEX,2)) + ';'
+					reportData += 'Royalties (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]]) + ',' + str(round(sumRoyalties,2)) + ';'
+					reportData += 'CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
+					reportData += 'Working Capital (Current Production) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCurrentProd]]) + ',' + str(round(sumWorkCapCurrentProd,2)) + ';'
+					reportData += 'Working Capital (Costs of LG Stockpile) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCostsLG]]) + ',' + str(round(sumWorkCapCostsLG,2)) + ';'
+					reportData += 'Taxes (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
 
-					# reportData += ';PRE-TAX CASH FLOW;'
-					# reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]]) + ',' + str(round(sumCashFlowPreTax,2)) + ';'
-					# reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]]) + ',' + str(round(sumCashFlowPreTax,2)) + ';'
-					# reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]]) + ',' + str(round(sumPaybackPreTax,2)) + ';'
-					# for rate in discountRates:
-					# 	reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPreTaxNPV[int(round(rate*100))],2)) + ';'
-					# reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(preTaxIRR,2)) + ';'
+					reportData += ';PRE-TAX CASH FLOW;'
+					reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]]) + ',' + filler + ';'
+					reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]]) + ',' + filler + ';'
+					reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]]) + ',' + filler + ';'
+					for rate in discountRates:
+						reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]]) + ',' + filler + ';'
+					reportData += 'INTERNAL RATE OF RETURN (IRR),' + 'N/A' + ';'
 
-					# reportData += ';POST-TAX CASH FLOW;'
-					# reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]]) + ',' + str(round(sumCashFlowPostTax,2)) + ';'
-					# reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]]) + ',' + str(round(sumCashFlowPostTax,2)) + ';'
-					# reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]]) + ',' + str(round(sumPaybackPostTax,2)) + ';'
-					# for rate in discountRates:
-					# 	reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPostTaxNPV[int(round(rate*100))],2)) + ';'
-					# reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(postTaxIRR,2)) + ';'
-
+					reportData += ';POST-TAX CASH FLOW;'
+					reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]]) + ',' + filler + ';'
+					reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]]) + ',' + filler + ';'
+					reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]]) + ',' + filler + ';'
+					for rate in discountRates:
+						reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]]) + ',' + filler + ';'
+					reportData += 'INTERNAL RATE OF RETURN (IRR),' + 'N/A' + ';'
 
 					filter_form = filterForm(mineID=mineID, startDate=projectStartDate, endDate=projectEndDate)
 					default_filter_form = defaultFilterForm(mineID=mineID, thisYearStartDate=thisYearStartDate, thisYearEndDate=thisYearEndDate,
@@ -4233,7 +4257,14 @@ def reportDL(request):
 						'sumFederalTaxes': sumFederalTaxes, 'sumProvincialTaxes': sumProvincialTaxes, 'sumMiningTaxes': sumMiningTaxes,
 						'totalTaxes': totalTaxes, 'sumTotalTaxes': sumTotalTaxes,
 						'workCapCurrentProd': workCapCurrentProd, 'workCapCostsLG': workCapCostsLG,
-						'sumWorkCapCurrentProd': sumWorkCapCurrentProd, 'sumWorkCapCostsLG': sumWorkCapCostsLG})
+						'sumWorkCapCurrentProd': sumWorkCapCurrentProd, 'sumWorkCapCostsLG': sumWorkCapCostsLG,
+						'cashFlowPreTax': cashFlowPreTax, 'cashFlowPostTax': cashFlowPostTax,
+						'cumCashFlowPreTax': cumCashFlowPreTax, 'cumCashFlowPostTax': cumCashFlowPostTax,
+						'sumCashFlowPreTax': sumCashFlowPreTax, 'sumCashFlowPostTax': sumCashFlowPostTax,
+						'paybackPreTax': paybackPreTax, 'paybackPostTax': paybackPostTax,
+						'sumPaybackPreTax': sumPaybackPreTax, 'sumPaybackPostTax': sumPaybackPostTax,
+						'preTaxIRR': preTaxIRR, 'postTaxIRR': postTaxIRR,
+						'preTaxPVs': preTaxPVs, 'postTaxPVs': postTaxPVs, 'sumPreTaxNPV': sumPreTaxNPV, 'sumPostTaxNPV': sumPostTaxNPV})
 						# 'cashFlowPreTax': cashFlowPreTax, 'cashFlowPostTax': cashFlowPostTax,
 						# 'cumCashFlowPreTax': cumCashFlowPreTax, 'cumCashFlowPostTax': cumCashFlowPostTax,
 						# 'sumCashFlowPreTax': sumCashFlowPreTax, 'sumCashFlowPostTax': sumCashFlowPostTax,
@@ -4242,7 +4273,22 @@ def reportDL(request):
 						# 'preTaxNPVs': preTaxNPVs, 'postTaxNPVs': postTaxNPVs, 'preTaxIRR': preTaxIRR, 'postTaxIRR': postTaxIRR,
 						# 'preTaxPVs': preTaxPVs, 'postTaxPVs': postTaxPVs, 'sumPreTaxNPV': sumPreTaxNPV, 'sumPostTaxNPV': sumPostTaxNPV})
 
+				latestCAPEX = tblCAPEX.objects.filter(mineID=int(mineID)).order_by('-dateAdded')[0]
+				timestamp = latestCAPEX.dateAdded
+				CAPEXEntries = tblCAPEX.objects.filter(mineID=int(mineID), dateAdded=timestamp)
 
+				negCAPEX = []
+				for year in [-3,-2,-1]:
+					currCAPEX = CAPEXEntries.filter(year=year)
+					if currCAPEX:
+						row = currCAPEX[0]
+						negCAPEX.append(round(Decimal(row.preStrip + row.mineEquipInitial + row.mineEquipSustain + 
+							row.infraDirectCost + row.infraIndirectCost + row.contingency + row.railcars + 
+							row.otherMobEquip + row.closureRehabAssure + row.depoProvisionPay + 
+							row.workCapCurrentProd + row.workCapCostsLG + row.EPCM + row.ownerCost),2))
+					else:
+						negCAPEX.append(Decimal(0.0))
+				sumNegCAPEX = sum(negCAPEX)
 
 				tonnageVals = {}
 				tonnageTotals = {}
@@ -4628,6 +4674,146 @@ def reportDL(request):
 
 				sumTotalRevenues = sum(totalRevenues)
 
+				cashFlowPreTax = []
+				cashFlowPostTax = []
+				cumCashFlowPreTax = []
+				cumCashFlowPostTax = []
+
+				annualCashFlowPreTax = []
+				annualCashFlowPostTax = []
+				annualCumCashFlowPreTax = []
+				annualCumCashFlowPostTax = []
+				# Beginning populating tblCashFlow data for HTML report here
+				currCumCashFlowPreTax = (-1)*sumNegCAPEX
+				currCumCashFlowPostTax = (-1)*sumNegCAPEX
+
+				cashFlowEntries = tblCashFlow.objects.filter(projectID=latestProject.projectID)
+				for year in range(1, projectPeriods.count()+1):
+					currPeriod = projectPeriods.get(year=year)
+					currStart = currPeriod.startDate
+					currEnd = currPeriod.endDate
+					currCashFlows = cashFlowEntries.filter(date__gte=currStart, date__lte=currEnd).order_by('-date')
+					if not currCashFlows:
+						annualCumCashFlowPreTax.append(currCumCashFlowPreTax)
+						annualCumCashFlowPostTax.append(currCumCashFlowPostTax)
+						annualCashFlowPreTax.append(Decimal(0.0))
+						annualCashFlowPostTax.append(Decimal(0.0))
+					else:
+						lastCashFlow = currCashFlows[0]
+						annualCumCashFlowPreTax.append(round(Decimal(lastCashFlow.cumulativeCashFlowPreTax),2))
+						annualCumCashFlowPostTax.append(round(Decimal(lastCashFlow.cumulativeCashFlowPostTax),2))
+						annualCashFlowPreTax.append(round(Decimal(lastCashFlow.cumulativeCashFlowPreTax) - currCumCashFlowPreTax,2))
+						annualCashFlowPostTax.append(round(Decimal(lastCashFlow.cumulativeCashFlowPostTax) - currCumCashFlowPostTax,2))
+						currCumCashFlowPreTax = annualCumCashFlowPreTax[-1]
+						currCumCashFlowPostTax = annualCumCashFlowPostTax[-1]
+				preTaxIRR = round(np.irr([(-1)*sumNegCAPEX] + annualCashFlowPreTax)*100,2)
+				postTaxIRR = round(np.irr([(-1)*sumNegCAPEX] + annualCashFlowPostTax)*100,2)
+
+				prevCashFlows = cashFlowEntries.filter(date__lt=startDate).order_by('-date')
+				if not prevCashFlows:
+					currCumCashFlowPreTax = (-1)*sumNegCAPEX
+					currCumCashFlowPostTax = (-1)*sumNegCAPEX
+				else:
+					currCumCashFlowPreTax = round(Decimal(prevCashFlows[0].cumulativeCashFlowPreTax),2)
+					currCumCashFlowPostTax = round(Decimal(prevCashFlows[0].cumulativeCashFlowPostTax),2)
+
+				currCashFlows = cashFlowEntries.filter(date__gte=startDate, date__lte=endDate).order_by('date')
+				if not currCashFlows:
+					cashFlowPreTax += [Decimal(0.0)]*((endDate - startDate).days)
+					cashFlowPostTax += [Decimal(0.0)]*((endDate - startDate).days)
+					cumCashFlowPreTax += [currCumCashFlowPreTax]*((endDate - startDate).days)
+					cumCashFlowPostTax += [currCumCashFlowPostTax]*((endDate - startDate).days)
+				else:
+					currDate = startDate
+					for entry in currCashFlows:
+						cashFlowPreTax += [Decimal(0.0)]*((entry.date - currDate).days)
+						cashFlowPostTax += [Decimal(0.0)]*((entry.date - currDate).days)
+						cumCashFlowPreTax += [currCumCashFlowPreTax]*((entry.date - currDate).days)
+						cumCashFlowPostTax += [currCumCashFlowPostTax]*((entry.date - currDate).days)
+
+						cumCashFlowPreTax.append(round(Decimal(entry.cumulativeCashFlowPreTax),2))
+						cumCashFlowPostTax.append(round(Decimal(entry.cumulativeCashFlowPostTax),2))
+						cashFlowPreTax.append(round(Decimal(entry.cashFlowPreTax),2))
+						cashFlowPostTax.append(round(Decimal(entry.cashFlowPostTax),2))
+
+						currDate = entry.date
+						currCumCashFlowPreTax = cumCashFlowPreTax[-1]
+						currCumCashFlowPostTax = cumCashFlowPostTax[-1]
+					cashFlowPreTax += [Decimal(0.0)]*((endDate - currDate).days)
+					cashFlowPostTax += [Decimal(0.0)]*((endDate - currDate).days)
+					cumCashFlowPreTax += [currCumCashFlowPreTax]*((endDate - currDate).days)
+					cumCashFlowPostTax += [currCumCashFlowPostTax]*((endDate - currDate).days)
+				sumCashFlowPreTax = sum(cashFlowPreTax)
+				sumCashFlowPostTax = sum(cashFlowPostTax)
+
+				positiveFlow = False
+				paybackPreTax = []
+				if cumCashFlowPreTax[0] > 0:
+					paybackPreTax = [Decimal(0.0)]*((endDate - startDate).days)
+				else:
+					for i in range(len(cumCashFlowPreTax)):
+						if positiveFlow:
+							paybackPreTax.append(Decimal(0.0))
+						else:
+							if cumCashFlowPreTax[i] > 0:
+								if i == 0:
+									paybackPreTax.append(Decimal(0.0))
+								else:
+									paybackPreTax.append(abs(round(cumCashFlowPreTax[i-1] / cashFlowPreTax[i],4)))
+								positiveFlow = True
+							else:
+								paybackPreTax.append(Decimal(1.0))
+				sumPaybackPreTax = sum(paybackPreTax)
+
+				positiveFlow = False
+				paybackPostTax = []
+				if cumCashFlowPostTax[0] > 0:
+					paybackPostTax = [Decimal(0.0)]*((endDate - startDate).days)
+				else:
+					for i in range(len(cumCashFlowPostTax)):
+						if positiveFlow:
+							paybackPostTax.append(Decimal(0.0))
+						else:
+							if cumCashFlowPostTax[i] > 0:
+								if i == 0:
+									paybackPostTax.append(Decimal(0.0))
+								else:
+									paybackPostTax.append(abs(round(cumCashFlowPostTax[i-1] / cashFlowPostTax[i],4)))
+								positiveFlow = True
+							else:
+								paybackPostTax.append(Decimal(1.0))
+				sumPaybackPostTax = sum(paybackPostTax)
+
+				# Calculate and Update NPVs and IRRs
+				preTaxPVs = {}
+				postTaxPVs = {}
+				sumPreTaxNPV = {}
+				sumPostTaxNPV = {}
+				financialsEntries = tblFinancials.objects.filter(projectID=latestProject.projectID)
+				for rate in discountRates:
+					rate = int(round(rate*100))
+					preTaxPVs[rate] = []
+					postTaxPVs[rate] = []
+
+					currFinancials = financialsEntries.filter(date__gte=startDate, date__lte=endDate, 
+						discountRate=rate).order_by('date')
+					if not currFinancials:
+						preTaxPVs[rate] += [0.0]*((endDate - startDate).days)
+						postTaxPVs[rate] += [0.0]*((endDate - startDate).days)
+					else:
+						currDate = startDate
+						for entry in currFinancials:
+							preTaxPVs[rate] += [0.0]*((entry.date - currDate).days)
+							postTaxPVs[rate] += [0.0]*((entry.date - currDate).days)
+
+							preTaxPVs[rate].append(round(entry.NPVPreTax,2))
+							postTaxPVs[rate].append(round(entry.NPVPostTax,2))
+
+							currDate = entry.date
+						preTaxPVs[rate] += [0.0]*((endDate - currDate).days)
+						postTaxPVs[rate] += [0.0]*((endDate - currDate).days)
+					sumPreTaxNPV[rate] = sum(preTaxPVs[rate])
+					sumPostTaxNPV[rate] = sum(postTaxPVs[rate])
 
 				# Create DL Form Data
 				reportRowCount = 1
@@ -4774,31 +4960,30 @@ def reportDL(request):
 				reportData += 'Mining Taxes,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in miningTaxes]]) + ',' + str(round(sumMiningTaxes,2)) + ';'
 				reportData += 'TOTAL (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
 
-				# reportData += ';SUMMARY;'
-				# reportData += 'Revenues (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + str(round(sumTotalRevenues,2)) + ';'
-				# reportData += 'OPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]]) + ',' + str(round(sumTotalOPEX,2)) + ';'
-				# reportData += 'Royalties (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]]) + ',' + str(round(sumRoyalties,2)) + ';'
-				# reportData += 'CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
-				# reportData += 'Working Capital (Current Production) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCurrentProd]]) + ',' + str(round(sumWorkCapCurrentProd,2)) + ';'
-				# reportData += 'Working Capital (Costs of LG Stockpile) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCostsLG]]) + ',' + str(round(sumWorkCapCostsLG,2)) + ';'
-				# reportData += 'Taxes (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
+				reportData += ';SUMMARY;'
+				reportData += 'Revenues (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalRevenues]]) + ',' + str(round(sumTotalRevenues,2)) + ';'
+				reportData += 'OPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalOPEX]]) + ',' + str(round(sumTotalOPEX,2)) + ';'
+				reportData += 'Royalties (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in royalties]]) + ',' + str(round(sumRoyalties,2)) + ';'
+				reportData += 'CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
+				reportData += 'Working Capital (Current Production) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCurrentProd]]) + ',' + str(round(sumWorkCapCurrentProd,2)) + ';'
+				reportData += 'Working Capital (Costs of LG Stockpile) (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in workCapCostsLG]]) + ',' + str(round(sumWorkCapCostsLG,2)) + ';'
+				reportData += 'Taxes (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalTaxes]]) + ',' + str(round(sumTotalTaxes,2)) + ';'
 
-				# reportData += ';PRE-TAX CASH FLOW;'
-				# reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]]) + ',' + str(round(sumCashFlowPreTax,2)) + ';'
-				# reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]]) + ',' + str(round(sumCashFlowPreTax,2)) + ';'
-				# reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]]) + ',' + str(round(sumPaybackPreTax,2)) + ';'
-				# for rate in discountRates:
-				# 	reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPreTaxNPV[int(round(rate*100))],2)) + ';'
-				# reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(preTaxIRR,2)) + ';'
+				reportData += ';PRE-TAX CASH FLOW;'
+				reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPreTax]]) + ',' + str(round(sumCashFlowPreTax,2)) + ';'
+				reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPreTax]]) + ';'
+				reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPreTax]]) + ',' + str(round(sumPaybackPreTax,2)) + ';'
+				for rate in discountRates:
+					reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in preTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPreTaxNPV[int(round(rate*100))],2)) + ';'
+				reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(preTaxIRR,2)) + ';'
 
-				# reportData += ';POST-TAX CASH FLOW;'
-				# reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]]) + ',' + str(round(sumCashFlowPostTax,2)) + ';'
-				# reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]]) + ',' + str(round(sumCashFlowPostTax,2)) + ';'
-				# reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]]) + ',' + str(round(sumPaybackPostTax,2)) + ';'
-				# for rate in discountRates:
-				# 	reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPostTaxNPV[int(round(rate*100))],2)) + ';'
-				# reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(postTaxIRR,2)) + ';'
-
+				reportData += ';POST-TAX CASH FLOW;'
+				reportData += 'Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cashFlowPostTax]]) + ',' + str(round(sumCashFlowPostTax,2)) + ';'
+				reportData += 'Cumulative Undiscounted Cash Flow (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in cumCashFlowPostTax]]) + ';'
+				reportData += 'Payback Period (year),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in paybackPostTax]]) + ',' + str(round(sumPaybackPostTax,2)) + ';'
+				for rate in discountRates:
+					reportData += 'PRE-TAX NPV @ {0}%,'.format(int(round(rate*100))) + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in postTaxPVs[int(round(rate*100))]]]) + ',' + str(round(sumPostTaxNPV[int(round(rate*100))],2)) + ';'
+				reportData += 'INTERNAL RATE OF RETURN (IRR),' + str(round(postTaxIRR,2)) + ';'
 
 				filter_form = filterForm(mineID=mineID, startDate=projectStartDate, endDate=projectEndDate)
 				default_filter_form = defaultFilterForm(mineID=mineID, thisYearStartDate=thisYearStartDate, thisYearEndDate=thisYearEndDate,
@@ -4855,7 +5040,14 @@ def reportDL(request):
 					'sumFederalTaxes': sumFederalTaxes, 'sumProvincialTaxes': sumProvincialTaxes, 'sumMiningTaxes': sumMiningTaxes,
 					'totalTaxes': totalTaxes, 'sumTotalTaxes': sumTotalTaxes,
 					'workCapCurrentProd': workCapCurrentProd, 'workCapCostsLG': workCapCostsLG,
-					'sumWorkCapCurrentProd': sumWorkCapCurrentProd, 'sumWorkCapCostsLG': sumWorkCapCostsLG})
+					'sumWorkCapCurrentProd': sumWorkCapCurrentProd, 'sumWorkCapCostsLG': sumWorkCapCostsLG,
+					'cashFlowPreTax': cashFlowPreTax, 'cashFlowPostTax': cashFlowPostTax,
+					'cumCashFlowPreTax': cumCashFlowPreTax, 'cumCashFlowPostTax': cumCashFlowPostTax,
+					'sumCashFlowPreTax': sumCashFlowPreTax, 'sumCashFlowPostTax': sumCashFlowPostTax,
+					'paybackPreTax': paybackPreTax, 'paybackPostTax': paybackPostTax,
+					'sumPaybackPreTax': sumPaybackPreTax, 'sumPaybackPostTax': sumPaybackPostTax,
+					'preTaxIRR': preTaxIRR, 'postTaxIRR': postTaxIRR,
+					'preTaxPVs': preTaxPVs, 'postTaxPVs': postTaxPVs, 'sumPreTaxNPV': sumPreTaxNPV, 'sumPostTaxNPV': sumPostTaxNPV})
 					# 'cashFlowPreTax': cashFlowPreTax, 'cashFlowPostTax': cashFlowPostTax,
 					# 'cumCashFlowPreTax': cumCashFlowPreTax, 'cumCashFlowPostTax': cumCashFlowPostTax,
 					# 'sumCashFlowPreTax': sumCashFlowPreTax, 'sumCashFlowPostTax': sumCashFlowPostTax,
