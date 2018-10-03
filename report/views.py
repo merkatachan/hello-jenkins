@@ -4008,14 +4008,14 @@ def reportDL(request):
 					totalRevenues = [filler]*((endDate - startDate).days+1)
 					sumTotalRevenues = filler
 
-					cashFlowPreTax = [filler]*len(startDateVals)
-					cashFlowPostTax = [filler]*len(startDateVals)
-					cumCashFlowPreTax = [filler]*len(startDateVals)
-					cumCashFlowPostTax = [filler]*len(startDateVals)
+					cashFlowPreTax = [filler]*((endDate - startDate).days+1)
+					cashFlowPostTax = [filler]*((endDate - startDate).days+1)
+					cumCashFlowPreTax = [filler]*((endDate - startDate).days+1)
+					cumCashFlowPostTax = [filler]*((endDate - startDate).days+1)
 					sumCashFlowPreTax = filler
 					sumCashFlowPostTax = filler
-					paybackPreTax = [filler]*len(startDateVals)
-					paybackPostTax = [filler]*len(startDateVals)
+					paybackPreTax = [filler]*((endDate - startDate).days+1)
+					paybackPostTax = [filler]*((endDate - startDate).days+1)
 					sumPaybackPreTax = filler
 					sumPaybackPostTax = filler
 					preTaxIRR = filler
@@ -4027,8 +4027,8 @@ def reportDL(request):
 					sumPostTaxNPV = {}
 					for rate in discountRates:
 						rate = int(round(rate*100))
-						preTaxPVs[rate] = [filler]*len(startDateVals)
-						postTaxPVs[rate] = [filler]*len(startDateVals)
+						preTaxPVs[rate] = [filler]*((endDate - startDate).days+1)
+						postTaxPVs[rate] = [filler]*((endDate - startDate).days+1)
 						sumPreTaxNPV[rate] = filler
 						sumPostTaxNPV[rate] = filler
 
