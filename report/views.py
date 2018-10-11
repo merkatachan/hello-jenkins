@@ -380,9 +380,10 @@ def index(request):
 	sumDepoProvisionPay = sum(depoProvisionPay)
 	sumWorkCapCurrentProd = sum(workCapCurrentProd)
 	sumWorkCapCostsLG = sum(workCapCostsLG)
+	sumOwnerCost = sum(ownerCost)
 	totalCAPEX = [sum(x) for x in zip(preStrip, mineEquipInitial, mineEquipSustain, infraDirectCost, infraIndirectCost,
-		contingency, railcars, otherMobEquip, closureRehabAssure, depoProvisionPay)]
-	cashFlowCAPEX = [sum(x) for x in zip(totalCAPEX, workCapCurrentProd, workCapCostsLG, EPCM, ownerCost)]
+		contingency, railcars, otherMobEquip, closureRehabAssure, depoProvisionPay, ownerCost)]
+	cashFlowCAPEX = [sum(x) for x in zip(totalCAPEX, workCapCurrentProd, workCapCostsLG, EPCM)]
 	sumTotalCAPEX = sum(totalCAPEX)
 
 
@@ -691,6 +692,7 @@ def index(request):
 		reportData += 'Other Mobile Equipment,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]]) + ',' + str(round(sumOtherMobEquip,2)) + ';'
 		reportData += 'Closure and Rehab Assurance Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]]) + ',' + str(round(sumClosureRehabAssure,2)) + ';'
 		reportData += 'Deposits Provision Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]]) + ',' + str(round(sumDepoProvisionPay,2)) + ';'
+		reportData += "Owner's Cost," + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ownerCost]]) + ',' + str(round(sumOwnerCost,2)) + ';'
 		reportData += 'TOTAL CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
 
 		reportData += 'TAXES (millions CAD);'
@@ -772,10 +774,11 @@ def index(request):
 			'totalOPEX': totalOPEX, 'sumTotalOPEX':sumTotalOPEX, 'royalties': royalties, 'sumRoyalties': sumRoyalties,
 			'preStrip': preStrip, 'mineEquipInitial': mineEquipInitial, 'mineEquipSustain': mineEquipSustain, 'infraDirectCost': infraDirectCost,
 			'infraIndirectCost': infraIndirectCost, 'contingency': contingency, 'railcars': railcars, 'otherMobEquip': otherMobEquip,
-			'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'sumPreStrip': sumPreStrip,
-			'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 'sumInfraDirectCost': sumInfraDirectCost,
-			'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency, 'sumRailcars': sumRailcars,
-			'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 'sumDepoProvisionPay': sumDepoProvisionPay,
+			'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'ownerCost': ownerCost, 
+			'sumPreStrip': sumPreStrip, 'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 
+			'sumInfraDirectCost': sumInfraDirectCost, 'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency, 
+			'sumRailcars': sumRailcars, 'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 
+			'sumDepoProvisionPay': sumDepoProvisionPay, 'sumOwnerCost': sumOwnerCost,
 			'totalCAPEX': totalCAPEX, 'sumTotalCAPEX': sumTotalCAPEX,
 			'federalTaxes': federalTaxes, 'provincialTaxes': provincialTaxes, 'miningTaxes': miningTaxes,
 			'sumFederalTaxes': sumFederalTaxes, 'sumProvincialTaxes': sumProvincialTaxes, 'sumMiningTaxes': sumMiningTaxes,
@@ -1694,6 +1697,7 @@ def index(request):
 	reportData += 'Other Mobile Equipment,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]]) + ',' + str(round(sumOtherMobEquip,2)) + ';'
 	reportData += 'Closure and Rehab Assurance Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]]) + ',' + str(round(sumClosureRehabAssure,2)) + ';'
 	reportData += 'Deposits Provision Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]]) + ',' + str(round(sumDepoProvisionPay,2)) + ';'
+	reportData += "Owner's Cost," + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ownerCost]]) + ',' + str(round(sumOwnerCost,2)) + ';'
 	reportData += 'TOTAL CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
 
 	reportData += 'TAXES (millions CAD);'
@@ -1773,10 +1777,11 @@ def index(request):
 		'totalOPEX': totalOPEX, 'sumTotalOPEX':sumTotalOPEX, 'royalties': royalties, 'sumRoyalties': sumRoyalties,
 		'preStrip': preStrip, 'mineEquipInitial': mineEquipInitial, 'mineEquipSustain': mineEquipSustain, 'infraDirectCost': infraDirectCost,
 		'infraIndirectCost': infraIndirectCost, 'contingency': contingency, 'railcars': railcars, 'otherMobEquip': otherMobEquip,
-		'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'sumPreStrip': sumPreStrip,
-		'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 'sumInfraDirectCost': sumInfraDirectCost,
-		'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency, 'sumRailcars': sumRailcars,
-		'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 'sumDepoProvisionPay': sumDepoProvisionPay,
+		'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'ownerCost': ownerCost, 
+		'sumPreStrip': sumPreStrip, 'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 
+		'sumInfraDirectCost': sumInfraDirectCost, 'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency, 
+		'sumRailcars': sumRailcars, 'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 
+		'sumDepoProvisionPay': sumDepoProvisionPay, 'sumOwnerCost': sumOwnerCost,
 		'totalCAPEX': totalCAPEX, 'sumTotalCAPEX': sumTotalCAPEX,
 		'federalTaxes': federalTaxes, 'provincialTaxes': provincialTaxes, 'miningTaxes': miningTaxes,
 		'sumFederalTaxes': sumFederalTaxes, 'sumProvincialTaxes': sumProvincialTaxes, 'sumMiningTaxes': sumMiningTaxes,
@@ -2229,9 +2234,10 @@ def reportDL(request):
 				sumDepoProvisionPay = sum(depoProvisionPay)
 				sumWorkCapCurrentProd = sum(workCapCurrentProd)
 				sumWorkCapCostsLG = sum(workCapCostsLG)
+				sumOwnerCost = sum(ownerCost)
 
 				totalCAPEX = [sum(x) for x in zip(preStrip, mineEquipInitial, mineEquipSustain, infraDirectCost, infraIndirectCost,
-					contingency, railcars, otherMobEquip, closureRehabAssure, depoProvisionPay)]
+					contingency, railcars, otherMobEquip, closureRehabAssure, depoProvisionPay, ownerCost)]
 				sumTotalCAPEX = sum(totalCAPEX)
 
 				latestTaxes = tblTaxes.objects.filter(mineID=mineID).order_by('-dateAdded')[0]
@@ -2514,6 +2520,7 @@ def reportDL(request):
 					reportData += 'Other Mobile Equipment,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]]) + ',' + str(round(sumOtherMobEquip,2)) + ';'
 					reportData += 'Closure and Rehab Assurance Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]]) + ',' + str(round(sumClosureRehabAssure,2)) + ';'
 					reportData += 'Deposits Provision Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]]) + ',' + str(round(sumDepoProvisionPay,2)) + ';'
+					reportData += "Owner's Cost," + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ownerCost]]) + ',' + str(round(sumOwnerCost,2)) + ';'
 					reportData += 'TOTAL CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
 
 					reportData += 'TAXES (millions CAD);'
@@ -2593,10 +2600,11 @@ def reportDL(request):
 						'totalOPEX': totalOPEX, 'sumTotalOPEX':sumTotalOPEX, 'royalties': royalties, 'sumRoyalties': sumRoyalties,
 						'preStrip': preStrip, 'mineEquipInitial': mineEquipInitial, 'mineEquipSustain': mineEquipSustain, 'infraDirectCost': infraDirectCost,
 						'infraIndirectCost': infraIndirectCost, 'contingency': contingency, 'railcars': railcars, 'otherMobEquip': otherMobEquip,
-						'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'sumPreStrip': sumPreStrip,
-						'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 'sumInfraDirectCost': sumInfraDirectCost,
-						'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency, 'sumRailcars': sumRailcars,
-						'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 'sumDepoProvisionPay': sumDepoProvisionPay,
+						'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'ownerCost':ownerCost,
+						'sumPreStrip': sumPreStrip, 'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain,
+						'sumInfraDirectCost': sumInfraDirectCost, 'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency,
+						'sumRailcars': sumRailcars, 'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure,
+						'sumDepoProvisionPay': sumDepoProvisionPay, 'sumOwnerCost': sumOwnerCost,
 						'totalCAPEX': totalCAPEX, 'sumTotalCAPEX': sumTotalCAPEX,
 						'federalTaxes': federalTaxes, 'provincialTaxes': provincialTaxes, 'miningTaxes': miningTaxes,
 						'sumFederalTaxes': sumFederalTaxes, 'sumProvincialTaxes': sumProvincialTaxes, 'sumMiningTaxes': sumMiningTaxes,
@@ -3369,6 +3377,7 @@ def reportDL(request):
 				reportData += 'Other Mobile Equipment,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]]) + ',' + str(round(sumOtherMobEquip,2)) + ';'
 				reportData += 'Closure and Rehab Assurance Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]]) + ',' + str(round(sumClosureRehabAssure,2)) + ';'
 				reportData += 'Deposits Provision Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]]) + ',' + str(round(sumDepoProvisionPay,2)) + ';'
+				reportData += "Owner's Cost," + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ownerCost]]) + ',' + str(round(sumOwnerCost,2)) + ';'
 				reportData += 'TOTAL CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
 
 				reportData += 'TAXES (millions CAD);'
@@ -3449,10 +3458,11 @@ def reportDL(request):
 					'totalOPEX': totalOPEX, 'sumTotalOPEX':sumTotalOPEX, 'royalties': royalties, 'sumRoyalties': sumRoyalties,
 					'preStrip': preStrip, 'mineEquipInitial': mineEquipInitial, 'mineEquipSustain': mineEquipSustain, 'infraDirectCost': infraDirectCost,
 					'infraIndirectCost': infraIndirectCost, 'contingency': contingency, 'railcars': railcars, 'otherMobEquip': otherMobEquip,
-					'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'sumPreStrip': sumPreStrip,
-					'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 'sumInfraDirectCost': sumInfraDirectCost,
-					'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency, 'sumRailcars': sumRailcars,
-					'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 'sumDepoProvisionPay': sumDepoProvisionPay,
+					'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'ownerCost': ownerCost,
+					'sumPreStrip': sumPreStrip, 'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain,
+					'sumInfraDirectCost': sumInfraDirectCost, 'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency,
+					'sumRailcars': sumRailcars, 'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 
+					'sumDepoProvisionPay': sumDepoProvisionPay, 'sumOwnerCost': sumOwnerCost,
 					'totalCAPEX': totalCAPEX, 'sumTotalCAPEX': sumTotalCAPEX,
 					'federalTaxes': federalTaxes, 'provincialTaxes': provincialTaxes, 'miningTaxes': miningTaxes,
 					'sumFederalTaxes': sumFederalTaxes, 'sumProvincialTaxes': sumProvincialTaxes, 'sumMiningTaxes': sumMiningTaxes,
@@ -3866,6 +3876,7 @@ def reportDL(request):
 				sumOtherMobEquip = sum(otherMobEquip)
 				sumClosureRehabAssure = sum(closureRehabAssure)
 				sumDepoProvisionPay = sum(depoProvisionPay)
+				sumOwnerCost = sum(ownerCost)
 				sumWorkCapCurrentProd = sum(workCapCurrentProd)
 				sumWorkCapCostsLG = sum(workCapCostsLG)
 
@@ -4169,6 +4180,7 @@ def reportDL(request):
 					reportData += 'Other Mobile Equipment,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]]) + ',' + str(round(sumOtherMobEquip,2)) + ';'
 					reportData += 'Closure and Rehab Assurance Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]]) + ',' + str(round(sumClosureRehabAssure,2)) + ';'
 					reportData += 'Deposits Provision Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]]) + ',' + str(round(sumDepoProvisionPay,2)) + ';'
+					reportData += "Owner's Cost," + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ownerCost]]) + ',' + str(round(sumOwnerCost,2)) + ';'
 					reportData += 'TOTAL CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
 
 					reportData += 'TAXES (millions CAD);'
@@ -4248,10 +4260,11 @@ def reportDL(request):
 						'totalOPEX': totalOPEX, 'sumTotalOPEX':sumTotalOPEX, 'royalties': royalties, 'sumRoyalties': sumRoyalties,
 						'preStrip': preStrip, 'mineEquipInitial': mineEquipInitial, 'mineEquipSustain': mineEquipSustain, 'infraDirectCost': infraDirectCost,
 						'infraIndirectCost': infraIndirectCost, 'contingency': contingency, 'railcars': railcars, 'otherMobEquip': otherMobEquip,
-						'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'sumPreStrip': sumPreStrip,
-						'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 'sumInfraDirectCost': sumInfraDirectCost,
-						'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency, 'sumRailcars': sumRailcars,
-						'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 'sumDepoProvisionPay': sumDepoProvisionPay,
+						'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'ownerCost': ownerCost,
+						'sumPreStrip': sumPreStrip, 'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain,
+						'sumInfraDirectCost': sumInfraDirectCost, 'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency,
+						'sumRailcars': sumRailcars, 'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure,
+						'sumDepoProvisionPay': sumDepoProvisionPay, 'sumOwnerCost': sumOwnerCost,
 						'totalCAPEX': totalCAPEX, 'sumTotalCAPEX': sumTotalCAPEX,
 						'federalTaxes': federalTaxes, 'provincialTaxes': provincialTaxes, 'miningTaxes': miningTaxes,
 						'sumFederalTaxes': sumFederalTaxes, 'sumProvincialTaxes': sumProvincialTaxes, 'sumMiningTaxes': sumMiningTaxes,
@@ -4952,6 +4965,7 @@ def reportDL(request):
 				reportData += 'Other Mobile Equipment,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in otherMobEquip]]) + ',' + str(round(sumOtherMobEquip,2)) + ';'
 				reportData += 'Closure and Rehab Assurance Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in closureRehabAssure]]) + ',' + str(round(sumClosureRehabAssure,2)) + ';'
 				reportData += 'Deposits Provision Payments,' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in depoProvisionPay]]) + ',' + str(round(sumDepoProvisionPay,2)) + ';'
+				reportData += "Owner's Cost," + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in ownerCost]]) + ',' + str(round(sumOwnerCost,2)) + ';'
 				reportData += 'TOTAL CAPEX (millions CAD),' + ','.join([*[x if isinstance(x,str) else str(round(x,2)) for x in totalCAPEX]]) + ',' + str(round(sumTotalCAPEX,2)) + ';'
 
 				reportData += 'TAXES (millions CAD);'
@@ -5031,10 +5045,11 @@ def reportDL(request):
 					'totalOPEX': totalOPEX, 'sumTotalOPEX':sumTotalOPEX, 'royalties': royalties, 'sumRoyalties': sumRoyalties,
 					'preStrip': preStrip, 'mineEquipInitial': mineEquipInitial, 'mineEquipSustain': mineEquipSustain, 'infraDirectCost': infraDirectCost,
 					'infraIndirectCost': infraIndirectCost, 'contingency': contingency, 'railcars': railcars, 'otherMobEquip': otherMobEquip,
-					'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'sumPreStrip': sumPreStrip,
-					'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 'sumInfraDirectCost': sumInfraDirectCost,
-					'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency, 'sumRailcars': sumRailcars,
-					'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure, 'sumDepoProvisionPay': sumDepoProvisionPay,
+					'closureRehabAssure': closureRehabAssure, 'depoProvisionPay': depoProvisionPay, 'ownerCost': ownerCost,
+					'sumPreStrip': sumPreStrip, 'sumMineEquipInitial': sumMineEquipInitial, 'sumMineEquipSustain': sumMineEquipSustain, 
+					'sumInfraDirectCost': sumInfraDirectCost, 'sumInfraIndirectCost': sumInfraIndirectCost, 'sumContingency': sumContingency,
+					'sumRailcars': sumRailcars, 'sumOtherMobEquip': sumOtherMobEquip, 'sumClosureRehabAssure': sumClosureRehabAssure,
+					'sumDepoProvisionPay': sumDepoProvisionPay, 'sumOwnerCost': sumOwnerCost,
 					'totalCAPEX': totalCAPEX, 'sumTotalCAPEX': sumTotalCAPEX,
 					'federalTaxes': federalTaxes, 'provincialTaxes': provincialTaxes, 'miningTaxes': miningTaxes,
 					'sumFederalTaxes': sumFederalTaxes, 'sumProvincialTaxes': sumProvincialTaxes, 'sumMiningTaxes': sumMiningTaxes,

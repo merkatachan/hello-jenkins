@@ -878,6 +878,13 @@
                     {% endfor %}
                     <td class="numval">${{ sumDepoProvisionPay|intcomma }}</td>
                 </tr>
+                <tr>
+                    <th class="subhead">Owner's Costs</th>
+                    {% for val in ownerCost %}
+                        <td class="numval">${{ val|intcomma }}</td>
+                    {% endfor %}
+                    <td class="numval">${{ sumOwnerCost|intcomma }}</td>
+                </tr>
             </tbody>
             <tr>
                 <th class="centrecol">TOTAL CAPEX (millions CAD)</th>
