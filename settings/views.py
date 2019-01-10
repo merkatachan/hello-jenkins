@@ -357,9 +357,14 @@ def editCAPEX(request):
 				latestCAPEX.save()
 
 			# Toggle Processed tag in tblCashFlow
-			cashFlowEntry = tblCashFlow.objects.filter(projectID=latestProject.projectID).order_by('date')[0]
-			cashFlowEntry.processed = False
-			cashFlowEntry.save()
+			# cashFlowEntry = tblCashFlow.objects.filter(projectID=latestProject.projectID).order_by('date')[0]
+			# cashFlowEntry.processed = False
+			# cashFlowEntry.save()
+			cashFlowEntries = tblCashFlow.objects.filter(projectID=latestProject.projectID)
+			if cashFlowEntries:
+				cashFlowEntry = tblCashFlow.objects.filter(projectID=latestProject.projectID).order_by('date')[0]
+				cashFlowEntry.processed = False
+				cashFlowEntry.save()
 
 			return render(request, 'settings/success.html', { }) #Redirect
 
@@ -568,9 +573,15 @@ def editOPEX(request):
 				latestOPEX.save()
 
 			# Toggle Processed tag in tblCashFlow
-			cashFlowEntry = tblCashFlow.objects.filter(projectID=latestProject.projectID).order_by('date')[0]
-			cashFlowEntry.processed = False
-			cashFlowEntry.save()
+			cashFlowEntries = tblCashFlow.objects.filter(projectID=latestProject.projectID)
+			if cashFlowEntries:
+				cashFlowEntry = tblCashFlow.objects.filter(projectID=latestProject.projectID).order_by('date')[0]
+				cashFlowEntry.processed = False
+				cashFlowEntry.save()
+
+			# cashFlowEntry = tblCashFlow.objects.filter(projectID=latestProject.projectID).order_by('date')[0]
+			# cashFlowEntry.processed = False
+			# cashFlowEntry.save()
 
 			return render(request, 'settings/success.html', { }) #Redirect
 
@@ -1035,3 +1046,9 @@ def editInputs(request):
 
 		form = inputsForm(inputs=inputsMatch, plantProducts=PPIDs)
 		return render(request, "settings/inputs.html", {'form': form})
+
+
+def editTaxes(request):
+	mineID = request.session["mineID"]
+
+	
